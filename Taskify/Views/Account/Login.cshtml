@@ -1,0 +1,321 @@
+﻿@model Taskify.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Task Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #7c3aed;
+            --gradient-start: #667eea;
+            --gradient-end: #764ba2;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+            .login-header .logo {
+                font-size: 3rem;
+                margin-bottom: 10px;
+            }
+
+            .login-header h2 {
+                margin: 0;
+                font-weight: 600;
+                font-size: 1.8rem;
+            }
+
+            .login-header p {
+                margin: 10px 0 0;
+                opacity: 0.9;
+                font-size: 0.95rem;
+            }
+
+        .login-body {
+            padding: 40px 30px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+            .form-control:focus {
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            }
+
+        .input-group-text {
+            background: transparent;
+            border: 2px solid #e5e7eb;
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+            color: #6b7280;
+        }
+
+        .input-group .form-control {
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .input-group:focus-within .input-group-text {
+            border-color: var(--primary-color);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+            .btn-login:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+            }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 25px 0;
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+
+            .divider::before,
+            .divider::after {
+                content: '';
+                flex: 1;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .divider span {
+                padding: 0 15px;
+            }
+
+        .social-login {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-social {
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: #374151;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+            .btn-social:hover {
+                border-color: var(--primary-color);
+                background: #f9fafb;
+            }
+
+            .btn-social i {
+                margin-right: 8px;
+            }
+
+        .register-link {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+        }
+
+            .register-link a {
+                color: var(--primary-color);
+                font-weight: 600;
+                text-decoration: none;
+            }
+
+                .register-link a:hover {
+                    text-decoration: underline;
+                }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: 8px;
+        }
+
+            .forgot-password a {
+                color: var(--primary-color);
+                font-size: 0.9rem;
+                text-decoration: none;
+            }
+
+                .forgot-password a:hover {
+                    text-decoration: underline;
+                }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Header -->
+            <div class="login-header">
+                <div class="logo">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <h2>Welcome Back!</h2>
+                <p>Login to manage your tasks</p>
+            </div>
+
+            <!-- Body -->
+            <div class="login-body">
+                @if (ViewBag.ErrorMessage != null)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        @ViewBag.ErrorMessage
+                    </div>
+                }
+
+                @if (ViewBag.SuccessMessage != null)
+                {
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        @ViewBag.SuccessMessage
+                    </div>
+                }
+
+                <form asp-action="Login" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input asp-for="Email" class="form-control" placeholder="example@email.com" />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" />
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="form-check">
+                            <input asp-for="RememberMe" class="form-check-input" type="checkbox" />
+                            <label asp-for="RememberMe" class="form-check-label">
+                                Remember me
+                            </label>
+                        </div>
+                        <div class="forgot-password">
+                            <a asp-action="ForgotPassword">Forgot password?</a>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-login">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="divider">
+                    <span>or login with</span>
+                </div>
+
+                <!-- Social Login -->
+                <div class="social-login">
+                    <button class="btn btn-social" onclick="alert('Feature in development')">
+                        <i class="fab fa-google"></i>Google
+                    </button>
+                    <button class="btn btn-social" onclick="alert('Feature in development')">
+                        <i class="fab fa-facebook-f"></i>Facebook
+                    </button>
+                </div>
+
+                <!-- Register Link -->
+                <div class="register-link">
+                    Don't have an account? <a asp-action="Register">Sign up now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+</body>
+</html>

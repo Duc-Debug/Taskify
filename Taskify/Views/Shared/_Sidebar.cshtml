@@ -1,0 +1,275 @@
+﻿<div class="sidebar">
+    <!-- Logo -->
+    <div class="sidebar-header">
+        <a href="@Url.Action("Index", "Home")" class="logo">
+            <i class="fas fa-tasks"></i>
+            <span>Task Manager</span>
+        </a>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+        <ul class="nav flex-column">
+            <!-- Dashboard -->
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"
+                   href="@Url.Action("Index", "Home")">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <!-- My Tasks -->
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Tasks" ? "active" : "")"
+                   href="@Url.Action("Index", "Tasks")">
+                    <i class="fas fa-list-check"></i>
+                    <span>My Tasks</span>
+                    <span class="badge bg-primary ms-auto">@(ViewBag.TotalTasks ?? 0)</span>
+                </a>
+            </li>
+
+            <!-- Categories -->
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Categories" ? "active" : "")"
+                   href="@Url.Action("Index", "Categories")">
+                    <i class="fas fa-folder"></i>
+                    <span>Categories</span>
+                </a>
+            </li>
+
+            <!-- Completed Tasks -->
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Completed" ? "active" : "")"
+                   href="@Url.Action("Index", "Tasks", new { filter = "completed" })">
+                    <i class="fas fa-check-double"></i>
+                    <span>Completed</span>
+                </a>
+            </li>
+
+            <li><hr class="sidebar-divider"></li>
+
+            <!-- Priority Filters -->
+            <li class="nav-section">
+                <span class="nav-section-title">Priority</span>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="@Url.Action("Index", "Tasks", new { priority = "High" })">
+                    <i class="fas fa-exclamation-circle text-danger"></i>
+                    <span>High</span>
+                    <span class="badge bg-danger ms-auto">@(ViewBag.HighPriorityCount ?? 0)</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="@Url.Action("Index", "Tasks", new { priority = "Medium" })">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    <span>Medium</span>
+                    <span class="badge bg-warning ms-auto">@(ViewBag.MediumPriorityCount ?? 0)</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="@Url.Action("Index", "Tasks", new { priority = "Low" })">
+                    <i class="fas fa-circle text-success"></i>
+                    <span>Low</span>
+                    <span class="badge bg-success ms-auto">@(ViewBag.LowPriorityCount ?? 0)</span>
+                </a>
+            </li>
+
+            <li><hr class="sidebar-divider"></li>
+
+            <!-- Status Filters -->
+            <li class="nav-section">
+                <span class="nav-section-title">Status</span>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="@Url.Action("Index", "Tasks", new { status = "Pending" })">
+                    <i class="fas fa-clock text-secondary"></i>
+                    <span>Pending</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="@Url.Action("Index", "Tasks", new { status = "InProgress" })">
+                    <i class="fas fa-spinner text-primary"></i>
+                    <span>In Progress</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="@Url.Action("Index", "Tasks", new { filter = "overdue" })">
+                    <i class="fas fa-times-circle text-danger"></i>
+                    <span>Overdue</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+        <div class="progress-card">
+            <div class="d-flex justify-content-between mb-2">
+                <small class="text-muted">Today's Progress</small>
+                <small class="text-muted"><strong>@(ViewBag.CompletedToday ?? 0)/@(ViewBag.TotalToday ?? 0)</strong></small>
+            </div>
+            <div class="progress" style="height: 8px;">
+                @{
+                    var todayProgress = ViewBag.TotalToday != null && ViewBag.TotalToday > 0
+                    ? (ViewBag.CompletedToday ?? 0) * 100 / (int)ViewBag.TotalToday
+                    : 0;
+                }
+                <div class="progress-bar bg-success" role="progressbar" style="width: @todayProgress%"
+                     aria-valuenow="@todayProgress" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay for mobile -->
+<div class="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('show')"></div>
+
+<style>
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: var(--sidebar-width);
+        height: 100vh;
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        color: white;
+        overflow-y: auto;
+        overflow-x: hidden;
+        transition: transform 0.3s ease;
+        z-index: 1050;
+        box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+
+    .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .sidebar .logo {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+        .sidebar .logo i {
+            font-size: 1.8rem;
+            margin-right: 12px;
+            color: var(--primary-color);
+        }
+
+    .sidebar-nav {
+        padding: 20px 0;
+    }
+
+    .sidebar .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        color: rgba(255,255,255,0.8);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+    }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border-left-color: var(--primary-color);
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(79, 70, 229, 0.15);
+            color: white;
+            border-left-color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+
+        .sidebar .nav-link .badge {
+            font-size: 0.7rem;
+            padding: 3px 7px;
+        }
+
+    .nav-section {
+        padding: 15px 20px 8px;
+    }
+
+    .nav-section-title {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.5);
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-divider {
+        margin: 15px 20px;
+        border-color: rgba(255,255,255,0.1);
+    }
+
+    .sidebar-footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 20px;
+        background: rgba(0,0,0,0.2);
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .progress-card {
+        background: rgba(255,255,255,0.05);
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1040;
+    }
+
+    /* Mobile Responsive */
+    @@media (max-width: 768px) {
+        .sidebar {
+            transform: translateX(-100%);
+        }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+                .sidebar.show ~ .sidebar-overlay {
+                    display: block;
+                }
+    }
+</style>

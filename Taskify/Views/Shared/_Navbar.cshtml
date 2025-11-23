@@ -1,0 +1,136 @@
+﻿<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+    <div class="container-fluid">
+        <!-- Toggle Sidebar Button (Mobile) -->
+        <button class="btn btn-link d-lg-none" type="button" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Search Bar -->
+        <form class="d-none d-md-flex ms-3 flex-grow-1" style="max-width: 500px;">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+                <input type="text" class="form-control border-start-0" placeholder="Search tasks..." />
+            </div>
+        </form>
+
+        <!-- Right Side Items -->
+        <div class="d-flex align-items-center ms-auto">
+            <!-- Add Task Button -->
+            <a href="@Url.Action("Create", "Tasks")" class="btn btn-primary me-3 d-none d-md-inline-block">
+                <i class="fas fa-plus me-2"></i>Add Task
+            </a>
+
+            <!-- Notifications -->
+            <div class="dropdown me-3">
+                <button class="btn btn-link position-relative" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-bell fs-5 text-dark"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        3
+                    </span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" style="width: 300px;">
+                    <li class="dropdown-header">Notifications</li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="#">
+                            <div class="d-flex">
+                                <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                <div>
+                                    <strong>Task Completed</strong>
+                                    <p class="mb-0 small text-muted">You completed "Write Report"</p>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#">
+                            <div class="d-flex">
+                                <i class="fas fa-exclamation-circle text-warning me-2 mt-1"></i>
+                                <div>
+                                    <strong>Deadline Approaching</strong>
+                                    <p class="mb-0 small text-muted">"Client Meeting" is due in 2 hours</p>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-center text-primary" href="#">View All</a></li>
+                </ul>
+            </div>
+
+            <!-- User Profile -->
+            <div class="dropdown">
+                <button class="btn btn-link text-decoration-none d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                    <img src="https://ui-avatars.com/api/?name=@User.Identity.Name&background=4f46e5&color=fff"
+                         alt="User Avatar" class="rounded-circle me-2" width="35" height="35">
+                    <span class="d-none d-md-inline text-dark">@(User.Identity.Name ?? "Guest User")</span>
+                    <i class="fas fa-chevron-down ms-2 text-muted small"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="@Url.Action("Profile", "Account")">
+                            <i class="fas fa-user me-2"></i>Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="@Url.Action("Settings", "Account")">
+                            <i class="fas fa-cog me-2"></i>Settings
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .navbar {
+        height: 70px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        z-index: 1000;
+    }
+
+        .navbar .input-group-text,
+        .navbar .form-control {
+            border-color: #e5e7eb;
+        }
+
+            .navbar .form-control:focus {
+                box-shadow: none;
+                border-color: var(--primary-color);
+            }
+
+        .navbar .btn-link:hover {
+            text-decoration: none;
+        }
+
+    .dropdown-item {
+        padding: 12px 20px;
+    }
+
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+        }
+
+    @@media (max-width: 768px) {
+        .navbar {
+            padding: 0.5rem 1rem;
+        }
+    }
+</style>
+
+<script>
+    document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+        document.querySelector('.sidebar').classList.toggle('show');
+    });
+</script>
