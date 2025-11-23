@@ -1,0 +1,193 @@
+﻿@model Taskify.Models.CategoryViewModel
+
+@{
+    ViewData["Title"] = "Create Category";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-action="Index">Categories</a>
+                    </li>
+                    <li class="breadcrumb-item active">Create New Category</li>
+                </ol>
+            </nav>
+            <h2 class="mb-1">
+                <i class="fas fa-folder-plus me-2"></i>Create New Category
+            </h2>
+            <p class="text-muted mb-0">Add a new category to organize your tasks</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Category Information
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Category Name -->
+                        <div class="mb-4">
+                            <label asp-for="Name" class="form-label">
+                                Category Name <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-tag"></i>
+                                </span>
+                                <input asp-for="Name" class="form-control form-control-lg"
+                                       placeholder="e.g., Work, Personal, Shopping" autofocus />
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Choose a descriptive name for your category
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"
+                                      placeholder="Add a description for this category (optional)"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                            <div class="form-text">
+                                Maximum 200 characters
+                            </div>
+                        </div>
+
+                        <!-- Category Preview -->
+                        <div class="category-preview">
+                            <h6 class="mb-3">
+                                <i class="fas fa-eye me-2"></i>Preview
+                            </h6>
+                            <div class="preview-card">
+                                <div class="preview-icon">
+                                    <i class="fas fa-folder"></i>
+                                </div>
+                                <div>
+                                    <h6 id="previewName" class="mb-1">Category Name</h6>
+                                    <p id="previewDescription" class="mb-0 small text-muted">Category description will appear here</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Create Category
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Tips -->
+            <div class="card mt-4 bg-info bg-opacity-10 border-info">
+                <div class="card-body">
+                    <h6 class="text-info mb-3">
+                        <i class="fas fa-lightbulb me-2"></i>Tips for Creating Categories
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li class="mb-2">Keep names short and memorable</li>
+                        <li class="mb-2">Use broad categories like "Work", "Personal", "Health"</li>
+                        <li class="mb-2">Don't create too many categories - 5-10 is ideal</li>
+                        <li>You can always edit or delete categories later</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        // Live Preview
+        document.getElementById('Name')?.addEventListener('input', function(e) {
+            const preview = document.getElementById('previewName');
+            preview.textContent = e.target.value || 'Category Name';
+        });
+
+        document.getElementById('Description')?.addEventListener('input', function(e) {
+            const preview = document.getElementById('previewDescription');
+            preview.textContent = e.target.value || 'Category description will appear here';
+        });
+    </script>
+}
+
+<style>
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        border-radius: 15px;
+    }
+
+    .card-header {
+        border-bottom: 2px solid #f3f4f6;
+        padding: 20px;
+    }
+
+    .input-group-text {
+        background: transparent;
+        border-right: none;
+    }
+
+    .input-group .form-control {
+        border-left: none;
+    }
+
+    .category-preview {
+        background: #f9fafb;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+
+    .preview-card {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        border: 2px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .preview-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .preview-card h6 {
+        font-weight: 600;
+        color: #1f2937;
+    }
+</style>

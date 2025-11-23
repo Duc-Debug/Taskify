@@ -1,0 +1,261 @@
+﻿@model Taskify.Models.CategoryViewModel
+
+@{
+    ViewData["Title"] = "Delete Category";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-action="Index">Categories</a>
+                    </li>
+                    <li class="breadcrumb-item active">Delete Category</li>
+                </ol>
+            </nav>
+            <h2 class="mb-1 text-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>Delete Category
+            </h2>
+            <p class="text-muted mb-0">Confirm category deletion</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Warning Alert -->
+            <div class="alert alert-danger border-danger">
+                <h5 class="alert-heading">
+                    <i class="fas fa-exclamation-circle me-2"></i>Are you sure?
+                </h5>
+                <p class="mb-0">
+                    This action cannot be undone. Please review the information below before proceeding.
+                </p>
+            </div>
+
+            <!-- Category Details Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Category Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="category-preview-large">
+                        <div class="preview-icon-large">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <div class="preview-details">
+                            <h4 class="mb-2">@Model.Name</h4>
+                            @if (!string.IsNullOrEmpty(Model.Description))
+                            {
+                                <p class="text-muted mb-0">@Model.Description</p>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0 fst-italic">No description</p>
+                            }
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Impact Assessment -->
+                    <div class="impact-section">
+                        <h6 class="mb-3">
+                            <i class="fas fa-chart-line me-2"></i>Impact Assessment
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="impact-box">
+                                    <i class="fas fa-tasks text-primary"></i>
+                                    <div class="impact-value">@(ViewBag.TotalTasks ?? 0)</div>
+                                    <div class="impact-label">Tasks Affected</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="impact-box">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <div class="impact-value">@(ViewBag.CompletedTasks ?? 0)</div>
+                                    <div class="impact-label">Completed</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="impact-box">
+                                    <i class="fas fa-clock text-warning"></i>
+                                    <div class="impact-value">@(ViewBag.PendingTasks ?? 0)</div>
+                                    <div class="impact-label">Pending</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if ((ViewBag.TotalTasks ?? 0) > 0)
+                    {
+                        <div class="alert alert-warning mt-3">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-info-circle me-2"></i>What happens to tasks?
+                            </h6>
+                            <ul class="mb-0">
+                                <li>All <strong>@ViewBag.TotalTasks task(s)</strong> in this category will be moved to "Uncategorized"</li>
+                                <li>Task data and history will be preserved</li>
+                                <li>You can reassign these tasks to other categories later</li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-success mt-3">
+                            <i class="fas fa-check-circle me-2"></i>
+                            This category has no tasks. It's safe to delete without affecting any tasks.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Confirmation Form -->
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Confirm Deletion
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="Name" />
+
+                        <p class="mb-3">
+                            To confirm deletion, please type the category name:
+                            <strong class="text-danger">@Model.Name</strong>
+                        </p>
+
+                        <div class="mb-4">
+                            <input type="text" class="form-control form-control-lg"
+                                   id="confirmName" placeholder="Type category name here"
+                                   onkeyup="checkConfirmation()" />
+                            <div class="form-text">
+                                This is to prevent accidental deletions
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="deleteBtn" disabled>
+                                <i class="fas fa-trash me-2"></i>Delete Category
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function checkConfirmation() {
+            const confirmInput = document.getElementById('confirmName').value;
+            const expectedName = '@Model.Name';
+            const deleteBtn = document.getElementById('deleteBtn');
+
+            if (confirmInput === expectedName) {
+                deleteBtn.disabled = false;
+                deleteBtn.classList.remove('btn-secondary');
+                deleteBtn.classList.add('btn-danger');
+            } else {
+                deleteBtn.disabled = true;
+                deleteBtn.classList.remove('btn-danger');
+                deleteBtn.classList.add('btn-secondary');
+            }
+        }
+    </script>
+}
+
+<style>
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        border-radius: 15px;
+    }
+
+    .card-header {
+        border-bottom: 2px solid #f3f4f6;
+        padding: 20px;
+    }
+
+    .category-preview-large {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+        background: #f9fafb;
+        border-radius: 10px;
+    }
+
+    .preview-icon-large {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.5rem;
+        flex-shrink: 0;
+    }
+
+    .preview-details h4 {
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .impact-section {
+        background: #f9fafb;
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .impact-box {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid #e5e7eb;
+    }
+
+        .impact-box i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+    .impact-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .impact-label {
+        font-size: 0.85rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    #deleteBtn:disabled {
+        background-color: #9ca3af !important;
+        border-color: #9ca3af !important;
+        cursor: not-allowed;
+    }
+</style>

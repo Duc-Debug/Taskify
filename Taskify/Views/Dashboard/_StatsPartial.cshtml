@@ -1,0 +1,184 @@
+﻿@model Taskify.Models.DashboardViewModel
+
+<!-- Stats Overview -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="dashboard-stat-card stat-total">
+            <div class="stat-icon">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <div class="stat-content">
+                <h3>@Model.TotalTasks</h3>
+                <p>Total Tasks</p>
+                <div class="stat-change">
+                    <i class="fas fa-layer-group"></i> All tasks
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="dashboard-stat-card stat-pending">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3>@Model.PendingTask</h3>
+                <p>Pending</p>
+                <div class="stat-change">
+                    <i class="fas fa-pause-circle"></i> Waiting to start
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="dashboard-stat-card stat-progress">
+            <div class="stat-icon">
+                <i class="fas fa-spinner"></i>
+            </div>
+            <div class="stat-content">
+                <h3>@Model.InProgressTasks</h3>
+                <p>In Progress</p>
+                <div class="stat-change">
+                    <i class="fas fa-play-circle"></i> Currently working
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="dashboard-stat-card stat-completed">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3>@Model.CompletedTasks</h3>
+                <p>Completed</p>
+                @{
+                    var completionRate = Model.TotalTasks > 0 ? (Model.CompletedTasks * 100.0 / Model.TotalTasks) : 0;
+                }
+                <div class="stat-change positive">
+                    <i class="fas fa-check"></i> @completionRate.ToString("F0")% complete
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .dashboard-stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        height: 100%;
+    }
+
+        .dashboard-stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+    .stat-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .stat-total .stat-icon {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .stat-pending .stat-icon {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+    }
+
+    .stat-progress .stat-icon {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    }
+
+    .stat-completed .stat-icon {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+        .stat-content h3 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+            color: #1f2937;
+            line-height: 1;
+        }
+
+        .stat-content p {
+            margin: 5px 0;
+            color: #6b7280;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+    .stat-change {
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .stat-change.positive {
+            color: #10b981;
+        }
+
+        .stat-change i {
+            font-size: 0.9rem;
+        }
+
+    @@media (max-width: 768px) {
+        .dashboard-stat-card {
+            padding: 20px;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+
+        .stat-content h3 {
+            font-size: 2rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .dashboard-stat-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .stat-change {
+            justify-content: center;
+        }
+    }
+</style>

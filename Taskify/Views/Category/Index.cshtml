@@ -1,0 +1,244 @@
+﻿@model IEnumerable<Taskify.Models.CategoryViewModel>
+
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-folder me-2"></i>Categories
+                    </h2>
+                    <p class="text-muted mb-0">Organize your tasks with custom categories</p>
+                </div>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add Category
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @ViewBag.SuccessMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Categories Grid -->
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var category in Model)
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="category-card">
+                        <div class="category-card-header">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="category-icon">
+                                    <i class="fas fa-folder"></i>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" asp-action="Edit" asp-route-id="@category.Id">
+                                                <i class="fas fa-edit me-2"></i>Edit
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Tasks" asp-action="Index"
+                                               asp-route-categoryId="@category.Id">
+                                                <i class="fas fa-tasks me-2"></i>View Tasks
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@category.Id">
+                                                <i class="fas fa-trash me-2"></i>Delete
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="category-card-body">
+                            <h5 class="category-name">@category.Name</h5>
+
+                            @if (!string.IsNullOrEmpty(category.Description))
+                            {
+                                <p class="category-description">@category.Description</p>
+                            }
+
+                            <div class="category-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-tasks text-primary"></i>
+                                    <span>Tasks</span>
+                                    <strong>0</strong>
+                                </div>
+                                <div class="stat-divider"></div>
+                                <div class="stat-item">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <span>Completed</span>
+                                    <strong>0</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="category-card-footer">
+                            <a asp-controller="Tasks" asp-action="Index" asp-route-categoryId="@category.Id"
+                               class="btn btn-sm btn-outline-primary w-100">
+                                <i class="fas fa-arrow-right me-2"></i>View Tasks
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <h4>No categories yet</h4>
+                    <p>Create your first category to organize your tasks</p>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Create Category
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .category-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 2px solid #e5e7eb;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-color: var(--primary-color);
+        }
+
+    .category-card-header {
+        padding: 20px;
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    }
+
+    .category-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.8rem;
+    }
+
+    .category-card-body {
+        padding: 20px;
+        flex: 1;
+    }
+
+    .category-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 10px;
+    }
+
+    .category-description {
+        color: #6b7280;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 15px;
+    }
+
+    .category-stats {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding: 15px;
+        background: #f9fafb;
+        border-radius: 10px;
+        margin-top: auto;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        text-align: center;
+    }
+
+        .stat-item i {
+            font-size: 1.2rem;
+        }
+
+        .stat-item span {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-item strong {
+            font-size: 1.2rem;
+            color: #1f2937;
+        }
+
+    .stat-divider {
+        width: 1px;
+        height: 40px;
+        background: #e5e7eb;
+    }
+
+    .category-card-footer {
+        padding: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 15px;
+    }
+
+        .empty-state i {
+            font-size: 5rem;
+            color: #e5e7eb;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h4 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+</style>
