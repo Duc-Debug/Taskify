@@ -1,0 +1,452 @@
+﻿@model Taskify.Models.TaskDetailsViewModel
+
+@{
+    ViewData["Title"] = "Task Details";
+    var priorityClass = Model.Priority switch
+    {
+        TaskPriority.High => "danger",
+        TaskPriority.Medium => "warning",
+        TaskPriority.Low => "success",
+        _ => "secondary"
+    };
+    var statusClass = Model.Status switch
+    {
+        Taskify.Models.TaskStatus.Completed => "success",
+        Taskify.Models.TaskStatus.InProgress => "primary",
+        Taskify.Models.TaskStatus.Cancelled => "secondary",
+        _ => "warning"
+    };
+    var statusText = Model.Status switch
+    {
+        Taskify.Models.TaskStatus.Completed => "Completed",
+        Taskify.Models.TaskStatus.InProgress => "In Progress",
+        Taskify.Models.TaskStatus.Cancelled => "Cancelled",
+        Taskify.Models.TaskStatus.Pending => "Pending",
+        _ => "Unknown"
+    };
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-action="Index">Tasks</a>
+                    </li>
+                    <li class="breadcrumb-item active">@Model.Title</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8 mb-4">
+            <!-- Task Header -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="form-check me-3">
+                                    <input class="form-check-input task-checkbox-large" type="checkbox"
+                                           id="taskCompleted" @(Model.Status == Taskify.Models.TaskStatus.Completed ? "checked" : "")
+                                           onchange="toggleTaskComplete(@Model.Id, this.checked)">
+                                </div>
+                                <div>
+                                    <h2 class="mb-2 @(Model.Status == Taskify.Models.TaskStatus.Completed ? "text-decoration-line-through text-muted" : "")">
+                                        @Model.Title
+                                    </h2>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="badge bg-@priorityClass">
+                                            <i class="fas fa-exclamation-circle me-1"></i>@Model.Priority Priority
+                                        </span>
+                                        <span class="badge bg-@statusClass">
+                                            <i class="fas fa-spinner me-1"></i>@statusText
+                                        </span>
+                                        @if (!string.IsNullOrEmpty(Model.CategoryName))
+                                        {
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-folder me-1"></i>@Model.CategoryName
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-link text-muted" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v fs-4"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" asp-action="Edit" asp-route-id="@Model.Id">
+                                        <i class="fas fa-edit me-2"></i>Edit Task
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="duplicateTask(@Model.Id)">
+                                        <i class="fas fa-copy me-2"></i>Duplicate
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                       data-bs-target="#deleteModal">
+                                        <i class="fas fa-trash me-2"></i>Delete
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Task Meta Info -->
+                    <div class="meta-info">
+                        <div class="meta-item">
+                            <i class="fas fa-calendar text-primary me-2"></i>
+                            <strong>Created:</strong> @Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")
+                        </div>
+                        @if (Model.DueDate.HasValue)
+                        {
+                            <div class="meta-item">
+                                <i class="fas fa-clock text-warning me-2"></i>
+                                <strong>Due Date:</strong> @Model.DueDate.Value.ToString("MMM dd, yyyy")
+                            </div>
+                        }
+                        @if (Model.CompletedAt.HasValue)
+                        {
+                            <div class="meta-item">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <strong>Completed:</strong> @Model.CompletedAt.Value.ToString("MMM dd, yyyy hh:mm tt")
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            @if (!string.IsNullOrEmpty(Model.Decription))
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-align-left me-2"></i>Description
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0 text-break">@Model.Decription</p>
+                    </div>
+                </div>
+            }
+
+            <!-- Timeline / History -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Task Timeline
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon bg-primary">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6>Task Created</h6>
+                                <p class="text-muted mb-0">@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</p>
+                            </div>
+                        </div>
+
+                        @if (Model.Status == Taskify.Models.TaskStatus.InProgress || Model.Status == Taskify.Models.TaskStatus.Completed)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-icon bg-warning">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Started</h6>
+                                    <p class="text-muted mb-0">Task status changed to In Progress</p>
+                                </div>
+                            </div>
+                        }
+
+                        @if (Model.Status == Taskify.Models.TaskStatus.Completed && Model.CompletedAt.HasValue)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-icon bg-success">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Completed</h6>
+                                    <p class="text-muted mb-0">@Model.CompletedAt.Value.ToString("MMM dd, yyyy hh:mm tt")</p>
+                                </div>
+                            </div>
+                        }
+
+                        @if (Model.Status == Taskify.Models.TaskStatus.Cancelled)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-icon bg-secondary">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>Cancelled</h6>
+                                    <p class="text-muted mb-0">Task was cancelled</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4 mb-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                            <i class="fas fa-edit me-2"></i>Edit Task
+                        </a>
+                        @if (Model.Status != Taskify.Models.TaskStatus.Completed)
+                        {
+                            <button class="btn btn-outline-success" onclick="markAsComplete(@Model.Id)">
+                                <i class="fas fa-check me-2"></i>Mark as Complete
+                            </button>
+                        }
+                        <button class="btn btn-outline-info" onclick="duplicateTask(@Model.Id)">
+                            <i class="fas fa-copy me-2"></i>Duplicate Task
+                        </button>
+                        <button class="btn btn-outline-warning" onclick="shareTask()">
+                            <i class="fas fa-share me-2"></i>Share Task
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Tracking -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-stopwatch me-2"></i>Time Tracking
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="time-stat">
+                        <span class="time-label">
+                            <i class="fas fa-calendar-day me-2"></i>Days Since Created
+                        </span>
+                        <span class="time-value">@((DateTime.Now - Model.CreatedAt).Days) days</span>
+                    </div>
+                    @if (Model.DueDate.HasValue)
+                    {
+                        <div class="time-stat">
+                            <span class="time-label">
+                                <i class="fas fa-hourglass-half me-2"></i>Time Until Due
+                            </span>
+                            @{
+                                var remaining = (Model.DueDate.Value - DateTime.Now).Days;
+                            }
+                            <span class="time-value @(remaining < 0 ? "text-danger" : "")">
+                                @if (remaining < 0)
+                                {
+                                    <text>@Math.Abs(remaining) days overdue</text>
+                                }
+                                else if (remaining == 0)
+                                {
+                                    <text>Due today</text>
+                                }
+                                else
+                                {
+                                    <text>@remaining days remaining</text>
+                                }
+                            </span>
+                        </div>
+                    }
+                    @if (Model.CompletedAt.HasValue)
+                    {
+                        <div class="time-stat">
+                            <span class="time-label">
+                                <i class="fas fa-clock me-2"></i>Time to Complete
+                            </span>
+                            <span class="time-value">@((Model.CompletedAt.Value - Model.CreatedAt).Days) days</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Task
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete "<strong>@Model.Title</strong>"?</p>
+                <div class="alert alert-warning">
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Delete Task
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleTaskComplete(taskId, isCompleted) {
+            const newStatus = isCompleted ? 'Completed' : 'Pending';
+
+            fetch(`/Tasks/UpdateStatus/${taskId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(response => response.ok ? location.reload() : console.error('Error'))
+            .catch(error => console.error('Error:', error));
+        }
+
+        function markAsComplete(taskId) {
+            if (confirm('Mark this task as completed?')) {
+                document.getElementById('taskCompleted').checked = true;
+                toggleTaskComplete(taskId, true);
+            }
+        }
+
+        function duplicateTask(taskId) {
+            if (confirm('Create a copy of this task?')) {
+                window.location.href = `/Tasks/Duplicate/${taskId}`;
+            }
+        }
+
+        function shareTask() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Task link copied to clipboard!');
+            }).catch(() => {
+                prompt('Copy this link:', url);
+            });
+        }
+    </script>
+}
+
+<style>
+    .task-checkbox-large {
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+    }
+
+    .meta-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        padding: 20px;
+        background: #f9fafb;
+        border-radius: 10px;
+    }
+
+    .meta-item {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 40px;
+    }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e5e7eb;
+        }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 25px;
+    }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+    .timeline-icon {
+        position: absolute;
+        left: -40px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.85rem;
+    }
+
+    .timeline-content h6 {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .time-stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+        .time-stat:last-child {
+            border-bottom: none;
+        }
+
+    .time-label {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    .time-value {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        border-radius: 15px;
+    }
+
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+</style>

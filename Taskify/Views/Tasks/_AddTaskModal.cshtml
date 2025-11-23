@@ -1,0 +1,212 @@
+﻿<!-- Quick Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title" id="addTaskModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Quick Add Task
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <form id="quickAddTaskForm" asp-action="QuickCreate" asp-controller="Tasks" method="post">
+                    <!-- Task Title -->
+                    <div class="mb-3">
+                        <label for="taskTitle" class="form-label">
+                            Task Title <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control form-control-lg" id="taskTitle"
+                               name="Title" placeholder="Enter task title..." required autofocus>
+                        <div class="invalid-feedback">Please enter a task title.</div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="taskDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="taskDescription" name="Description"
+                                  rows="3" placeholder="Add task description..."></textarea>
+                    </div>
+
+                    <!-- Row: Category & Priority -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="taskCategory" class="form-label">
+                                Category <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="taskCategory" name="CategoryId" required>
+                                <option value="">Select category...</option>
+                                @if (ViewBag.Categories != null)
+                                {
+                                    @foreach (var category in ViewBag.Categories as IEnumerable<SelectListItem>)
+                                    {
+                                        <option value="@category.Value">@category.Text</option>
+                                    }
+                                }
+                            </select>
+                            <div class="invalid-feedback">Please select a category.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Priority <span class="text-danger">*</span>
+                            </label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="Priority" id="modalPriorityLow"
+                                       value="@TaskPriority.Low" checked>
+                                <label class="btn btn-outline-success" for="modalPriorityLow">
+                                    <i class="fas fa-circle"></i> Low
+                                </label>
+
+                                <input type="radio" class="btn-check" name="Priority" id="modalPriorityMedium"
+                                       value="@TaskPriority.Medium">
+                                <label class="btn btn-outline-warning" for="modalPriorityMedium">
+                                    <i class="fas fa-exclamation-triangle"></i> Medium
+                                </label>
+
+                                <input type="radio" class="btn-check" name="Priority" id="modalPriorityHigh"
+                                       value="@TaskPriority.High">
+                                <label class="btn btn-outline-danger" for="modalPriorityHigh">
+                                    <i class="fas fa-exclamation-circle"></i> High
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Due Date -->
+                    <div class="mb-3">
+                        <label for="taskDueDate" class="form-label">Due Date</label>
+                        <input type="date" class="form-control" id="taskDueDate" name="DueDate"
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")">
+                    </div>
+
+                    <!-- Quick Date Buttons -->
+                    <div class="mb-3">
+                        <label class="form-label">Quick Select:</label>
+                        <div class="btn-group-quick-dates">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setQuickDate(0)">
+                                Today
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setQuickDate(1)">
+                                Tomorrow
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setQuickDate(7)">
+                                Next Week
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setQuickDate(30)">
+                                Next Month
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary" onclick="submitQuickTask()">
+                    <i class="fas fa-check me-2"></i>Create Task
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    }
+
+    .modal-content {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+        border-bottom: none;
+        padding: 25px 30px;
+    }
+
+    .modal-body {
+        padding: 30px;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #e5e7eb;
+        padding: 20px 30px;
+    }
+
+    .btn-group-quick-dates {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+        .btn-group-quick-dates .btn {
+            border-radius: 20px;
+        }
+
+    .btn-group {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        .btn-group .btn {
+            border-radius: 0 !important;
+        }
+
+    .invalid-feedback {
+        display: none;
+        font-size: 0.875rem;
+        color: #dc3545;
+    }
+
+    .was-validated .form-control:invalid ~ .invalid-feedback,
+    .was-validated .form-select:invalid ~ .invalid-feedback {
+        display: block;
+    }
+</style>
+
+<script>
+    // Initialize modal
+    document.getElementById('addTaskModal')?.addEventListener('shown.bs.modal', function () {
+        document.getElementById('taskTitle')?.focus();
+    });
+
+    // Reset form when modal is hidden
+    document.getElementById('addTaskModal')?.addEventListener('hidden.bs.modal', function () {
+        const form = document.getElementById('quickAddTaskForm');
+        if (form) {
+            form.reset();
+            form.classList.remove('was-validated');
+        }
+    });
+
+    function setQuickDate(daysFromNow) {
+        const date = new Date();
+        date.setDate(date.getDate() + daysFromNow);
+        const dateString = date.toISOString().split('T')[0];
+        const dateInput = document.getElementById('taskDueDate');
+        if (dateInput) {
+            dateInput.value = dateString;
+        }
+    }
+
+    function submitQuickTask() {
+        const form = document.getElementById('quickAddTaskForm');
+        if (!form) return;
+
+        form.classList.add('was-validated');
+
+        if (form.checkValidity()) {
+            // Submit form
+            form.submit();
+        }
+    }
+</script>

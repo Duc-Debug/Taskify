@@ -1,0 +1,397 @@
+﻿@model IEnumerable<Taskify.Models.TaskDetailsViewModel>
+
+@{
+    ViewData["Title"] = "My Tasks";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-list-check me-2"></i>My Tasks
+                    </h2>
+                    <p class="text-muted mb-0">Manage and track your tasks efficiently</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add Task
+                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-filter me-2"></i>Filter
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="?filter=all">All Tasks</a></li>
+                            <li><a class="dropdown-item" href="?filter=today">Today</a></li>
+                            <li><a class="dropdown-item" href="?filter=week">This Week</a></li>
+                            <li><a class="dropdown-item" href="?filter=overdue">Overdue</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="stats-card bg-primary-subtle">
+                <div class="stats-icon bg-primary">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>@(ViewBag.TotalTasks ?? Model.Count())</h3>
+                    <p>Total Tasks</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card bg-success-subtle">
+                <div class="stats-icon bg-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>@(ViewBag.CompletedTasks ?? Model.Count(t => t.Status == Taskify.Models.TaskStatus.Completed))</h3>
+                    <p>Completed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card bg-warning-subtle">
+                <div class="stats-icon bg-warning">
+                    <i class="fas fa-spinner"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>@(ViewBag.InProgressTasks ?? Model.Count(t => t.Status == Taskify.Models.TaskStatus.InProgress))</h3>
+                    <p>In Progress</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card bg-danger-subtle">
+                <div class="stats-icon bg-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>@(ViewBag.OverdueTasks ?? Model.Count(t => t.DueDate.HasValue && t.DueDate.Value < DateTime.Now && t.Status != Taskify.Models.TaskStatus.Completed))</h3>
+                    <p>Overdue</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs & Search -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        <!-- Tabs -->
+                        <ul class="nav nav-pills" id="taskTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="all-tab" data-bs-toggle="pill"
+                                        data-bs-target="#all" type="button">
+                                    All <span class="badge bg-secondary ms-2">@Model.Count()</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pending-tab" data-bs-toggle="pill"
+                                        data-bs-target="#pending" type="button">
+                                    Pending <span class="badge bg-secondary ms-2">@Model.Count(t => t.Status == Taskify.Models.TaskStatus.Pending)</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="progress-tab" data-bs-toggle="pill"
+                                        data-bs-target="#progress" type="button">
+                                    In Progress <span class="badge bg-primary ms-2">@Model.Count(t => t.Status == Taskify.Models.TaskStatus.InProgress)</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="completed-tab" data-bs-toggle="pill"
+                                        data-bs-target="#completed" type="button">
+                                    Completed <span class="badge bg-success ms-2">@Model.Count(t => t.Status == Taskify.Models.TaskStatus.Completed)</span>
+                                </button>
+                            </li>
+                        </ul>
+
+                        <!-- Search & Sort -->
+                        <div class="d-flex gap-2">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" class="form-control" id="searchInput"
+                                       placeholder="Search tasks..." onkeyup="filterTasks()">
+                            </div>
+                            <select class="form-select" style="width: auto;" onchange="sortTasks(this.value)">
+                                <option value="date-desc">Date (Newest)</option>
+                                <option value="date-asc">Date (Oldest)</option>
+                                <option value="priority-high">Priority (High to Low)</option>
+                                <option value="priority-low">Priority (Low to High)</option>
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks Content -->
+    <div class="tab-content" id="taskTabsContent">
+        <div class="tab-pane fade show active" id="all">
+            <div class="row" id="tasksList">
+                @if (Model.Any())
+                {
+                    @foreach (var task in Model)
+                    {
+                        <div class="col-12 task-item"
+                             data-task-id="@task.Id"
+                             data-priority="@((int)task.Priority)"
+                             data-status="@task.Status"
+                             data-created-date="@task.CreatedAt.ToString("yyyy-MM-dd")"
+                             data-title="@task.Title">
+                            @await Html.PartialAsync("_TaskCard", task)
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <h4>No tasks yet</h4>
+                            <p>Create your first task to get started</p>
+                            <a asp-action="Create" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Task
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="pending">
+            <div class="row">
+                @if (Model.Any(t => t.Status == Taskify.Models.TaskStatus.Pending))
+                {
+                    @foreach (var task in Model.Where(t => t.Status == Taskify.Models.TaskStatus.Pending))
+                    {
+                        <div class="col-12">
+                            @await Html.PartialAsync("_TaskCard", task)
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="empty-state">
+                            <i class="fas fa-clock"></i>
+                            <h5>No pending tasks</h5>
+                            <p class="text-muted">All tasks are either in progress or completed</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="progress">
+            <div class="row">
+                @if (Model.Any(t => t.Status == Taskify.Models.TaskStatus.InProgress))
+                {
+                    @foreach (var task in Model.Where(t => t.Status == Taskify.Models.TaskStatus.InProgress))
+                    {
+                        <div class="col-12">
+                            @await Html.PartialAsync("_TaskCard", task)
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="empty-state">
+                            <i class="fas fa-tasks"></i>
+                            <h5>No tasks in progress</h5>
+                            <p class="text-muted">Start working on your pending tasks</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="completed">
+            <div class="row">
+                @if (Model.Any(t => t.Status == Taskify.Models.TaskStatus.Completed))
+                {
+                    @foreach (var task in Model.Where(t => t.Status == Taskify.Models.TaskStatus.Completed))
+                    {
+                        <div class="col-12">
+                            @await Html.PartialAsync("_TaskCard", task)
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="empty-state">
+                            <i class="fas fa-check-circle"></i>
+                            <h5>No completed tasks yet</h5>
+                            <p class="text-muted">Keep working to complete your tasks</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function filterTasks() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const tasks = document.querySelectorAll('.task-item');
+
+            tasks.forEach(task => {
+                const text = task.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    task.style.display = '';
+                } else {
+                    task.style.display = 'none';
+                }
+            });
+        }
+
+        function sortTasks(sortBy) {
+            const tasksList = document.getElementById('tasksList');
+            const tasks = Array.from(document.querySelectorAll('.task-item'));
+
+            tasks.sort((a, b) => {
+                switch(sortBy) {
+                    case 'date-desc':
+                        return new Date(b.dataset.createdDate) - new Date(a.dataset.createdDate);
+                    case 'date-asc':
+                        return new Date(a.dataset.createdDate) - new Date(b.dataset.createdDate);
+                    case 'priority-high':
+                        return parseInt(b.dataset.priority) - parseInt(a.dataset.priority);
+                    case 'priority-low':
+                        return parseInt(a.dataset.priority) - parseInt(b.dataset.priority);
+                    case 'name-asc':
+                        return a.dataset.title.localeCompare(b.dataset.title);
+                    case 'name-desc':
+                        return b.dataset.title.localeCompare(a.dataset.title);
+                }
+            });
+
+            tasks.forEach(task => tasksList.appendChild(task));
+        }
+    </script>
+}
+
+<style>
+    .stats-card {
+        border-radius: 15px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .stats-info h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        color: #1f2937;
+    }
+
+    .stats-info p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    .nav-pills .nav-link {
+        color: #6b7280;
+        border-radius: 10px;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+    }
+
+        .nav-pills .nav-link:hover {
+            background-color: #f3f4f6;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .nav-pills .nav-link .badge {
+            font-size: 0.7rem;
+        }
+
+    .search-box {
+        position: relative;
+        width: 300px;
+    }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .search-box input {
+            padding-left: 45px;
+            border-radius: 10px;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 15px;
+    }
+
+        .empty-state i {
+            font-size: 5rem;
+            color: #e5e7eb;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h4, .empty-state h5 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+    .card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        border-radius: 15px;
+    }
+</style>
