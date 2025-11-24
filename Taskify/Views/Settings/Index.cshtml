@@ -1,0 +1,364 @@
+﻿@model Taskify.Models.SettingsViewModel
+
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-1">
+                <i class="fas fa-cog me-2"></i>Settings
+            </h2>
+            <p class="text-muted mb-0">Manage your account preferences and configurations</p>
+        </div>
+    </div>
+
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @ViewBag.SuccessMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Settings Menu -->
+        <div class="col-lg-3 mb-4">
+            <div class="card settings-menu">
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="#general" class="list-group-item list-group-item-action active" data-section="general">
+                            <i class="fas fa-sliders-h me-3"></i>
+                            <span>General</span>
+                            <i class="fas fa-chevron-right ms-auto"></i>
+                        </a>
+                        <a asp-action="Notifications" class="list-group-item list-group-item-action">
+                            <i class="fas fa-bell me-3"></i>
+                            <span>Notifications</span>
+                            <i class="fas fa-chevron-right ms-auto"></i>
+                        </a>
+                        <a asp-action="Preferences" class="list-group-item list-group-item-action">
+                            <i class="fas fa-palette me-3"></i>
+                            <span>Preferences</span>
+                            <i class="fas fa-chevron-right ms-auto"></i>
+                        </a>
+                        <a asp-controller="Account" asp-action="Profile" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user me-3"></i>
+                            <span>Profile</span>
+                            <i class="fas fa-chevron-right ms-auto"></i>
+                        </a>
+                        <a asp-controller="Account" asp-action="ChangePassword" class="list-group-item list-group-item-action">
+                            <i class="fas fa-key me-3"></i>
+                            <span>Security</span>
+                            <i class="fas fa-chevron-right ms-auto"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Info Card -->
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <img src="https://ui-avatars.com/api/?name=@User.Identity.Name&size=80&background=4f46e5&color=fff" 
+                         class="rounded-circle mb-3" width="80" height="80">
+                    <h6 class="mb-1">@User.Identity.Name</h6>
+                    <p class="text-muted small mb-0">@User.Identity.Name</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="col-lg-9 mb-4">
+            <!-- General Settings -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sliders-h me-2"></i>General Settings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Index" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- Theme Selection -->
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h6 class="mb-1">
+                                    <i class="fas fa-moon me-2 text-primary"></i>Theme
+                                </h6>
+                                <p class="text-muted small mb-0">Choose your preferred color theme</p>
+                            </div>
+                            <div class="setting-control">
+                                <select asp-for="Theme" class="form-select">
+                                    <option value="Light">Light</option>
+                                    <option value="Dark">Dark</option>
+                                    <option value="Auto">Auto (System)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Notifications Toggle -->
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h6 class="mb-1">
+                                    <i class="fas fa-bell me-2 text-warning"></i>Enable Notifications
+                                </h6>
+                                <p class="text-muted small mb-0">Receive notifications about your tasks</p>
+                            </div>
+                            <div class="setting-control">
+                                <div class="form-check form-switch">
+                                    <input asp-for="EnableNotification" class="form-check-input" type="checkbox" role="switch">
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Language Selection -->
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h6 class="mb-1">
+                                    <i class="fas fa-language me-2 text-info"></i>Language
+                                </h6>
+                                <p class="text-muted small mb-0">Select your preferred language</p>
+                            </div>
+                            <div class="setting-control">
+                                <select class="form-select">
+                                    <option value="en" selected>English</option>
+                                    <option value="vi">Tiếng Việt</option>
+                                    <option value="es">Español</option>
+                                    <option value="fr">Français</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Time Zone -->
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h6 class="mb-1">
+                                    <i class="fas fa-clock me-2 text-success"></i>Time Zone
+                                </h6>
+                                <p class="text-muted small mb-0">Set your local time zone</p>
+                            </div>
+                            <div class="setting-control">
+                                <select class="form-select">
+                                    <option value="UTC">UTC (GMT +0:00)</option>
+                                    <option value="Asia/Ho_Chi_Minh" selected>Vietnam (GMT +7:00)</option>
+                                    <option value="America/New_York">New York (GMT -5:00)</option>
+                                    <option value="Europe/London">London (GMT +0:00)</option>
+                                    <option value="Asia/Tokyo">Tokyo (GMT +9:00)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Start of Week -->
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h6 class="mb-1">
+                                    <i class="fas fa-calendar-week me-2 text-danger"></i>Start of Week
+                                </h6>
+                                <p class="text-muted small mb-0">Choose which day starts your week</p>
+                            </div>
+                            <div class="setting-control">
+                                <select class="form-select">
+                                    <option value="Sunday" selected>Sunday</option>
+                                    <option value="Monday">Monday</option>
+                                    <option value="Saturday">Saturday</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Save Button -->
+                        <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <a asp-action="Notifications" class="quick-link-card">
+                        <div class="quick-link-icon bg-warning">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Notifications</h6>
+                            <p class="small text-muted mb-0">Manage notification preferences</p>
+                        </div>
+                        <i class="fas fa-chevron-right ms-auto"></i>
+                    </a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <a asp-action="Preferences" class="quick-link-card">
+                        <div class="quick-link-icon bg-info">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Preferences</h6>
+                            <p class="small text-muted mb-0">Customize your experience</p>
+                        </div>
+                        <i class="fas fa-chevron-right ms-auto"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
+
+<style>
+    .settings-menu {
+        position: sticky;
+        top: 90px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .settings-menu .list-group-item {
+        border: none;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .settings-menu .list-group-item i.fa-chevron-right {
+        font-size: 0.8rem;
+        color: #9ca3af;
+    }
+
+    .settings-menu .list-group-item:hover {
+        background-color: #f3f4f6;
+        padding-left: 25px;
+    }
+
+    .settings-menu .list-group-item.active {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        font-weight: 500;
+    }
+
+    .settings-menu .list-group-item.active i {
+        color: white;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        border-radius: 15px;
+    }
+
+    .card-header {
+        border-bottom: 2px solid #f3f4f6;
+        padding: 20px;
+    }
+
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 0;
+        gap: 20px;
+    }
+
+    .setting-info {
+        flex: 1;
+    }
+
+    .setting-info h6 {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .setting-control {
+        width: 250px;
+    }
+
+    .form-switch .form-check-input {
+        width: 3rem;
+        height: 1.5rem;
+        cursor: pointer;
+    }
+
+    .form-switch .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .quick-link-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        background: white;
+        border-radius: 15px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 2px solid #e5e7eb;
+    }
+
+    .quick-link-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        border-color: var(--primary-color);
+    }
+
+    .quick-link-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .quick-link-card h6 {
+        margin: 0;
+        color: #1f2937;
+    }
+
+    .quick-link-card p {
+        margin: 0;
+    }
+
+    .quick-link-card i.fa-chevron-right {
+        color: #9ca3af;
+    }
+
+    @@media (max-width: 992px) {
+        .setting-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .setting-control {
+            width: 100%;
+        }
+
+        .settings-menu {
+            position: relative;
+            top: 0;
+        }
+    }
+</style>

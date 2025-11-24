@@ -1,0 +1,384 @@
+﻿@model Taskify.Models.SettingsViewModel
+
+@{
+    ViewData["Title"] = "Notification Settings";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-action="Index">Settings</a>
+                    </li>
+                    <li class="breadcrumb-item active">Notifications</li>
+                </ol>
+            </nav>
+            <h2 class="mb-1">
+                <i class="fas fa-bell me-2"></i>Notification Settings
+            </h2>
+            <p class="text-muted mb-0">Manage how and when you receive notifications</p>
+        </div>
+    </div>
+
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @ViewBag.SuccessMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <form asp-action="Notifications" method="post">
+                <!-- Email Notifications -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-envelope me-2"></i>Email Notifications
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="notification-item">
+                            <div class="notification-icon bg-primary">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div class="notification-info">
+                                <h6 class="mb-1">Task Updates</h6>
+                                <p class="text-muted small mb-0">Get notified about changes to your tasks</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="notification-item">
+                            <div class="notification-icon bg-warning">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="notification-info">
+                                <h6 class="mb-1">Due Date Reminders</h6>
+                                <p class="text-muted small mb-0">Receive reminders before tasks are due</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="notification-item">
+                            <div class="notification-icon bg-success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="notification-info">
+                                <h6 class="mb-1">Task Completions</h6>
+                                <p class="text-muted small mb-0">Get notified when you complete tasks</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox">
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="notification-item">
+                            <div class="notification-icon bg-danger">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="notification-info">
+                                <h6 class="mb-1">Overdue Tasks</h6>
+                                <p class="text-muted small mb-0">Alerts for tasks that are past due</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="notification-item">
+                            <div class="notification-icon bg-info">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="notification-info">
+                                <h6 class="mb-1">Weekly Summary</h6>
+                                <p class="text-muted small mb-0">Receive a weekly report of your progress</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Push Notifications -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-mobile-alt me-2"></i>Push Notifications
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Push notifications require browser permission. Click the button below to enable.
+                        </div>
+
+                        <div class="notification-item">
+                            <div class="notification-icon bg-primary">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="notification-info">
+                                <h6 class="mb-1">Browser Notifications</h6>
+                                <p class="text-muted small mb-0">Show notifications in your browser</p>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="requestNotificationPermission()">
+                                Enable
+                            </button>
+                        </div>
+
+                        <hr>
+
+                        <div class="notification-item">
+                            <div class="notification-icon bg-warning">
+                                <i class="fas fa-volume-up"></i>
+                            </div>
+                            <div class="notification-info">
+                                <h6 class="mb-1">Notification Sounds</h6>
+                                <p class="text-muted small mb-0">Play sound when receiving notifications</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reminder Timing -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-stopwatch me-2"></i>Reminder Timing
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Remind me before due date</label>
+                                <select class="form-select">
+                                    <option value="0">On due date</option>
+                                    <option value="1">1 hour before</option>
+                                    <option value="3">3 hours before</option>
+                                    <option value="24" selected>1 day before</option>
+                                    <option value="48">2 days before</option>
+                                    <option value="168">1 week before</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Daily digest time</label>
+                                <select class="form-select">
+                                    <option value="08:00">08:00 AM</option>
+                                    <option value="09:00" selected>09:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="18:00">06:00 PM</option>
+                                    <option value="20:00">08:00 PM</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Weekly summary day</label>
+                            <select class="form-select">
+                                <option value="Monday" selected>Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                                <option value="Sunday">Sunday</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Do Not Disturb -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-moon me-2"></i>Do Not Disturb
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="notification-item mb-3">
+                            <div class="notification-info">
+                                <h6 class="mb-1">Enable Quiet Hours</h6>
+                                <p class="text-muted small mb-0">Pause notifications during specified times</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="quietHoursToggle"
+                                       onchange="toggleQuietHours()">
+                            </div>
+                        </div>
+
+                        <div id="quietHoursSettings" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Start time</label>
+                                    <input type="time" class="form-control" value="22:00">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">End time</label>
+                                    <input type="time" class="form-control" value="08:00">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Tips
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="tip-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <p class="small mb-0">Enable email notifications to never miss important updates</p>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <p class="small mb-0">Set quiet hours to avoid interruptions during sleep or work</p>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <p class="small mb-0">Weekly summaries help you track your productivity</p>
+                    </div>
+                    <div class="tip-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <p class="small mb-0">You can customize reminder timing for each task</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function requestNotificationPermission() {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(function(permission) {
+                    if (permission === 'granted') {
+                        alert('Browser notifications enabled!');
+                    }
+                });
+            } else {
+                alert('Your browser does not support notifications.');
+            }
+        }
+
+        function toggleQuietHours() {
+            const toggle = document.getElementById('quietHoursToggle');
+            const settings = document.getElementById('quietHoursSettings');
+            settings.style.display = toggle.checked ? 'block' : 'none';
+        }
+    </script>
+}
+
+<style>
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        border-radius: 15px;
+    }
+
+    .card-header {
+        border-bottom: 2px solid #f3f4f6;
+        padding: 20px;
+    }
+
+    .notification-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 0;
+    }
+
+    .notification-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .notification-info {
+        flex: 1;
+    }
+
+        .notification-info h6 {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+    .form-check-input {
+        width: 3rem;
+        height: 1.5rem;
+        cursor: pointer;
+    }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+    .tip-item {
+        display: flex;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+        .tip-item:last-child {
+            border-bottom: none;
+        }
+
+        .tip-item i {
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+</style>

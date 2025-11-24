@@ -1,0 +1,560 @@
+﻿@model Taskify.Models.SettingsViewModel
+
+@{
+    ViewData["Title"] = "Preferences";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-action="Index">Settings</a>
+                    </li>
+                    <li class="breadcrumb-item active">Preferences</li>
+                </ol>
+            </nav>
+            <h2 class="mb-1">
+                <i class="fas fa-palette me-2"></i>Preferences
+            </h2>
+            <p class="text-muted mb-0">Customize your experience and interface</p>
+        </div>
+    </div>
+
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @ViewBag.SuccessMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <form asp-action="Preferences" method="post">
+                <!-- Appearance -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-paint-brush me-2"></i>Appearance
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Theme -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Color Theme</label>
+                            <div class="theme-selector">
+                                <div class="theme-option">
+                                    <input type="radio" name="Theme" value="Light" id="themeLight" class="theme-radio" checked>
+                                    <label for="themeLight" class="theme-card">
+                                        <div class="theme-preview light-theme">
+                                            <div class="preview-header"></div>
+                                            <div class="preview-content">
+                                                <div class="preview-sidebar"></div>
+                                                <div class="preview-main"></div>
+                                            </div>
+                                        </div>
+                                        <span class="theme-name">
+                                            <i class="fas fa-sun me-2"></i>Light
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <div class="theme-option">
+                                    <input type="radio" name="Theme" value="Dark" id="themeDark" class="theme-radio">
+                                    <label for="themeDark" class="theme-card">
+                                        <div class="theme-preview dark-theme">
+                                            <div class="preview-header"></div>
+                                            <div class="preview-content">
+                                                <div class="preview-sidebar"></div>
+                                                <div class="preview-main"></div>
+                                            </div>
+                                        </div>
+                                        <span class="theme-name">
+                                            <i class="fas fa-moon me-2"></i>Dark
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <div class="theme-option">
+                                    <input type="radio" name="Theme" value="Auto" id="themeAuto" class="theme-radio">
+                                    <label for="themeAuto" class="theme-card">
+                                        <div class="theme-preview auto-theme">
+                                            <div class="preview-header"></div>
+                                            <div class="preview-content">
+                                                <div class="preview-sidebar"></div>
+                                                <div class="preview-main"></div>
+                                            </div>
+                                        </div>
+                                        <span class="theme-name">
+                                            <i class="fas fa-adjust me-2"></i>Auto
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Accent Color -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Accent Color</label>
+                            <div class="color-picker">
+                                <input type="radio" name="AccentColor" value="indigo" id="colorIndigo" checked>
+                                <label for="colorIndigo" class="color-option" style="background: #4f46e5;"></label>
+
+                                <input type="radio" name="AccentColor" value="blue" id="colorBlue">
+                                <label for="colorBlue" class="color-option" style="background: #3b82f6;"></label>
+
+                                <input type="radio" name="AccentColor" value="green" id="colorGreen">
+                                <label for="colorGreen" class="color-option" style="background: #10b981;"></label>
+
+                                <input type="radio" name="AccentColor" value="red" id="colorRed">
+                                <label for="colorRed" class="color-option" style="background: #ef4444;"></label>
+
+                                <input type="radio" name="AccentColor" value="purple" id="colorPurple">
+                                <label for="colorPurple" class="color-option" style="background: #8b5cf6;"></label>
+
+                                <input type="radio" name="AccentColor" value="pink" id="colorPink">
+                                <label for="colorPink" class="color-option" style="background: #ec4899;"></label>
+                            </div>
+                        </div>
+
+                        <!-- Font Size -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Font Size</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="text-muted">A</span>
+                                <input type="range" class="form-range flex-grow-1" min="12" max="18" value="14"
+                                       id="fontSizeRange" onchange="updateFontSize(this.value)">
+                                <span class="text-muted fs-4">A</span>
+                                <span class="badge bg-secondary" id="fontSizeValue">14px</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Display Options -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-desktop me-2"></i>Display Options
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h6 class="mb-1">Compact View</h6>
+                                <p class="text-muted small mb-0">Show more tasks in less space</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox">
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h6 class="mb-1">Show Task Numbers</h6>
+                                <p class="text-muted small mb-0">Display task ID numbers</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h6 class="mb-1">Show Completed Tasks</h6>
+                                <p class="text-muted small mb-0">Display completed tasks in lists</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h6 class="mb-1">Group by Category</h6>
+                                <p class="text-muted small mb-0">Organize tasks by their categories</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task Defaults -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-tasks me-2"></i>Task Defaults
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Default Priority</label>
+                                <select class="form-select">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Default Category</label>
+                                <select class="form-select">
+                                    <option value="">None</option>
+                                    <option value="1">Work</option>
+                                    <option value="2">Personal</option>
+                                    <option value="3">Shopping</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Default Due Date</label>
+                            <select class="form-select">
+                                <option value="">No due date</option>
+                                <option value="today">Today</option>
+                                <option value="tomorrow" selected>Tomorrow</option>
+                                <option value="week">Next week</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data & Privacy -->
+                <div class="card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shield-alt me-2"></i>Data & Privacy
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h6 class="mb-1">Activity Tracking</h6>
+                                <p class="text-muted small mb-0">Help improve our service with usage data</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="preference-item">
+                            <div class="preference-info">
+                                <h6 class="mb-1">Auto-save</h6>
+                                <p class="text-muted small mb-0">Automatically save changes as you type</p>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" checked>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-primary" onclick="exportData()">
+                                <i class="fas fa-download me-2"></i>Export My Data
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
+                                    data-bs-target="#clearDataModal">
+                                <i class="fas fa-trash me-2"></i>Clear All Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Preferences
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar Preview -->
+        <div class="col-lg-4">
+            <div class="card position-sticky" style="top: 90px;">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-eye me-2"></i>Preview
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="preview-box">
+                        <div class="preview-header-main">
+                            <div class="preview-logo"></div>
+                            <div class="preview-search"></div>
+                        </div>
+                        <div class="preview-task">
+                            <div class="preview-checkbox"></div>
+                            <div class="preview-text"></div>
+                        </div>
+                        <div class="preview-task">
+                            <div class="preview-checkbox"></div>
+                            <div class="preview-text"></div>
+                        </div>
+                        <div class="preview-task">
+                            <div class="preview-checkbox"></div>
+                            <div class="preview-text"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Clear Data Modal -->
+<div class="modal fade" id="clearDataModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Clear All Data
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to clear all your data?</p>
+                <div class="alert alert-warning">
+                    <strong>Warning:</strong> This will delete all your tasks, categories, and settings.
+                    This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="clearAllData()">
+                    <i class="fas fa-trash me-2"></i>Clear Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateFontSize(value) {
+            document.getElementById('fontSizeValue').textContent = value + 'px';
+        }
+
+        function exportData() {
+            alert('Your data will be exported as a JSON file.');
+            // Implement export functionality
+        }
+
+        function clearAllData() {
+            if (confirm('Are you absolutely sure? This cannot be undone!')) {
+                // Implement clear data functionality
+                alert('All data has been cleared.');
+                window.location.href = '/';
+            }
+        }
+    </script>
+}
+
+<style>
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        border-radius: 15px;
+    }
+
+    .card-header {
+        border-bottom: 2px solid #f3f4f6;
+        padding: 20px;
+    }
+
+    .theme-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .theme-radio {
+        display: none;
+    }
+
+    .theme-card {
+        cursor: pointer;
+        border: 3px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 15px;
+        transition: all 0.3s ease;
+        display: block;
+    }
+
+    .theme-radio:checked + .theme-card {
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+    }
+
+    .theme-preview {
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 10px;
+        height: 100px;
+    }
+
+    .light-theme {
+        background: #ffffff;
+    }
+
+    .dark-theme {
+        background: #1f2937;
+    }
+
+    .auto-theme {
+        background: linear-gradient(90deg, #ffffff 50%, #1f2937 50%);
+    }
+
+    .preview-header {
+        height: 20px;
+        background: #4f46e5;
+    }
+
+    .preview-content {
+        display: flex;
+        height: 80px;
+    }
+
+    .preview-sidebar {
+        width: 30%;
+        background: rgba(0,0,0,0.1);
+    }
+
+    .preview-main {
+        flex: 1;
+        background: rgba(0,0,0,0.05);
+    }
+
+    .theme-name {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+        color: #1f2937;
+    }
+
+    .color-picker {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+        .color-picker input[type="radio"] {
+            display: none;
+        }
+
+    .color-option {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition: all 0.3s ease;
+        display: block;
+    }
+
+    .color-picker input[type="radio"]:checked + .color-option {
+        border-color: #1f2937;
+        transform: scale(1.1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .preference-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+    }
+
+    .preference-info h6 {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .form-check-input {
+        width: 3rem;
+        height: 1.5rem;
+        cursor: pointer;
+    }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+    .preview-box {
+        background: #f9fafb;
+        border-radius: 10px;
+        padding: 15px;
+    }
+
+    .preview-header-main {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .preview-logo {
+        width: 30px;
+        height: 30px;
+        background: var(--primary-color);
+        border-radius: 5px;
+    }
+
+    .preview-search {
+        flex: 1;
+        height: 30px;
+        background: #e5e7eb;
+        border-radius: 5px;
+    }
+
+    .preview-task {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 10px;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 8px;
+    }
+
+    .preview-checkbox {
+        width: 20px;
+        height: 20px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        flex-shrink: 0;
+    }
+
+    .preview-text {
+        flex: 1;
+        height: 10px;
+        background: #e5e7eb;
+        border-radius: 3px;
+    }
+</style>
