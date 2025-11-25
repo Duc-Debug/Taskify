@@ -4,19 +4,20 @@ namespace Taskify.Models
 {
     public class TaskItem
     {
-        public int Id { get; set; }
-        [Required, MaxLength(200)]
+        public Guid Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTime? DueDate { get; set; }
-        public TaskPriority Priority { get; set; }
-        public TaskStatus Status { get; set; } = TaskStatus.Pending;
-        public int CategoryId { get; set; }
+        public int Order { get; set; }
+
+        public Guid ListId { get; set; }
+        public Guid? CategoryId { get; set; }
+
+        // Navigation
+        public TaskList List { get; set; }
         public Category Category { get; set; }
-        public int UserId { get; set; }
-        public User User { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime? CompleteAt { get; set; }
+        public ICollection<TaskAssignment> Assignments { get; set; }
+        public ICollection<TaskComment> Comments { get; set; }
     }
     public class TaskHistory
     {

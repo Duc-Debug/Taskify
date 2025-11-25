@@ -1,3 +1,7 @@
+using Microsoft.EntityFrameworkCore;
+using Taskify.Data;
+using System;
+
 namespace Taskify
 {
     public class Program
@@ -5,10 +9,11 @@ namespace Taskify
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            builder.Services.AddControllersWithViews();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
