@@ -40,7 +40,7 @@
                         View All <i class="fas fa-arrow-right ms-2"></i>
                     </a>
                 </div>
-                <div class="card-body">
+               @*  <div class="card-body">
                     @if (Model.UpcomingTasks != null && Model.UpcomingTasks.Any())
                     {
                         <div class="tasks-list">
@@ -120,7 +120,7 @@
                             </a>
                         </div>
                     }
-                </div>
+                </div> *@
             </div>
         </div>
 
@@ -156,7 +156,7 @@
                         <i class="fas fa-chart-pie me-2"></i>Overall Progress
                     </h5>
                 </div>
-                <div class="card-body text-center">
+               @*  <div class="card-body text-center">
                     @{
                         var completionRate = Model.TotalTasks > 0 ? (Model.CompletedTasks * 100.0 / Model.TotalTasks) : 0;
                     }
@@ -194,7 +194,7 @@
                             <span class="detail-value text-warning">@Model.PendingTask</span>
                         </div>
                     </div>
-                </div>
+                </div> *@
             </div>
         </div>
     </div>

@@ -4,7 +4,7 @@
     ViewData["Title"] = "My Tasks";
 }
 
-<div class="container-fluid">
+@* <div class="container-fluid">
     <!-- Page Header -->
     <div class="row mb-4">
         <div class="col-12">
@@ -78,7 +78,7 @@
                 <div class="stats-info">
                     <h3>@(ViewBag.OverdueTasks ?? Model.Count(t => t.DueDate.HasValue && t.DueDate.Value < DateTime.Now && t.Status != Taskify.Models.TaskStatus.Completed))</h3>
                     <p>Overdue</p>
-                </div>
+                </div> 
             </div>
         </div>
     </div>
@@ -245,7 +245,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> *@
 
 @section Scripts {
     <script>

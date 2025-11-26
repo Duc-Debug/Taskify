@@ -80,7 +80,7 @@
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
-                        <!-- Category -->
+                       @*  <!-- Category -->
                         <div class="mb-4">
                             <label asp-for="CategoryId" class="form-label">
                                 Category <span class="text-danger">*</span>
@@ -89,7 +89,7 @@
                                 <option value="">Select a category...</option>
                             </select>
                             <span asp-validation-for="CategoryId" class="text-danger small"></span>
-                        </div>
+                        </div> *@
 
                         <!-- Due Date -->
                         <div class="mb-4">
@@ -112,7 +112,7 @@
                     </div>
                     <div class="card-body">
                         <!-- Status -->
-                        <div class="mb-4">
+                        @* <div class="mb-4">
                             <label asp-for="Status" class="form-label">
                                 Status <span class="text-danger">*</span>
                             </label>
@@ -123,7 +123,7 @@
                                 <option value="@Taskify.Models.TaskStatus.Cancelled">Cancelled</option>
                             </select>
                             <span asp-validation-for="Status" class="text-danger small"></span>
-                        </div>
+                        </div> *@
 
                         <!-- Priority -->
                         <div class="mb-4">

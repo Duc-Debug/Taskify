@@ -33,7 +33,7 @@
                     <i class="fas fa-tasks"></i>
                 </div>
                 <div class="stat-content">
-                    <h3>@Model.TotalTasks</h3>
+                  @*   <h3>@Model.TotalTasks</h3> *@
                     <p>Total Tasks</p>
                     <div class="stat-change positive">
                         <i class="fas fa-arrow-up"></i> All tasks
@@ -48,7 +48,7 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-content">
-                    <h3>@Model.PendingTask</h3>
+                   @*  <h3>@Model.PendingTask</h3> *@
                     <p>Pending</p>
                     <div class="stat-change">
                         <i class="fas fa-pause-circle"></i> Waiting to start
@@ -63,7 +63,7 @@
                     <i class="fas fa-spinner"></i>
                 </div>
                 <div class="stat-content">
-                    <h3>@Model.InProgressTasks</h3>
+                   @*  <h3>@Model.InProgressTasks</h3> *@
                     <p>In Progress</p>
                     <div class="stat-change">
                         <i class="fas fa-play-circle"></i> Currently working
@@ -77,7 +77,7 @@
                 <div class="stat-icon">
                     <i class="fas fa-check-circle"></i>
                 </div>
-                <div class="stat-content">
+                @* <div class="stat-content">
                     <h3>@Model.CompletedTasks</h3>
                     <p>Completed</p>
                     @{
@@ -86,7 +86,7 @@
                     <div class="stat-change positive">
                         <i class="fas fa-check"></i> @completionRate.ToString("F0")% complete
                     </div>
-                </div>
+                </div> *@
             </div>
         </div>
     </div>
@@ -103,7 +103,7 @@
                         View All <i class="fas fa-arrow-right ms-2"></i>
                     </a>
                 </div>
-                <div class="card-body">
+                @* <div class="card-body">
                     @if (Model.UpcomingTasks != null && Model.UpcomingTasks.Any())
                     {
                         <div class="tasks-list">
@@ -182,7 +182,7 @@
                             </a>
                         </div>
                     }
-                </div>
+                </div> *@
             </div>
         </div>
 
@@ -218,7 +218,7 @@
                         <i class="fas fa-chart-pie me-2"></i>Overall Progress
                     </h5>
                 </div>
-                <div class="card-body text-center">
+                @* <div class="card-body text-center">
                     <div class="progress-circle-large mx-auto mb-3">
                         <svg width="150" height="150">
                             <circle cx="75" cy="75" r="65" fill="none" stroke="#e5e7eb" stroke-width="10" />
@@ -253,7 +253,7 @@
                             <span class="detail-value text-warning">@Model.PendingTask</span>
                         </div>
                     </div>
-                </div>
+                </div> *@
             </div>
         </div>
     </div>
