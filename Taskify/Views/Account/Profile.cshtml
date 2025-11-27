@@ -1,389 +1,453 @@
 ﻿@model Taskify.Models.ProfileViewModel
-
 @{
     ViewData["Title"] = "Profile";
 }
 
-<div class="container-fluid">
-    <!-- Page Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="mb-1">
-                        <i class="fas fa-user-circle me-2"></i>My Profile
-                    </h2>
-                    <p class="text-muted mb-0">Manage your account information</p>
-                </div>
-                <a asp-action="ChangePassword" class="btn btn-outline-primary">
-                    <i class="fas fa-key me-2"></i>Change Password
-                </a>
-            </div>
-        </div>
+<div class="profile-container">
+    <div class="profile-header">
+        <h2>My Profile</h2>
+        <p>Manage your personal information and preferences</p>
     </div>
 
-    @if (ViewBag.SuccessMessage != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>
-            @ViewBag.SuccessMessage
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    <div class="row">
-        <!-- Profile Card -->
-        <div class="col-lg-4 mb-4">
-            <div class="card profile-card">
-                <div class="card-body text-center">
-                    <!-- Avatar -->
-                    <div class="avatar-container mb-3">
-                        <img src="@(Model.AvatarUrl ?? $"https://ui-avatars.com/api/?name={Model.FullName}&size=150&background=4f46e5&color=fff")"
-                             alt="Avatar" class="avatar-img" id="avatarPreview">
-                        <div class="avatar-upload">
-                            <label for="avatarUpload" class="avatar-upload-btn">
-                                <i class="fas fa-camera"></i>
-                            </label>
-                            <input type="file" id="avatarUpload" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
+    <div class="profile-content">
+        <!-- Left Column: Avatar & Stats -->
+        <div class="profile-sidebar">
+            <div class="avatar-section">
+                <div class="avatar-wrapper">
+                    @if (!string.IsNullOrEmpty(Model.AvatarUrl))
+                    {
+                        <img src="@Model.AvatarUrl" alt="@Model.FullName" class="avatar-image" />
+                    }
+                    else
+                    {
+                        <div class="avatar-placeholder">
+                            @(Model.FullName?.Substring(0, 1).ToUpper() ?? "U")
                         </div>
-                    </div>
-
-                    <!-- User Info -->
-                    <h4 class="mb-2">@Model.FullName</h4>
-                    <p class="text-muted mb-3">@Model.Email</p>
-
-                    <!-- Stats -->
-                    <div class="profile-stats">
-                        <div class="stat-item">
-                            <div class="stat-value">@Model.TotalTasks</div>
-                            <div class="stat-label">Total Tasks</div>
-                        </div>
-                        <div class="stat-divider"></div>
-                        <div class="stat-item">
-                            <div class="stat-value">@Model.CompletedTasks</div>
-                            <div class="stat-label">Completed</div>
-                        </div>
-                        <div class="stat-divider"></div>
-                        <div class="stat-item">
-                            <div class="stat-value">@Model.PendingTasks</div>
-                            <div class="stat-label">Pending</div>
-                        </div>
-                    </div>
-
-                    <!-- Member Since -->
-                    <div class="member-since mt-4 p-3 bg-light rounded">
-                        <small class="text-muted">Member since</small>
-                        <div class="fw-bold">@Model.MemberSince.ToString("MMM dd, yyyy")</div>
-                    </div>
+                    }
                 </div>
-            </div>
-        </div>
-
-        <!-- Profile Form -->
-        <div class="col-lg-8 mb-4">
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-edit me-2"></i>Personal Information
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form asp-action="UpdateProfile" method="post" enctype="multipart/form-data">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-                        <div class="row">
-                            <!-- Full Name -->
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="FullName" class="form-label">
-                                    Full Name <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-user"></i>
-                                    </span>
-                                    <input asp-for="FullName" class="form-control" />
-                                </div>
-                                <span asp-validation-for="FullName" class="text-danger small"></span>
-                            </div>
-
-                            <!-- Email -->
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Email" class="form-label">
-                                    Email <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-envelope"></i>
-                                    </span>
-                                    <input asp-for="Email" class="form-control" />
-                                </div>
-                                <span asp-validation-for="Email" class="text-danger small"></span>
-                            </div>
-
-                            <!-- Date of Birth -->
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-calendar"></i>
-                                    </span>
-                                    <input asp-for="DateOfBirth" type="date" class="form-control" />
-                                </div>
-                                <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
-                            </div>
-
-                            <!-- Address -->
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Address" class="form-label">Address</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                    </span>
-                                    <input asp-for="Address" class="form-control" />
-                                </div>
-                                <span asp-validation-for="Address" class="text-danger small"></span>
-                            </div>
-
-                            <!-- Bio -->
-                            <div class="col-12 mb-3">
-                                <label asp-for="Bio" class="form-label">Bio</label>
-                                <textarea asp-for="Bio" class="form-control" rows="4"
-                                          placeholder="Tell us about yourself..."></textarea>
-                                <span asp-validation-for="Bio" class="text-danger small"></span>
-                            </div>
-                        </div>
-
-                        <hr class="my-4">
-
-                        <h6 class="mb-3">
-                            <i class="fas fa-bell me-2"></i>Notification Preferences
-                        </h6>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input asp-for="EmailNotifications" class="form-check-input" type="checkbox">
-                                    <label asp-for="EmailNotifications" class="form-check-label">
-                                        Email Notifications
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <div class="form-check form-switch">
-                                    <input asp-for="TaskReminders" class="form-check-input" type="checkbox">
-                                    <label asp-for="TaskReminders" class="form-check-label">
-                                        Task Reminders
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="d-flex justify-content-end gap-2 mt-4">
-                            <button type="button" class="btn btn-outline-secondary" onclick="window.location.reload()">
-                                <i class="fas fa-times me-2"></i>Cancel
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Save Changes
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Danger Zone -->
-            <div class="card border-danger mt-4">
-                <div class="card-header bg-danger bg-opacity-10 border-danger">
-                    <h5 class="mb-0 text-danger">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Danger Zone
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted mb-3">
-                        Once you delete your account, all of your data will be permanently removed. This action cannot be undone.
-                    </p>
-                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
-                        <i class="fas fa-trash me-2"></i>Delete Account
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Account Modal -->
-<div class="modal fade" id="deleteAccountModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm Account Deletion
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-3">Are you sure you want to delete your account?</p>
-                <div class="alert alert-warning">
-                    <strong>Warning:</strong> This action cannot be undone. All your data will be permanently deleted.
-                </div>
-                <p class="mb-2">To confirm, please enter your email:</p>
-                <input type="email" class="form-control" id="confirmEmail" placeholder="your@email.com">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" onclick="deleteAccount()">
-                    <i class="fas fa-trash me-2"></i>Delete Account
+                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('avatarUpload').click()">
+                    Change Photo
                 </button>
+                <input type="file" id="avatarUpload" style="display: none;" accept="image/*" />
             </div>
+
+            <div class="stats-section">
+                <h3>Statistics</h3>
+                <div class="stat-item">
+                    <span class="stat-label">Total Tasks</span>
+                    <span class="stat-value">@Model.TotalTasks</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Completed</span>
+                    <span class="stat-value text-success">@Model.CompletedTasks</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Pending</span>
+                    <span class="stat-value text-warning">@Model.PendingTasks</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Member Since</span>
+                    <span class="stat-value">@Model.MemberSince.ToString("MMM yyyy")</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Profile Form -->
+        <div class="profile-main">
+            <form asp-action="UpdateProfile" asp-controller="Account" method="post" class="profile-form">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+
+                <div class="form-section">
+                    <h3>Personal Information</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="FullName">Full Name</label>
+                            <input asp-for="FullName" class="form-control" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Email">Email Address</label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="DateOfBirth">Date of Birth</label>
+                            <input asp-for="DateOfBirth" class="form-control" type="date" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Address">Address</label>
+                            <input asp-for="Address" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Bio">Bio</label>
+                        <textarea asp-for="Bio" class="form-control" rows="4" placeholder="Tell us about yourself..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Notification Settings</h3>
+
+                    <div class="form-group-checkbox">
+                        <div class="custom-checkbox">
+                            <input asp-for="EmailNotifications" type="checkbox" id="emailNotif" />
+                            <label for="emailNotif">
+                                <strong>Email Notifications</strong>
+                                <span class="checkbox-desc">Receive email updates about your tasks</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group-checkbox">
+                        <div class="custom-checkbox">
+                            <input asp-for="TaskReminders" type="checkbox" id="taskReminders" />
+                            <label for="taskReminders">
+                                <strong>Task Reminders</strong>
+                                <span class="checkbox-desc">Get reminders for upcoming task deadlines</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a asp-action="ChangePassword" class="btn btn-outline">Change Password</a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
-
-    <script>
-        function previewAvatar(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('avatarPreview').src = e.target.result;
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function deleteAccount() {
-            const confirmEmail = document.getElementById('confirmEmail').value;
-            const userEmail = '@Model.Email';
-
-            if (confirmEmail === userEmail) {
-                if (confirm('Are you absolutely sure? This action cannot be undone!')) {
-                    fetch('/Account/DeleteAccount', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            window.location.href = '/Account/Login';
-                        }
-                    });
-                }
-            } else {
-                alert('Email does not match!');
-            }
-        }
-    </script>
+    <partial name="_ValidationScriptsPartial" />
 }
 
 <style>
-    .profile-card {
-        border: none;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        border-radius: 15px;
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
     }
 
-    .avatar-container {
-        position: relative;
-        display: inline-block;
+    .profile-header {
+        margin-bottom: 40px;
     }
 
-    .avatar-img {
-        width: 150px;
-        height: 150px;
+        .profile-header h2 {
+            color: #2d3748;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .profile-header p {
+            color: #718096;
+            font-size: 16px;
+        }
+
+    .profile-content {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 40px;
+    }
+
+    @@media (max-width: 968px) {
+        .profile-content {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Sidebar */
+    .profile-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .avatar-section {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .avatar-wrapper {
+        margin-bottom: 20px;
+    }
+
+    .avatar-image {
+        width: 120px;
+        height: 120px;
         border-radius: 50%;
         object-fit: cover;
-        border: 5px solid #f3f4f6;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        border: 4px solid #e2e8f0;
     }
 
-    .avatar-upload {
-        position: absolute;
-        bottom: 5px;
-        right: 5px;
-    }
-
-    .avatar-upload-btn {
-        width: 40px;
-        height: 40px;
-        background: var(--primary-color);
-        color: white;
+    .avatar-placeholder {
+        width: 120px;
+        height: 120px;
         border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        transition: all 0.3s ease;
+        font-size: 48px;
+        font-weight: 700;
+        margin: 0 auto;
     }
 
-        .avatar-upload-btn:hover {
-            background: var(--secondary-color);
-            transform: scale(1.1);
+    .stats-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+        .stats-section h3 {
+            color: #2d3748;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
         }
 
-    .profile-stats {
+    .stat-item {
         display: flex;
-        justify-content: space-around;
+        justify-content: space-between;
         align-items: center;
-        margin-top: 20px;
-        padding: 20px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 10px;
-        color: white;
+        padding: 12px 0;
+        border-bottom: 1px solid #e2e8f0;
     }
 
-    .stat-item {
-        text-align: center;
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+    .stat-label {
+        color: #718096;
+        font-size: 14px;
     }
 
     .stat-value {
-        font-size: 1.8rem;
-        font-weight: 700;
+        color: #2d3748;
+        font-weight: 600;
+        font-size: 16px;
     }
 
-    .stat-label {
-        font-size: 0.85rem;
-        opacity: 0.9;
-        margin-top: 5px;
+    .text-success {
+        color: #38a169 !important;
     }
 
-    .stat-divider {
-        width: 1px;
-        height: 40px;
-        background: rgba(255,255,255,0.3);
+    .text-warning {
+        color: #dd6b20 !important;
     }
 
-    .card {
-        border: none;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        border-radius: 15px;
+    /* Main Form */
+    .profile-main {
+        background: white;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
-    .card-header {
-        border-bottom: 2px solid #f3f4f6;
-        padding: 20px;
+    .profile-form {
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
     }
 
-    .input-group-text {
-        background: transparent;
-        border-right: none;
+    .form-section h3 {
+        color: #2d3748;
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #e2e8f0;
     }
 
-    .input-group .form-control {
-        border-left: none;
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
     }
 
-    .form-switch .form-check-input {
-        width: 3rem;
-        height: 1.5rem;
-    }
-
-        .form-switch .form-check-input:checked {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
+    @@media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
         }
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+        .form-group label {
+            display: block;
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+    textarea.form-control {
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .form-group-checkbox {
+        margin-bottom: 16px;
+    }
+
+    .custom-checkbox {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+        .custom-checkbox:hover {
+            border-color: #cbd5e0;
+            background: #f7fafc;
+        }
+
+        .custom-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .custom-checkbox label {
+            margin: 0;
+            cursor: pointer;
+            flex: 1;
+        }
+
+            .custom-checkbox label strong {
+                display: block;
+                color: #2d3748;
+                font-size: 14px;
+                margin-bottom: 4px;
+            }
+
+    .checkbox-desc {
+        display: block;
+        color: #718096;
+        font-size: 13px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        padding-top: 20px;
+        border-top: 2px solid #e2e8f0;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #2d3748;
+    }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+    .btn-outline {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-danger {
+        background-color: #fee;
+        color: #c53030;
+        border: 1px solid #feb2b2;
+    }
+
+    .alert-success {
+        background-color: #f0fff4;
+        color: #22543d;
+        border: 1px solid #9ae6b4;
+    }
+
+    .text-danger {
+        color: #e53e3e;
+        font-size: 12px;
+        display: block;
+        margin-top: 4px;
+    }
 </style>

@@ -10,14 +10,18 @@ namespace Taskify
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddControllersWithViews();
+            builder.Services.AddHttpContextAccessor();
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
      ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            builder.Services.AddScoped<IBoardService,BoardService>();
-            builder.Services.AddControllersWithViews();
+            //Dang ky services
+            builder.Services.AddScoped<IHomeService, Taskify.Services.HomeService>();
+            builder.Services.AddScoped<IBoardService, BoardService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

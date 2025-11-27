@@ -1,431 +1,54 @@
-﻿@model Taskify.Models.DashboardViewModel
-
-@{
-    ViewData["Title"] = "Dashboard";
+﻿@{
+    ViewData["Title"] = "Taskify - Manage your tasks efficiently";
+    Layout = "_LayoutPublic";
 }
 
-<div class="container-fluid">
-    <!-- Welcome Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="welcome-card">
-                <div>
-                    <h2 class="mb-2">
-                        <i class="fas fa-home me-2"></i>Welcome back, @User.Identity.Name!
-                    </h2>
-                    <p class="text-muted mb-0">Here's what's happening with your tasks today.</p>
-                </div>
-                <div>
-                    <span class="date-badge">
-                        <i class="fas fa-calendar-day me-2"></i>
-                        @DateTime.Now.ToString("MMMM dd, yyyy")
-                    </span>
-                </div>
+<div class="landing-page">
+    <div class="px-4 py-5 my-5 text-center">
+        <img class="d-block mx-auto mb-4" src="https://cdn-icons-png.flaticon.com/512/906/906334.png" alt="Taskify Logo" width="72" height="72">
+
+        <h1 class="display-5 fw-bold text-primary">Taskify</h1>
+        <div class="col-lg-6 mx-auto">
+            <p class="lead mb-4">
+                Taskify helps teams move work forward.
+                Collaborate, manage projects, and reach new productivity peaks.
+                From high rises to the home office, the way your team works is unique.
+            </p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg px-4 gap-3">
+                    Sign up - it's free
+                </a>
+                <a asp-controller="Account" asp-action="Login" class="btn btn-outline-secondary btn-lg px-4">
+                    Login
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Stats Overview -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="dashboard-stat-card stat-total">
-                <div class="stat-icon">
-                    <i class="fas fa-tasks"></i>
+    <div class="container px-4 py-5" id="featured-3">
+        <h2 class="pb-2 border-bottom">Why Taskify?</h2>
+        <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+            <div class="feature col">
+                <div class="feature-icon bg-primary bg-gradient text-white rounded-3 mb-3 p-3" style="width: fit-content;">
+                    <i class="bi bi-kanban fs-2"></i>
                 </div>
-                <div class="stat-content">
-                  @*   <h3>@Model.TotalTasks</h3> *@
-                    <p>Total Tasks</p>
-                    <div class="stat-change positive">
-                        <i class="fas fa-arrow-up"></i> All tasks
-                    </div>
-                </div>
+                <h3>Kanban Boards</h3>
+                <p>Visualize work with Trello-like boards, lists, and cards. Drag and drop with ease to update progress in real-time.</p>
             </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="dashboard-stat-card stat-pending">
-                <div class="stat-icon">
-                    <i class="fas fa-clock"></i>
+            <div class="feature col">
+                <div class="feature-icon bg-primary bg-gradient text-white rounded-3 mb-3 p-3" style="width: fit-content;">
+                    <i class="bi bi-people fs-2"></i>
                 </div>
-                <div class="stat-content">
-                   @*  <h3>@Model.PendingTask</h3> *@
-                    <p>Pending</p>
-                    <div class="stat-change">
-                        <i class="fas fa-pause-circle"></i> Waiting to start
-                    </div>
-                </div>
+                <h3>Team Collaboration</h3>
+                <p>Invite members, assign tasks, and track your team's progress seamlessly. Keep everyone on the same page.</p>
             </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="dashboard-stat-card stat-progress">
-                <div class="stat-icon">
-                    <i class="fas fa-spinner"></i>
+            <div class="feature col">
+                <div class="feature-icon bg-primary bg-gradient text-white rounded-3 mb-3 p-3" style="width: fit-content;">
+                    <i class="bi bi-lightning fs-2"></i>
                 </div>
-                <div class="stat-content">
-                   @*  <h3>@Model.InProgressTasks</h3> *@
-                    <p>In Progress</p>
-                    <div class="stat-change">
-                        <i class="fas fa-play-circle"></i> Currently working
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="dashboard-stat-card stat-completed">
-                <div class="stat-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                @* <div class="stat-content">
-                    <h3>@Model.CompletedTasks</h3>
-                    <p>Completed</p>
-                    @{
-                        var completionRate = Model.TotalTasks > 0 ? (Model.CompletedTasks * 100.0 / Model.TotalTasks) : 0;
-                    }
-                    <div class="stat-change positive">
-                        <i class="fas fa-check"></i> @completionRate.ToString("F0")% complete
-                    </div>
-                </div> *@
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <!-- Upcoming Tasks -->
-        <div class="col-lg-8 mb-4">
-            <div class="card">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="fas fa-calendar-check me-2"></i>Upcoming Tasks
-                    </h5>
-                    <a asp-controller="Tasks" asp-action="Index" class="btn btn-sm btn-outline-primary">
-                        View All <i class="fas fa-arrow-right ms-2"></i>
-                    </a>
-                </div>
-                @* <div class="card-body">
-                    @if (Model.UpcomingTasks != null && Model.UpcomingTasks.Any())
-                    {
-                        <div class="tasks-list">
-                            @foreach (var task in Model.UpcomingTasks.Take(5))
-                            {
-                                <div class="dashboard-task-item">
-                                    <div class="d-flex align-items-start gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox"
-                                                   @(task.Status == Taskify.Models.TaskStatus.Completed ? "checked" : "")>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-1">
-                                                <a asp-controller="Tasks" asp-action="Details" asp-route-id="@task.Id">
-                                                    @task.Title
-                                                </a>
-                                            </h6>
-                                            <div class="d-flex flex-wrap gap-2 align-items-center">
-                                                @{
-                                                    var priorityClass = task.Priority switch
-                                                    {
-                                                        TaskPriority.High => "danger",
-                                                        TaskPriority.Medium => "warning",
-                                                        TaskPriority.Low => "success",
-                                                        _ => "secondary"
-                                                    };
-                                                }
-                                                <span class="badge bg-@priorityClass bg-opacity-10 text-@priorityClass">
-                                                    @task.Priority
-                                                </span>
-                                                @if (!string.IsNullOrEmpty(task.CategoryName))
-                                                {
-                                                    <span class="badge bg-info bg-opacity-10 text-info">
-                                                        @task.CategoryName
-                                                    </span>
-                                                }
-                                                @if (task.DueDate.HasValue)
-                                                {
-                                                    var daysUntil = (task.DueDate.Value - DateTime.Now).Days;
-                                                    var dueDateClass = daysUntil < 0 ? "danger" : (daysUntil <= 1 ? "warning" : "secondary");
-                                                    <small class="text-@dueDateClass">
-                                                        <i class="fas fa-clock me-1"></i>
-                                                        @if (daysUntil < 0)
-                                                        {
-                                                            <text>Overdue</text>
-                                                        }
-                                                        else if (daysUntil == 0)
-                                                        {
-                                                            <text>Due today</text>
-                                                        }
-                                                        else
-                                                        {
-                                                            @task.DueDate.Value.ToString("MMM dd")
-                                                        }
-                                                    </small>
-                                                }
-                                            </div>
-                                        </div>
-                                        <a asp-controller="Tasks" asp-action="Edit" asp-route-id="@task.Id"
-                                           class="btn btn-sm btn-link text-muted">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-5">
-                            <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">No upcoming tasks</h5>
-                            <p class="text-muted mb-3">You're all caught up! Create a new task to get started.</p>
-                            <a asp-controller="Tasks" asp-action="Create" class="btn btn-primary">
-                                <i class="fas fa-plus me-2"></i>Create Task
-                            </a>
-                        </div>
-                    }
-                </div> *@
-            </div>
-        </div>
-
-        <!-- Quick Actions & Progress -->
-        <div class="col-lg-4 mb-4">
-            <!-- Quick Actions -->
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-bolt me-2"></i>Quick Actions
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a asp-controller="Tasks" asp-action="Create" class="btn btn-primary">
-                            <i class="fas fa-plus me-2"></i>New Task
-                        </a>
-                        <a asp-controller="Categories" asp-action="Index" class="btn btn-outline-secondary">
-                            <i class="fas fa-folder me-2"></i>Manage Categories
-                        </a>
-                        <a asp-controller="Tasks" asp-action="Index" asp-route-filter="overdue"
-                           class="btn btn-outline-danger">
-                            <i class="fas fa-exclamation-triangle me-2"></i>View Overdue
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Overall Progress -->
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-pie me-2"></i>Overall Progress
-                    </h5>
-                </div>
-                @* <div class="card-body text-center">
-                    <div class="progress-circle-large mx-auto mb-3">
-                        <svg width="150" height="150">
-                            <circle cx="75" cy="75" r="65" fill="none" stroke="#e5e7eb" stroke-width="10" />
-                            <circle cx="75" cy="75" r="65" fill="none" stroke="url(#gradient)" stroke-width="10"
-                                    stroke-dasharray="408.407"
-                                    stroke-dashoffset="@((100 - completionRate) * 4.08407)"
-                                    stroke-linecap="round"
-                                    transform="rotate(-90 75 75)" />
-                            <defs>
-                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                        <div class="progress-text-large">
-                            <h2>@completionRate.ToString("F0")%</h2>
-                            <small class="text-muted">Complete</small>
-                        </div>
-                    </div>
-                    <div class="progress-details">
-                        <div class="progress-detail-item">
-                            <span class="detail-label">Completed</span>
-                            <span class="detail-value text-success">@Model.CompletedTasks</span>
-                        </div>
-                        <div class="progress-detail-item">
-                            <span class="detail-label">In Progress</span>
-                            <span class="detail-value text-primary">@Model.InProgressTasks</span>
-                        </div>
-                        <div class="progress-detail-item">
-                            <span class="detail-label">Pending</span>
-                            <span class="detail-value text-warning">@Model.PendingTask</span>
-                        </div>
-                    </div>
-                </div> *@
+                <h3>Automation</h3>
+                <p>Save time with automated workflows and smart notifications. Focus on what truly matters.</p>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    .welcome-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 15px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 20px;
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-    }
-
-    .date-badge {
-        background: rgba(255,255,255,0.2);
-        padding: 10px 20px;
-        border-radius: 25px;
-        font-weight: 500;
-    }
-
-    .dashboard-stat-card {
-        background: white;
-        border-radius: 15px;
-        padding: 25px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        height: 100%;
-    }
-
-        .dashboard-stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        }
-
-    .stat-icon {
-        width: 70px;
-        height: 70px;
-        border-radius: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-    }
-
-    .stat-total .stat-icon {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-
-    .stat-pending .stat-icon {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: white;
-    }
-
-    .stat-progress .stat-icon {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        color: white;
-    }
-
-    .stat-completed .stat-icon {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-    }
-
-    .stat-content h3 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin: 0;
-        color: #1f2937;
-    }
-
-    .stat-content p {
-        margin: 5px 0;
-        color: #6b7280;
-        font-size: 0.95rem;
-    }
-
-    .stat-change {
-        font-size: 0.85rem;
-        color: #6b7280;
-    }
-
-        .stat-change.positive {
-            color: #10b981;
-        }
-
-    .dashboard-task-item {
-        padding: 15px;
-        border-bottom: 1px solid #f3f4f6;
-        transition: background 0.2s ease;
-    }
-
-        .dashboard-task-item:hover {
-            background: #f9fafb;
-        }
-
-        .dashboard-task-item:last-child {
-            border-bottom: none;
-        }
-
-        .dashboard-task-item h6 a {
-            color: #1f2937;
-            text-decoration: none;
-        }
-
-            .dashboard-task-item h6 a:hover {
-                color: var(--primary-color);
-            }
-
-    .progress-circle-large {
-        position: relative;
-        width: 150px;
-        height: 150px;
-    }
-
-    .progress-text-large {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-    }
-
-        .progress-text-large h2 {
-            margin: 0;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #1f2937;
-        }
-
-    .progress-details {
-        display: grid;
-        gap: 10px;
-        margin-top: 20px;
-    }
-
-    .progress-detail-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px 0;
-        border-bottom: 1px solid #f3f4f6;
-    }
-
-        .progress-detail-item:last-child {
-            border-bottom: none;
-        }
-
-    .detail-label {
-        color: #6b7280;
-    }
-
-    .detail-value {
-        font-weight: 700;
-    }
-
-    .card {
-        border: none;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        border-radius: 15px;
-    }
-
-    .card-header {
-        border-bottom: 2px solid #f3f4f6;
-        padding: 20px;
-    }
-</style>

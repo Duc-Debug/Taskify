@@ -1,0 +1,362 @@
+﻿@model List<Taskify.Models.NotificationViewModel>
+
+<div class="notification-container">
+    <!-- Header -->
+    <div class="notification-header">
+        <h3>Notifications</h3>
+        <button class="btn-mark-read" onclick="markAllAsRead()">
+            Mark all as read
+        </button>
+    </div>
+
+    <!-- Notification List -->
+    <div class="notification-list">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var notification in Model)
+            {
+                <div class="notification-item @(!notification.IsRead ? "unread" : "")" data-id="@notification.Id">
+                    <div class="notification-icon">
+                        @if (notification.Message.Contains("assigned"))
+                        {
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="8.5" cy="7" r="4" />
+                                <polyline points="17 11 19 13 23 9" />
+                            </svg>
+                        }
+                        else if (notification.Message.Contains("comment"))
+                        {
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                            </svg>
+                        }
+                        else if (notification.Message.Contains("due"))
+                        {
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                        }
+                        else
+                        {
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 16v-4" />
+                                <path d="M12 8h.01" />
+                            </svg>
+                        }
+                    </div>
+
+                    <div class="notification-content">
+                        <p class="notification-message">@notification.Message</p>
+                        <span class="notification-time">@GetTimeAgo(notification.CreatedAt)</span>
+                    </div>
+
+                    @if (!notification.IsRead)
+                    {
+                        <div class="unread-indicator"></div>
+                    }
+
+                    <button class="btn-notification-action" onclick="markAsRead(@notification.Id)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </button>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="notification-empty">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                <p>No notifications yet</p>
+                <span>You're all caught up!</span>
+            </div>
+        }
+    </div>
+
+    <!-- Footer -->
+    <div class="notification-footer">
+        <a asp-controller="Notification" asp-action="Index" class="btn-view-all">
+            View All Notifications
+        </a>
+    </div>
+</div>
+
+@functions {
+    string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.UtcNow - dateTime;
+
+        if (timeSpan.TotalMinutes < 1)
+            return "Just now";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes}m ago";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours}h ago";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays}d ago";
+
+        return dateTime.ToString("MMM dd");
+    }
+}
+
+<style>
+    .notification-container {
+        display: flex;
+        flex-direction: column;
+        max-height: 500px;
+    }
+
+    /* Header */
+    .notification-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+        .notification-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+
+    .btn-mark-read {
+        background: none;
+        border: none;
+        color: #0ea5e9;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 6px 12px;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+        .btn-mark-read:hover {
+            background: rgba(14, 165, 233, 0.1);
+        }
+
+    /* List */
+    .notification-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 0;
+    }
+
+    .notification-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+        .notification-item:hover {
+            background: #f8fafc;
+        }
+
+        .notification-item.unread {
+            background: rgba(14, 165, 233, 0.05);
+        }
+
+            .notification-item.unread:hover {
+                background: rgba(14, 165, 233, 0.08);
+            }
+
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .notification-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .notification-message {
+        font-size: 13px;
+        color: #1e293b;
+        line-height: 1.5;
+        margin: 0 0 4px 0;
+        font-weight: 500;
+    }
+
+    .notification-time {
+        font-size: 11px;
+        color: #94a3b8;
+    }
+
+    .unread-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        margin-top: 6px;
+        flex-shrink: 0;
+    }
+
+    .btn-notification-action {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
+        opacity: 0;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .notification-item:hover .btn-notification-action {
+        opacity: 1;
+    }
+
+    .btn-notification-action:hover {
+        background: rgba(14, 165, 233, 0.1);
+        color: #0ea5e9;
+    }
+
+    /* Empty State */
+    .notification-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+        .notification-empty svg {
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        .notification-empty p {
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            margin: 0 0 4px 0;
+        }
+
+        .notification-empty span {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+    /* Footer */
+    .notification-footer {
+        padding: 12px 20px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-view-all {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        text-align: center;
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+        .btn-view-all:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+            color: white;
+        }
+
+    /* Scrollbar */
+    .notification-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .notification-list::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .notification-list::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+
+        .notification-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+</style>
+
+<script>
+    function markAsRead(notificationId) {
+        fetch(`/Notification/MarkAsRead/${notificationId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                const item = document.querySelector(`[data-id="${notificationId}"]`);
+                if (item) {
+                    item.classList.remove('unread');
+                    const indicator = item.querySelector('.unread-indicator');
+                    if (indicator) indicator.remove();
+                    updateBadgeCount();
+                }
+            }
+        });
+    }
+
+    function markAllAsRead() {
+        fetch('/Notification/MarkAllAsRead', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                document.querySelectorAll('.notification-item.unread').forEach(item => {
+                    item.classList.remove('unread');
+                    const indicator = item.querySelector('.unread-indicator');
+                    if (indicator) indicator.remove();
+                });
+                updateBadgeCount();
+            }
+        });
+    }
+
+    function updateBadgeCount() {
+        const badge = document.querySelector('.notification-btn .badge');
+        if (badge) {
+            const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+            if (unreadCount === 0) {
+                badge.style.display = 'none';
+            } else {
+                badge.textContent = unreadCount;
+                badge.style.display = 'block';
+            }
+        }
+    }
+</script>

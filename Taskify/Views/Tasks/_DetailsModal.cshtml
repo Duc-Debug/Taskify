@@ -1,0 +1,812 @@
+﻿@model Taskify.Models.TaskDetailsViewModel
+
+<!-- Task Details Modal -->
+<div class="modal fade" id="taskDetailsModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-scrollable modal-xl">
+        <div class="modal-content task-modal">
+            <!-- Modal Header -->
+            <div class="modal-header task-modal-header">
+                <div class="header-left">
+                    <div class="task-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 11 12 14 22 4" />
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="task-title-display">@Model.Title</h3>
+                        <p class="task-meta">
+                            in list <span class="list-badge">@Model.ListName</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" title="Edit" onclick="openEditTaskModal('@Model.Id')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body task-modal-body">
+                <div class="task-content-grid">
+                    <!-- Main Content -->
+                    <div class="task-main-content">
+                        <!-- Priority Badge -->
+                        <div class="detail-section">
+                            <span class="priority-badge priority-@Model.Priority.ToString().ToLower()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                </svg>
+                                @Model.Priority Priority
+                            </span>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="detail-section">
+                            <div class="section-header">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                    <line x1="16" y1="13" x2="8" y2="13" />
+                                    <line x1="16" y1="17" x2="8" y2="17" />
+                                    <polyline points="10 9 9 9 8 9" />
+                                </svg>
+                                <h4>Description</h4>
+                                <button class="btn-edit-desc" onclick="toggleDescriptionEdit()">Edit</button>
+                            </div>
+                            <div class="description-display" id="descDisplay">
+                                @if (!string.IsNullOrEmpty(Model.Description))
+                                {
+                                    <p>@Model.Description</p>
+                                }
+                                else
+                                {
+                                    <p class="description-empty">Add a more detailed description...</p>
+                                }
+                            </div>
+                            <div class="description-edit" id="descEdit" style="display: none;">
+                                <textarea class="form-control" rows="4" id="descriptionTextarea">@Model.Description</textarea>
+                                <div class="edit-actions">
+                                    <button class="btn btn-primary btn-sm" onclick="saveDescription()">Save</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="toggleDescriptionEdit()">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Assignees -->
+                        <div class="detail-section">
+                            <div class="section-header">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                    <circle cx="9" cy="7" r="4" />
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                </svg>
+                                <h4>Members</h4>
+                            </div>
+                            <div class="assignees-list">
+                                @if (Model.Assignees != null && Model.Assignees.Any())
+                                {
+                                    @foreach (var assignee in Model.Assignees)
+                                    {
+                                        <div class="assignee-item">
+                                            @if (!string.IsNullOrEmpty(assignee.AvatarUrl))
+                                            {
+                                                <img src="@assignee.AvatarUrl" alt="@assignee.FullName" class="assignee-avatar-lg" />
+                                            }
+                                            else
+                                            {
+                                                <div class="assignee-avatar-lg">@assignee.Initials</div>
+                                            }
+                                            <span>@assignee.FullName</span>
+                                            <button class="btn-remove-assignee" onclick="removeAssignee('@assignee.Id')">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="empty-message">No members assigned</p>
+                                }
+                                <button class="btn-add-member">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
+                                    Add Member
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Activity -->
+                        <div class="detail-section">
+                            <div class="section-header">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                                </svg>
+                                <h4>Activity</h4>
+                            </div>
+
+                            <!-- Add Comment -->
+                            <div class="add-comment">
+                                <div class="comment-avatar">
+                                    <div class="current-user-avatar">U</div>
+                                </div>
+                                <div class="comment-input-wrapper">
+                                    <textarea class="form-control comment-input" placeholder="Write a comment..." rows="2" id="commentTextarea"></textarea>
+                                    <button class="btn btn-primary btn-sm" onclick="addComment()">Comment</button>
+                                </div>
+                            </div>
+
+                            <!-- Activity Timeline -->
+                            <div class="activity-timeline">
+                                @if (Model.Activities != null && Model.Activities.Any())
+                                {
+                                    @foreach (var activity in Model.Activities)
+                                    {
+                                        <div class="activity-item">
+                                            <div class="activity-avatar">
+                                                <div class="user-avatar-sm">@activity.UserFullName.Substring(0, 1)</div>
+                                            </div>
+                                            <div class="activity-content">
+                                                <div class="activity-header">
+                                                    <strong>@activity.UserFullName</strong>
+                                                    <span class="activity-time">@((DateTime.Now - activity.Timestamp).TotalHours < 24 ? (DateTime.Now - activity.Timestamp).Hours + "h ago" : activity.Timestamp.ToString("MMM dd"))</span>
+                                                </div>
+                                                <p class="activity-text">@activity.Action</p>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="task-sidebar">
+                        <h5>Add to card</h5>
+
+                        <button class="sidebar-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="8.5" cy="7" r="4" />
+                                <line x1="20" y1="8" x2="20" y2="14" />
+                                <line x1="23" y1="11" x2="17" y2="11" />
+                            </svg>
+                            Members
+                        </button>
+
+                        <button class="sidebar-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                <line x1="16" y1="2" x2="16" y2="6" />
+                                <line x1="8" y1="2" x2="8" y2="6" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                            Due Date
+                        </button>
+
+                        <button class="sidebar-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                            </svg>
+                            Attachment
+                        </button>
+
+                        <h5>Actions</h5>
+
+                        <button class="sidebar-btn" onclick="moveTask()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                            Move
+                        </button>
+
+                        <button class="sidebar-btn" onclick="copyTask()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                            </svg>
+                            Copy
+                        </button>
+
+                        <button class="sidebar-btn" onclick="archiveTask()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="21 8 21 21 3 21 3 8" />
+                                <rect x="1" y="3" width="22" height="5" />
+                                <line x1="10" y1="12" x2="14" y2="12" />
+                            </svg>
+                            Archive
+                        </button>
+
+                        <button class="sidebar-btn danger" onclick="deleteTask('@Model.Id')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            </svg>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .task-modal {
+        border: none;
+        border-radius: 16px;
+    }
+
+    .task-modal-header {
+        border-bottom: 1px solid #e2e8f0;
+        padding: 20px 24px;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        flex: 1;
+    }
+
+    .task-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .task-title-display {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 4px 0;
+    }
+
+    .task-meta {
+        font-size: 13px;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .list-badge {
+        background: #f1f5f9;
+        color: #475569;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .task-modal-body {
+        padding: 0;
+    }
+
+    .task-content-grid {
+        display: grid;
+        grid-template-columns: 1fr 220px;
+        gap: 24px;
+        padding: 24px;
+    }
+
+    .task-main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* Detail Sections */
+    .detail-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+        .section-header svg {
+            color: #64748b;
+        }
+
+        .section-header h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+            flex: 1;
+        }
+
+    .btn-edit-desc {
+        background: #f1f5f9;
+        border: none;
+        color: #64748b;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-edit-desc:hover {
+            background: #e2e8f0;
+            color: #0ea5e9;
+        }
+
+    /* Priority Badge */
+    .priority-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        width: fit-content;
+    }
+
+        .priority-badge.priority-high {
+            background: #fee;
+            color: #dc2626;
+        }
+
+        .priority-badge.priority-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-badge.priority-low {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+    /* Description */
+    .description-display p {
+        color: #475569;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .description-empty {
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    .description-edit textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 14px;
+        resize: vertical;
+    }
+
+        .description-edit textarea:focus {
+            outline: none;
+            border-color: #0ea5e9;
+        }
+
+    .edit-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    /* Assignees */
+    .assignees-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .assignee-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 12px;
+        background: #f8fafc;
+        border-radius: 10px;
+    }
+
+    .assignee-avatar-lg {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .assignee-item span {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        color: #1e293b;
+    }
+
+    .btn-remove-assignee {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
+        display: flex;
+        transition: all 0.2s;
+    }
+
+        .btn-remove-assignee:hover {
+            background: white;
+            color: #ef4444;
+        }
+
+    .btn-add-member {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        background: #f1f5f9;
+        border: none;
+        border-radius: 10px;
+        color: #64748b;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-add-member:hover {
+            background: #e2e8f0;
+            color: #0ea5e9;
+        }
+
+    .empty-message {
+        color: #94a3b8;
+        font-size: 14px;
+        padding: 8px 0;
+        margin: 0;
+    }
+
+    /* Activity */
+    .add-comment {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .comment-avatar {
+        flex-shrink: 0;
+    }
+
+    .current-user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .comment-input-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .comment-input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 14px;
+        resize: none;
+    }
+
+        .comment-input:focus {
+            outline: none;
+            border-color: #0ea5e9;
+        }
+
+    .activity-timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .activity-item {
+        display: flex;
+        gap: 12px;
+    }
+
+    .activity-avatar {
+        flex-shrink: 0;
+    }
+
+    .user-avatar-sm {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+        .activity-header strong {
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+    .activity-time {
+        color: #94a3b8;
+        font-size: 12px;
+    }
+
+    .activity-text {
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    /* Sidebar */
+    .task-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+        .task-sidebar h5 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 12px 0 4px 0;
+        }
+
+            .task-sidebar h5:first-child {
+                margin-top: 0;
+            }
+
+    .sidebar-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        background: #f8fafc;
+        border: none;
+        border-radius: 8px;
+        color: #475569;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: left;
+    }
+
+        .sidebar-btn:hover {
+            background: #f1f5f9;
+            color: #0ea5e9;
+        }
+
+        .sidebar-btn.danger {
+            color: #ef4444;
+        }
+
+            .sidebar-btn.danger:hover {
+                background: #fee;
+            }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+        }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #64748b;
+    }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        border: none;
+        border-radius: 8px;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-icon:hover {
+            background: #f1f5f9;
+            color: #0ea5e9;
+        }
+
+    @@media (max-width: 992px) {
+        .task-content-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .task-sidebar {
+            order: -1;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+            .task-sidebar h5 {
+                width: 100%;
+            }
+    }
+</style>
+
+<script>
+    function toggleDescriptionEdit() {
+        const display = document.getElementById('descDisplay');
+        const edit = document.getElementById('descEdit');
+
+        if (display.style.display === 'none') {
+            display.style.display = 'block';
+            edit.style.display = 'none';
+        } else {
+            display.style.display = 'none';
+            edit.style.display = 'block';
+            document.getElementById('descriptionTextarea').focus();
+        }
+    }
+
+    function saveDescription() {
+        const description = document.getElementById('descriptionTextarea').value;
+        // Make API call to save
+        fetch('/Task/UpdateDescription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ taskId: '@Model.Id', description: description })
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+
+    function addComment() {
+        const comment = document.getElementById('commentTextarea').value;
+        if (!comment.trim()) return;
+
+        fetch('/Task/AddComment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ taskId: '@Model.Id', comment: comment })
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+
+    function removeAssignee(userId) {
+        fetch('/Task/RemoveAssignee', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ taskId: '@Model.Id', userId: userId })
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    }
+
+    function deleteTask(taskId) {
+        if (confirm('Are you sure you want to delete this task?')) {
+            fetch(`/Task/Delete/${taskId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/Board';
+                }
+            });
+        }
+    }
+
+    function moveTask() {
+        // Show move task modal
+        console.log('Move task');
+    }
+
+    function copyTask() {
+        // Copy task logic
+        console.log('Copy task');
+    }
+
+    function archiveTask() {
+        // Archive task logic
+        console.log('Archive task');
+    }
+</script>

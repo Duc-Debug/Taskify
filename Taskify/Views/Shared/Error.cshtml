@@ -1,137 +1,263 @@
-﻿@model Taskify.Models.ErrorViewModel
+﻿@model ErrorViewModel
 @{
     ViewData["Title"] = "Error";
-    Layout = "_Layout";
+    Layout = null;
 }
 
-<div class="container-fluid">
-    <div class="row justify-content-center align-items-center" style="min-height: 70vh;">
-        <div class="col-lg-6 col-md-8">
-            <div class="error-container text-center">
-                <div class="error-icon mb-4">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Taskify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-                <h1 class="error-title mb-3">Oops! Something went wrong</h1>
-
-                <p class="error-message mb-4">
-                    We're sorry, but something unexpected happened.
-                    Don't worry, we're on it!
-                </p>
-
-                @if (Model.ShowRequestId)
-                {
-                    <div class="alert alert-light">
-                        <small class="text-muted">
-                            <strong>Request ID:</strong> <code>@Model.RequestId</code>
-                        </small>
-                    </div>
-                }
-
-                <div class="error-actions mt-4">
-                    <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">
-                        <i class="fas fa-home me-2"></i>Back to Home
-                    </a>
-                    <a href="javascript:history.back()" class="btn btn-outline-secondary btn-lg">
-                        <i class="fas fa-arrow-left me-2"></i>Go Back
-                    </a>
-                </div>
-
-                <div class="error-tips mt-5">
-                    <h6 class="text-muted mb-3">What you can do:</h6>
-                    <ul class="list-unstyled">
-                        <li class="mb-2">
-                            <i class="fas fa-check-circle text-success me-2"></i>
-                            Check your internet connection
-                        </li>
-                        <li class="mb-2">
-                            <i class="fas fa-check-circle text-success me-2"></i>
-                            Refresh the page
-                        </li>
-                        <li class="mb-2">
-                            <i class="fas fa-check-circle text-success me-2"></i>
-                            Clear your browser cache
-                        </li>
-                        <li>
-                            <i class="fas fa-check-circle text-success me-2"></i>
-                            Contact support if the problem persists
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-    .error-container {
-        padding: 40px;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-    }
-
-    .error-icon {
-        font-size: 6rem;
-        color: #f59e0b;
-        animation: pulse 2s infinite;
-    }
-
-    @@keyframes pulse {
-        0%, 100% {
-            opacity: 1;
-            transform: scale(1);
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        50% {
-            opacity: 0.8;
-            transform: scale(1.05);
-        }
-    }
-
-    .error-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #1f2937;
-    }
-
-    .error-message {
-        font-size: 1.1rem;
-        color: #6b7280;
-        line-height: 1.6;
-    }
-
-    .error-actions {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .error-tips {
-        text-align: left;
-        max-width: 400px;
-        margin: 0 auto;
-        padding: 20px;
-        background: #f9fafb;
-        border-radius: 10px;
-    }
-
-        .error-tips ul li {
-            color: #6b7280;
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
-    @@media (max-width: 576px) {
+        .error-container {
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .error-animation {
+            margin-bottom: 40px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @@keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
         .error-icon {
-            font-size: 4rem;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 30px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+            .error-icon svg {
+                width: 100px;
+                height: 100px;
+                color: #0ea5e9;
+            }
+
+        .error-content {
+            background: white;
+            border-radius: 24px;
+            padding: 50px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .error-code {
+            font-size: 72px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            line-height: 1;
         }
 
         .error-title {
-            font-size: 1.8rem;
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
         }
 
-        .error-actions .btn {
-            width: 100%;
+        .error-message {
+            font-size: 16px;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 32px;
         }
-    }
-</style>
+
+        .error-details {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+            .error-details h4 {
+                font-size: 14px;
+                font-weight: 600;
+                color: #475569;
+                margin-bottom: 12px;
+            }
+
+            .error-details p {
+                font-size: 13px;
+                color: #64748b;
+                font-family: 'Courier New', monospace;
+                word-break: break-all;
+                margin: 0;
+            }
+
+        .error-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 30px rgba(14, 165, 233, 0.4);
+            }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+            .btn-secondary:hover {
+                background: #e2e8f0;
+                transform: translateY(-2px);
+            }
+
+        .error-footer {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+            .error-footer p {
+                font-size: 14px;
+                color: #94a3b8;
+                margin-bottom: 12px;
+            }
+
+            .error-footer a {
+                color: #0ea5e9;
+                text-decoration: none;
+                font-weight: 600;
+            }
+
+                .error-footer a:hover {
+                    text-decoration: underline;
+                }
+
+        @@media (max-width: 768px) {
+            .error-content {
+                padding: 40px 24px;
+            }
+
+            .error-code {
+                font-size: 56px;
+            }
+
+            .error-title {
+                font-size: 24px;
+            }
+
+            .error-icon {
+                width: 150px;
+                height: 150px;
+            }
+
+                .error-icon svg {
+                    width: 75px;
+                    height: 75px;
+                }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-animation">
+            <div class="error-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="error-content">
+            <div class="error-code">Oops!</div>
+            <h1 class="error-title">Something went wrong</h1>
+            <p class="error-message">
+                We're sorry, but an error occurred while processing your request.
+                Our team has been notified and we're working to fix it.
+            </p>
+
+            @if (!string.IsNullOrEmpty(Model?.RequestId))
+            {
+                <div class="error-details">
+                    <h4>Error Details:</h4>
+                    <p><strong>Request ID:</strong> @Model.RequestId</p>
+                </div>
+            }
+
+            <div class="error-actions">
+                <a href="/" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg>
+                    Go to Homepage
+                </a>
+                <button onclick="window.history.back()" class="btn btn-secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                        <line x1="19" y1="12" x2="5" y2="12" />
+                        <polyline points="12 19 5 12 12 5" />
+                    </svg>
+                    Go Back
+                </button>
+            </div>
+
+            <div class="error-footer">
+                <p>If this problem persists, please contact our support team.</p>
+                <a href="mailto:support@taskify.com">support@taskify.com</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

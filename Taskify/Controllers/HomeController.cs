@@ -1,27 +1,37 @@
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using Taskify.Models;
+using Taskify.Services;
 
 namespace Taskify.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly IHomeService _homeService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IHomeService homeService)
         {
-            _logger = logger;
+            _homeService = homeService;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            // 1. Logic chuyển hướng: Đã đăng nhập -> Vào Dashboard
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+
+            // 2. Logic hiển thị: Chưa đăng nhập -> Hiện Landing Page
+            // Gọi Service lấy data (nếu cần hiển thị số liệu)
+            var model = await _homeService.GetLandingPageDataAsync();
+
+            return View(model);
         }
 
         public IActionResult Privacy()
         {
             return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }
