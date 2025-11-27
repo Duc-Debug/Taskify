@@ -1,54 +1,618 @@
 ﻿@{
-    ViewData["Title"] = "Taskify - Manage your tasks efficiently";
+    ViewData["Title"] = "Taskify - Modern Task Management for Teams";
     Layout = "_LayoutPublic";
 }
 
-<div class="landing-page">
-    <div class="px-4 py-5 my-5 text-center">
-        <img class="d-block mx-auto mb-4" src="https://cdn-icons-png.flaticon.com/512/906/906334.png" alt="Taskify Logo" width="72" height="72">
-
-        <h1 class="display-5 fw-bold text-primary">Taskify</h1>
-        <div class="col-lg-6 mx-auto">
-            <p class="lead mb-4">
-                Taskify helps teams move work forward.
-                Collaborate, manage projects, and reach new productivity peaks.
-                From high rises to the home office, the way your team works is unique.
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+                Trusted by 10,000+ teams worldwide
+            </div>
+            <h1 class="hero-title">
+                Manage Tasks.<br />
+                <span class="gradient-text">Boost Productivity.</span><br />
+                Work Smarter.
+            </h1>
+            <p class="hero-description">
+                Taskify is the intuitive project management tool that helps teams collaborate,
+                organize tasks, and achieve their goals faster. From startups to enterprises.
             </p>
-            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg px-4 gap-3">
-                    Sign up - it's free
+            <div class="hero-actions">
+                <a asp-controller="Account" asp-action="Register" class="btn-hero btn-hero-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                        <polyline points="10 17 15 12 10 7" />
+                        <line x1="15" y1="12" x2="3" y2="12" />
+                    </svg>
+                    Start Free Trial
                 </a>
-                <a asp-controller="Account" asp-action="Login" class="btn btn-outline-secondary btn-lg px-4">
-                    Login
+                <a href="#demo" class="btn-hero btn-hero-secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                    Watch Demo
                 </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <strong>10,000+</strong>
+                    <span>Active Teams</span>
+                </div>
+                <div class="stat-item">
+                    <strong>99.9%</strong>
+                    <span>Uptime</span>
+                </div>
+                <div class="stat-item">
+                    <strong>4.9/5</strong>
+                    <span>User Rating</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="visual-card card-1">
+                <div class="card-header">
+                    <div class="card-icon">📋</div>
+                    <span>To Do</span>
+                </div>
+                <div class="card-items">
+                    <div class="card-task">Design homepage</div>
+                    <div class="card-task">Setup API</div>
+                    <div class="card-task">Write docs</div>
+                </div>
+            </div>
+            <div class="visual-card card-2">
+                <div class="card-header">
+                    <div class="card-icon">⚡</div>
+                    <span>In Progress</span>
+                </div>
+                <div class="card-items">
+                    <div class="card-task">Code review</div>
+                    <div class="card-task">Testing phase</div>
+                </div>
+            </div>
+            <div class="visual-card card-3">
+                <div class="card-header">
+                    <div class="card-icon">✅</div>
+                    <span>Done</span>
+                </div>
+                <div class="card-items">
+                    <div class="card-task">Database setup</div>
+                    <div class="card-task">UI mockups</div>
+                </div>
             </div>
         </div>
     </div>
+</section>
 
-    <div class="container px-4 py-5" id="featured-3">
-        <h2 class="pb-2 border-bottom">Why Taskify?</h2>
-        <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
-            <div class="feature col">
-                <div class="feature-icon bg-primary bg-gradient text-white rounded-3 mb-3 p-3" style="width: fit-content;">
-                    <i class="bi bi-kanban fs-2"></i>
+<!-- Features Section -->
+<section class="features-section" id="features">
+    <div class="features-container">
+        <div class="section-header">
+            <span class="section-badge">Features</span>
+            <h2 class="section-title">Everything you need to succeed</h2>
+            <p class="section-description">
+                Powerful features to help your team stay organized and productive
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <!-- Feature 1 -->
+            <div class="feature-card">
+                <div class="feature-icon kanban">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="18" rx="1" />
+                        <rect x="14" y="3" width="7" height="10" rx="1" />
+                    </svg>
                 </div>
                 <h3>Kanban Boards</h3>
-                <p>Visualize work with Trello-like boards, lists, and cards. Drag and drop with ease to update progress in real-time.</p>
+                <p>Visualize your workflow with intuitive drag-and-drop boards. Move tasks between lists with ease.</p>
             </div>
-            <div class="feature col">
-                <div class="feature-icon bg-primary bg-gradient text-white rounded-3 mb-3 p-3" style="width: fit-content;">
-                    <i class="bi bi-people fs-2"></i>
+
+            <!-- Feature 2 -->
+            <div class="feature-card">
+                <div class="feature-icon team">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
                 </div>
                 <h3>Team Collaboration</h3>
-                <p>Invite members, assign tasks, and track your team's progress seamlessly. Keep everyone on the same page.</p>
+                <p>Invite team members, assign tasks, and track progress together in real-time.</p>
             </div>
-            <div class="feature col">
-                <div class="feature-icon bg-primary bg-gradient text-white rounded-3 mb-3 p-3" style="width: fit-content;">
-                    <i class="bi bi-lightning fs-2"></i>
+
+            <!-- Feature 3 -->
+            <div class="feature-card">
+                <div class="feature-icon automation">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
                 </div>
-                <h3>Automation</h3>
-                <p>Save time with automated workflows and smart notifications. Focus on what truly matters.</p>
+                <h3>Smart Automation</h3>
+                <p>Automate repetitive tasks and workflows. Save time and focus on what matters most.</p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="feature-card">
+                <div class="feature-icon analytics">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10" />
+                        <line x1="12" y1="20" x2="12" y2="4" />
+                        <line x1="6" y1="20" x2="6" y2="14" />
+                    </svg>
+                </div>
+                <h3>Analytics & Reports</h3>
+                <p>Get insights into your team's productivity with detailed analytics and custom reports.</p>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="feature-card">
+                <div class="feature-icon mobile">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                        <line x1="12" y1="18" x2="12.01" y2="18" />
+                    </svg>
+                </div>
+                <h3>Mobile Apps</h3>
+                <p>Access your tasks anywhere with native iOS and Android apps. Work on the go.</p>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="feature-card">
+                <div class="feature-icon integrations">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M12 1v6m0 6v6m8.66-13.66-4.24 4.24m-4.24 4.24-4.24 4.24m13.66-.24-4.24-4.24m-4.24-4.24L3.34 3.34" />
+                    </svg>
+                </div>
+                <h3>Integrations</h3>
+                <p>Connect with your favorite tools like Slack, Google Drive, and more.</p>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="cta-container">
+        <div class="cta-content">
+            <h2>Ready to boost your productivity?</h2>
+            <p>Join thousands of teams already using Taskify to achieve their goals.</p>
+            <div class="cta-actions">
+                <a asp-controller="Account" asp-action="Register" class="btn-cta btn-cta-primary">
+                    Get Started Free
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                </a>
+                <span class="cta-note">No credit card required • Free forever</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+        padding: 80px 24px 120px;
+        overflow: hidden;
+    }
+
+    .hero-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 80px;
+        align-items: center;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 24px;
+    }
+
+        .hero-badge svg {
+            color: #f59e0b;
+        }
+
+    .hero-title {
+        font-size: 56px;
+        font-weight: 800;
+        line-height: 1.1;
+        color: #1e293b;
+        margin-bottom: 24px;
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-description {
+        font-size: 18px;
+        line-height: 1.7;
+        color: #64748b;
+        margin-bottom: 32px;
+        max-width: 500px;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 48px;
+    }
+
+    .btn-hero {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 32px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-hero-primary {
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        color: white;
+    }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(14, 165, 233, 0.4);
+        }
+
+    .btn-hero-secondary {
+        background: white;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+    }
+
+        .btn-hero-secondary:hover {
+            border-color: #0ea5e9;
+            color: #0ea5e9;
+        }
+
+    .hero-stats {
+        display: flex;
+        gap: 48px;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+        .stat-item strong {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .stat-item span {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+    /* Hero Visual */
+    .hero-visual {
+        position: relative;
+        height: 500px;
+    }
+
+    .visual-card {
+        position: absolute;
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        animation: float 6s ease-in-out infinite;
+    }
+
+        .visual-card.card-1 {
+            top: 0;
+            left: 0;
+            width: 220px;
+            animation-delay: 0s;
+        }
+
+        .visual-card.card-2 {
+            top: 120px;
+            right: 40px;
+            width: 200px;
+            animation-delay: 1s;
+        }
+
+        .visual-card.card-3 {
+            bottom: 40px;
+            left: 60px;
+            width: 210px;
+            animation-delay: 2s;
+        }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .card-icon {
+        font-size: 20px;
+    }
+
+    .card-header span {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .card-items {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .card-task {
+        padding: 10px 12px;
+        background: #f8fafc;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    @@keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+
+    /* Features Section */
+    .features-section {
+        padding: 100px 24px;
+        background: white;
+    }
+
+    .features-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 64px;
+    }
+
+    .section-badge {
+        display: inline-block;
+        padding: 6px 16px;
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+        color: #0ea5e9;
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 16px;
+    }
+
+    .section-title {
+        font-size: 42px;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 16px;
+    }
+
+    .section-description {
+        font-size: 18px;
+        color: #64748b;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 32px;
+    }
+
+    .feature-card {
+        padding: 32px;
+        background: #f8fafc;
+        border-radius: 20px;
+        transition: all 0.3s;
+    }
+
+        .feature-card:hover {
+            background: white;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+        }
+
+    .feature-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        color: white;
+    }
+
+        .feature-icon.kanban {
+            background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+        }
+
+        .feature-icon.team {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+        }
+
+        .feature-icon.automation {
+            background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        }
+
+        .feature-icon.analytics {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .feature-icon.mobile {
+            background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+        }
+
+        .feature-icon.integrations {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+
+    .feature-card h3 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 12px;
+    }
+
+    .feature-card p {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #64748b;
+        margin: 0;
+    }
+
+    /* CTA Section */
+    .cta-section {
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        padding: 80px 24px;
+    }
+
+    .cta-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .cta-content {
+        text-align: center;
+        color: white;
+    }
+
+        .cta-content h2 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .cta-content p {
+            font-size: 20px;
+            opacity: 0.95;
+            margin-bottom: 40px;
+        }
+
+    .cta-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .btn-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 18px 40px;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-cta-primary {
+        background: white;
+        color: #0ea5e9;
+    }
+
+        .btn-cta-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(255, 255, 255, 0.3);
+        }
+
+    .cta-note {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    /* Responsive */
+    @@media (max-width: 968px) {
+        .hero-container {
+            grid-template-columns: 1fr;
+            gap: 48px;
+        }
+
+        .hero-visual {
+            height: 400px;
+        }
+
+        .hero-title {
+            font-size: 40px;
+        }
+
+        .features-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .section-title {
+            font-size: 32px;
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .hero-title {
+            font-size: 32px;
+        }
+
+        .hero-actions {
+            flex-direction: column;
+        }
+
+        .hero-stats {
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .cta-content h2 {
+            font-size: 32px;
+        }
+    }
+</style>

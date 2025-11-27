@@ -1,0 +1,49 @@
+1. Phần Login - Authentication
+
+1.1 Câu lệnh:
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme) 
+    .AddCookie(options => // 2. Cấu hình chi tiết cho Cookie
+    {
+        options.LoginPath = "/Account/Login"; // 3. Đường dẫn khi chưa đăng nhập
+        options.ExpireTimeSpan = TimeSpan.FromDays(7); // 4. Thời hạn "thẻ"
+    });
+
+	---> AuthenticationCheme: Có nghĩa là xác minh Login bằng Cookie chứ không phải token/JWT
+	-->Loginpath: Chưa đăng nhập mà gõ URL /Dashborad là đá thẳng về phần Login( Vì hệ thống không thấy Cookie)
+	
+app.UseAuthentication();
+	--> Kích hoạt Middleware(Lính gác cổng)
+	--> Khi gửi request đến Server(VD:F5), nó phải đi qua UseAuthentication
+	--> Middleware sẽ đọc Cookie từ trình duyệt để dựng lên-> giải mã nó-> dựng lại thông tin User( Mày là ai? Id là gì?)
+	--> Không có nó thì đăng nhập thành công thì Server cũng ngó lơ Cookie đc gửi => User.Identity.IsAuthenticated luôn luôn là false.
+
+1.2 SHA256/ Salt và BCrypt.Net
+
+SHA256( Secure Hash Algorithm 256-bit) là 1 hàm băm một chiều.
+- Vấn đề ở đây là: SHA256 trần thì nếu 2 người dùng cùng đặt mật khẩu giống nhau thì trong DB sẽ có chuỗi Hash giống hệt nhau vì có chuỗi luôn cố định. 
+-> Vậy nên Salt( 1 chuỗi ký tự ngẫu nhiên) sẽ được thêm vào  mật khẩu trước khi băm -> cùng mật khẩu thì trong DB sẽ Hash ra chuỗi khác nhau.
+
+BCrypt là thuật toán Băm mật khẩu chuyên dụng an toàn hơn SHA nhiều vì: 
+- Tự động tạo Salt và gộp vào chuỗi cuối cùng
+- Nhưng chậm hơn SHA256( có chủ đích) giúp nếu bị trộm DB và dò mật khẩu( Brute-force) thì mất cực nhiều thời gian
+
+---------------------------------------------------
+CÁC KHÁI NIỆM:
+	Cookie: Là mẩu tin nhỏ(Text file) mà Server sẽ lưu khi đăng nhập thành công, Nó là cơ chế quản lý trạng thái cho giao thức HTTP( vì HTTP là giao thức Stateless( không lưu trạng thái) nên Cookie được tạo ra để vá chỗ này.
+	--> Dễ hiểu hơn: Nó là cơ chế quản lý trạng thái mà Server lưu dữ liệu(Session), client chỉ giữ mã định danh(Session ID),Server gửi Set-Cookie mà Browser sẽ tự lưu và gửi kèm Cookie mọi Request sau đó. 
+	==>Khi code, nhớ set HttpOnly = true để JavaScript của hacker không ăn trộm được cái ID này.
+	
+	Token (JWT): thường là JWT - JSON Web Token, chuẩn RFC 7519) là một phương thức xác thực Stateless (Phi trạng thái). Khác với Cookie/Session, Server không cần lưu trữ dữ liệu phiên làm việc trong Database/Memory. 
+	--> Cơ chế xác thực phi trạng thái (Stateless). Client giữ toàn bộ thông tin (Claims) có chữ ký số. Server không lưu gì cả.Server ký Token -> Trả về Client. Client phải tự lưu và tự gửi kèm Header Authorization: Bearer.... Server xác thực bằng chữ ký.
+	==>Note: Vì Server không lưu gì cả, nên nếu muốn "cấm" (ban) user ngay lập tức (Revoke Token) sẽ khó hơn Cookie một chút.
+	Middleware: Chuỗi trách nhiệm (Chain of Responsibility). Các đoạn code nối tiếp nhau để xử lý Request/Response.
+	==> Note: Thứ tự sắp xếp trong Program.cs là sống còn. (Ví dụ: Auth phải đứng trước Controller).
+	Hash: Là hàm biến đổi dữ liệu một chiều( One-way-function). Đầu vào bất kỳ, đầu ra cố định
+	==>Note: Một thay đổi nhỏ xíu ở đầu vào sẽ làm thay đổi hoàn toàn đầu ra (Hiệu ứng tuyết lở).
+	Salt: Là chuỗi ký tự ngẫu nhiên đc thêm vào password trước khi băm( đảm bảo 2 ng cùng mk nhưng có Hash khác nhau)< Mỗi User có 1 Salt riêng biệt>
+	==>Note: Salt không cần giấu, nó được lưu công khai ngay bên cạnh cột Hash trong Database.
+
+
+
+
+

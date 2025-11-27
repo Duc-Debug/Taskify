@@ -1,171 +1,97 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Taskify.Models;
+using Taskify.Services;
 
 namespace Taskify.Controllers
 {
     public class AccountController : Controller
     {
-      
-            // GET: Account/Login
-            public IActionResult Login()
-            {
-                return View();
-            }
+        private readonly IAccountService _accountService;
+        public AccountController(IAccountService accountService)
+        {
+            _accountService = accountService;
+        }
 
-            // POST: Account/Login
-            [HttpPost]
-            [ValidateAntiForgeryToken]
-            public IActionResult Login(LoginViewModel model)
+        // -------- REGISTER------------
+        [HttpGet]
+        public IActionResult Register()
+        {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                if (ModelState.IsValid)
+                return RedirectToAction("Index", "Dashboard");
+            }
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _accountService.RegisterAsync(model.FullName, model.Email, model.Password);
+                if (user == null)
                 {
-                    // Simple authentication (replace with real authentication)
-                    if (model.Email == "admin@taskify.com" && model.Password == "Admin@123")
-                    {
-                        // Set authentication cookie or session here
-                        TempData["SuccessMessage"] = "Login successful!";
-                        return RedirectToAction("Index", "Home");
-                    }
-                    else
-                    {
-                        ViewBag.ErrorMessage = "Invalid email or password.";
-                        return View(model);
-                    }
+                    ModelState.AddModelError("Email", "Email already exists.");
+                    return View(model);
                 }
-
-                return View(model);
+                await SignInUser(user, false);
+                return RedirectToAction("Index", "Dashboard");
             }
-
-            // GET: Account/Register
-            public IActionResult Register()
+            return View(model);
+        }
+        // ----- LOGIN-----
+        [HttpGet]
+        public IActionResult Login()
+        {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                return View();
+                return RedirectToAction("Index", "Dashboard");
             }
-
-            // POST: Account/Register
-            [HttpPost]
-            [ValidateAntiForgeryToken]
-            public IActionResult Register(RegisterViewModel model)
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> Login(LoginViewModel model)
+        {
+            if (ModelState.IsValid)
             {
-                if (ModelState.IsValid)
+                var user = await _accountService.ValidateUserAsync(model.Email, model.Password);
+                if (user == null)
                 {
-                    // Check if email already exists (simplified)
-                    if (model.Email == "admin@taskify.com")
-                    {
-                        ViewBag.ErrorMessage = "Email already registered.";
-                        return View(model);
-                    }
-
-                    // Register user (add to database here)
-                    TempData["SuccessMessage"] = "Registration successful! Please login.";
-                    return RedirectToAction(nameof(Login));
+                    ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                    return View(model);
                 }
-
-                return View(model);
+                await SignInUser(user, model.RememberMe);
+                return RedirectToAction("Index", "Dashboard");
             }
-
-            // GET: Account/Profile
-            public IActionResult Profile()
+            return View(model);
+        }
+        // ----- LOGOUT -----
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Home");
+        }
+        // -----Method to create Cookie Login -----
+        private async Task SignInUser(User user, bool isPersistent)
+        {
+            var claims = new List<Claim>
             {
-                var model = new ProfileViewModel
-                {
-                    FullName = "John Doe",
-                    Email = "john.doe@example.com",
-                    DateOfBirth = new DateTime(1990, 1, 1),
-                    Address = "123 Main Street, City, Country",
-                    Bio = "Task management enthusiast and productivity expert.",
-                    AvatarUrl = null,
-                    MemberSince = DateTime.Now.AddMonths(-6),
-                    TotalTasks = 45,
-                    CompletedTasks = 32,
-                    PendingTasks = 13,
-                    EmailNotifications = true,
-                    TaskReminders = true
-                };
-
-                return View(model);
-            }
-
-            // POST: Account/UpdateProfile
-            [HttpPost]
-            [ValidateAntiForgeryToken]
-            public IActionResult UpdateProfile(ProfileViewModel model)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
             {
-                if (ModelState.IsValid)
-                {
-                    // Update user profile in database
-                    TempData["SuccessMessage"] = "Profile updated successfully!";
-                    return RedirectToAction(nameof(Profile));
-                }
-
-                // Repopulate stats if validation fails
-                model.MemberSince = DateTime.Now.AddMonths(-6);
-                model.TotalTasks = 45;
-                model.CompletedTasks = 32;
-                model.PendingTasks = 13;
-
-                return View("Profile", model);
-            }
-
-            // GET: Account/ChangePassword
-            public IActionResult ChangePassword()
-            {
-                return View();
-            }
-
-            // POST: Account/ChangePassword
-            [HttpPost]
-            [ValidateAntiForgeryToken]
-            public IActionResult ChangePassword(ChangePasswordViewModel model)
-            {
-                if (ModelState.IsValid)
-                {
-                    // Verify current password (simplified)
-                    if (model.CurrentPassword != "Admin@123")
-                    {
-                        ViewBag.ErrorMessage = "Current password is incorrect.";
-                        return View(model);
-                    }
-
-                    // Update password in database
-                    TempData["SuccessMessage"] = "Password changed successfully!";
-                    return RedirectToAction(nameof(Profile));
-                }
-
-                return View(model);
-            }
-
-            // POST: Account/Logout
-            [HttpPost]
-            [ValidateAntiForgeryToken]
-            public IActionResult Logout()
-            {
-                // Clear authentication cookie or session
-                TempData["SuccessMessage"] = "You have been logged out.";
-                return RedirectToAction(nameof(Login));
-            }
-
-            // POST: Account/DeleteAccount
-            [HttpPost]
-            [ValidateAntiForgeryToken]
-            public IActionResult DeleteAccount()
-            {
-                // Delete user account from database
-                TempData["SuccessMessage"] = "Your account has been deleted.";
-                return RedirectToAction(nameof(Login));
-            }
-
-            // GET: Account/ForgotPassword
-            public IActionResult ForgotPassword()
-            {
-                return View();
-            }
-
-            // GET: Account/Settings
-            public IActionResult Settings()
-            {
-                return RedirectToAction("Index", "Settings");
-            }
-        
+                IsPersistent = isPersistent,
+                ExpiresUtc = isPersistent ? DateTimeOffset.UtcNow.AddDays(7) : (DateTimeOffset?)null
+            };
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
+        }
     }
 }

@@ -1,24 +1,36 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Taskify.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Taskify.Controllers
 {
+    [Authorize]
     public class BoardsController : Controller
     {
         private readonly IBoardService _boardService;
-
-        // [CẦN SỬA] Bạn hãy vào SQL Server, copy ID của 1 user bất kỳ dán vào đây để test
-        private readonly Guid HARD_CODED_USER_ID = Guid.Parse("COPY-GUID-CUA-USER-VAO-DAY");
 
         public BoardsController(IBoardService boardService)
         {
             _boardService = boardService;
         }
+        private Guid GetCurrentUserId()
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (Guid.TryParse(userIdString, out var userId))
+            {
+                return userId;
+            }
+            return Guid.Empty;
+        }
 
         public async Task<IActionResult> Index()
         {
-            var boards = await _boardService.GetBoardsByUserIdAsync(HARD_CODED_USER_ID);
+            var userId = GetCurrentUserId();
+          if (userId == Guid.Empty) return RedirectToAction("Login", "Account");
+            var boards = await _boardService.GetBoardsByUserIdAsync(userId);
             return View(boards);
+         
         }
 
         public async Task<IActionResult> Details(Guid id)
@@ -31,7 +43,11 @@ namespace Taskify.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(string name)
         {
-            await _boardService.CreateBoardAsync(name, HARD_CODED_USER_ID);
+           var userId = GetCurrentUserId();
+            if(userId != Guid.Empty && !string.IsNullOrWhiteSpace(name))
+            {
+                await _boardService.CreateBoardAsync(name, userId);
+            }
             return RedirectToAction(nameof(Index));
         }
     }

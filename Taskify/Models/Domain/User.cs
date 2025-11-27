@@ -10,6 +10,10 @@ namespace Taskify.Models
         public string AvatarUrl { get; set; }
         public string PasswordHash { get; set; }
 
+        // Salt Password
+        [MaxLength(128)]
+        public string Salt { get; set; }
+
         // Navigation
         public ICollection<TeamMember> TeamMembers { get; set; }
         public ICollection<TaskAssignment> TaskAssignments { get; set; }

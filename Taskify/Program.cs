@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using System;
 using Taskify.Data;
@@ -12,15 +13,29 @@ namespace Taskify
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpContextAccessor();
+
+            // Cau hinh Cookie
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/Account/Login";
+                    //options.LogoutPath = "/Account/Logout";
+                    //options.AccessDeniedPath = "/Account/AccessDenied";
+                    options.ExpireTimeSpan = TimeSpan.FromDays(7); //7 days expiration
+                });
+
+            // Cau hinh DbContext
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+                                    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
             //Dang ky services
-            builder.Services.AddScoped<IHomeService, Taskify.Services.HomeService>();
+            builder.Services.AddScoped<IHomeService, HomeService>();
+            builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IBoardService, BoardService>();
+            builder.Services.AddScoped<IAccountService, AccountService>();
 
             var app = builder.Build();
 
@@ -37,6 +52,7 @@ namespace Taskify
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
