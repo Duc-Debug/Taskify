@@ -179,56 +179,53 @@
                 </div>
 
                 <div class="activity-list">
-                    <div class="activity-item">
-                        <div class="activity-icon completed">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="20 6 9 17 4 12" />
-                            </svg>
+                    @if(Model.RecentActivities !=null && Model.RecentActivities.Any())
+                    {
+                        @foreach(var activity in Model.RecentActivities)
+                        {
+                            <div class="activity-item">
+                                <div class="activity-icon @activity.Type">
+                                    @if(activity.Type == "completed")
+                                    {
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    }
+                                    else if (activity.Type== "assigned")
+                                    {
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                            <circle cx="8.5" cy="7" r="4"/>
+                                            <polyline points="17 11 19 13 23 9"/>
+                                        </svg>
+                                    }
+                                    else if(activity.Type == "created")
+                                    {
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="12" y1="5" x2="12" y2="19"/>    
+                                        <line x1="5" y1="12" x2="19" y2="12"/>    
+                                        </svg>
+                                    }
+                                    else
+                                    {
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                        </svg>
+                                    }
+                                </div>
+                                <div class="activity-content">
+                                    <p>@Html.Raw(activity.Description)</p>
+                                    <span class="activity-time">@activity.TimeAgo</span>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-3 text-muted">
+                            <small>No recent activity</small>
                         </div>
-                        <div class="activity-content">
-                            <p>You completed <strong>"Update homepage design"</strong></p>
-                            <span class="activity-time">2 hours ago</span>
-                        </div>
-                    </div>
-
-                    <div class="activity-item">
-                        <div class="activity-icon assigned">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                <circle cx="8.5" cy="7" r="4" />
-                                <polyline points="17 11 19 13 23 9" />
-                            </svg>
-                        </div>
-                        <div class="activity-content">
-                            <p><strong>Sarah Johnson</strong> assigned you to <strong>"Review PR #234"</strong></p>
-                            <span class="activity-time">5 hours ago</span>
-                        </div>
-                    </div>
-
-                    <div class="activity-item">
-                        <div class="activity-icon comment">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                            </svg>
-                        </div>
-                        <div class="activity-content">
-                            <p><strong>Mike Chen</strong> commented on <strong>"Marketing Campaign"</strong></p>
-                            <span class="activity-time">1 day ago</span>
-                        </div>
-                    </div>
-
-                    <div class="activity-item">
-                        <div class="activity-icon created">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="12" y1="5" x2="12" y2="19" />
-                                <line x1="5" y1="12" x2="19" y2="12" />
-                            </svg>
-                        </div>
-                        <div class="activity-content">
-                            <p>You created a new board <strong>"Q1 Planning"</strong></p>
-                            <span class="activity-time">2 days ago</span>
-                        </div>
-                    </div>
+                    }
                 </div>
             </div>
         </div>
@@ -238,7 +235,7 @@
             <div class="section-card">
                 <div class="section-header">
                     <h2>My Boards</h2>
-                    <a asp-controller="Board" asp-action="Index" class="btn-link">
+                    <a asp-controller="Boards" asp-action="Index" class="btn-link">
                         View All
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="9 18 15 12 9 6" />

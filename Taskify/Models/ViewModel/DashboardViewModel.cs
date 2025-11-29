@@ -9,6 +9,13 @@
 
         // Danh sách các nhóm của tôi
         public List<TeamSummaryViewModel> MyTeams { get; set; } = new List<TeamSummaryViewModel>();
+        public List<ActivityViewModel> RecentActivities { get; set; }
+    }
+    //Class đại diện 1 dòng hd 
+    public class ActivityViewModel {
+        public string Description { get; set; }
+        public string TimeAgo { get; set; }
+        public string Type { get; set; }
     }
 
     public class TeamSummaryViewModel

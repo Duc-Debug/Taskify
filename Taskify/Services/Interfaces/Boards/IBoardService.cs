@@ -1,4 +1,5 @@
 ﻿using Taskify.Models;
+
 namespace Taskify.Services
 {
     public interface IBoardService

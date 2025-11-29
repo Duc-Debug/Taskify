@@ -38,6 +38,22 @@ namespace Taskify.Services
                     }).ToList()
                 })
                 .ToListAsync();
+            //Lay 5 hd gan nhat
+            var activities = await _context.TaskHistories
+                .Include(h => h.TaskItem)
+                .Where(h => h.TaskItem.Assignments.Any(a => a.UserId == userId))
+                .OrderByDescending(h => h.Timestamp)
+                .Take(5)
+                .Select(h => new ActivityViewModel
+                {
+                    Description = $"{h.Action}: {h.TaskItem.Title}",
+
+                    Type = h.Action.Contains("Create") ? "created" :
+                        h.Action.Contains("Complete") ? "completed" :
+                        h.Action.Contains("Assign") ? "asigned" : "Comment",
+                    TimeAgo = CalculateTimeAgo(h.Timestamp)
+                })
+                .ToListAsync();
 
             //Ghep data vao DashboardViewModel
             var model = new DashboardViewModel
@@ -45,10 +61,17 @@ namespace Taskify.Services
                 TotalAssignedTasks = totalTasks,
                 CompletedTasks = completedTasks,
                 PendingTasks = pendingTasks,
-                MyTeams = myTeams
-                //RecentAcctivities Lam sau
+                MyTeams = myTeams,
+               RecentActivities=activities
             };
             return model;
+        }
+        private static string CalculateTimeAgo(DateTime timestamp)
+        {
+            var timeSpan = DateTime.Now - timestamp;
+            if (timeSpan.TotalMinutes < 60) return $"{(int)timeSpan.TotalMinutes}m ago";
+            if (timeSpan.TotalHours < 24) return $"{(int)timeSpan.TotalHours}h ago";
+            return $"{(int)timeSpan.TotalDays}d ago";
         }
     }
 }

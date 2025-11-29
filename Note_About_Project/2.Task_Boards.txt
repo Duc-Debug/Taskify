@@ -1,0 +1,14 @@
+AJAX: Asynchronous JavaScript and XML): Là kỹ thuật giúp trình duyệt gửi ngầm 1 tín hiệu về Server mà ko cần Load lại trang.
+Trong Taskify:
+	Khi kéo thẻ từ cột A sang cột B.
+	- AJAX: Sẽ âm thầm gửi tin nhắn cho Server: "Ê, thằng 	
+	- Task 1 chuyển sang cột B rồi nhé, lưu đi".
+-->Kết quả: Người dùng thấy thẻ di chuyển mượt mà, không bị giật, không bị load lại trang.
+-	-	-	-	-	-	-
+DTO( Data Transfer Object): Là class chỉ chứa dữ liệu, dùng để vận chuyển dl giữ các lớp(Layer) hoặc giữa Client và Sercer.
+-	-	-		-	-	-
+SortableJS: Là thư viện JavaScript( đoạn code do ng khác viêt) chuyên xử lý việc kéo thả
+
+------------
+document: Là ng đại diện cho trang web. Nếu muốn tìm, sửa, xóa bất cứ cái gì trên màn hình (HTML), phải nhờ thằng document.
+Dùng const để bảo vệ biến lists không bị gán nhầm thành cái khác trong quá trình chạy code
