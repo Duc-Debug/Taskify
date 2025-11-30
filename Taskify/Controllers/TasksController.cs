@@ -51,6 +51,14 @@ namespace Taskify.Controllers
             await _taskService.DeleteTaskAsync(id);
             return Ok(new { success = true });
         }
+        [HttpGet]
+        public async Task<IActionResult> GetDetails(Guid id)
+        {
+            var viewModel = await _taskService.GetTaskDetailsAsync(id);
+            if (viewModel == null) return NotFound();
+
+            return PartialView("_DetailsModal", viewModel);
+        }
         //Class DTO(Data Transfer Object) nhan du lieu tu Js
         public class MoveTaskRequest
         {

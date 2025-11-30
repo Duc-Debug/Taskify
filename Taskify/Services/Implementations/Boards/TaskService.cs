@@ -59,5 +59,39 @@ namespace Taskify.Services
                 .ThenInclude(t => t.User)
                 .FirstOrDefaultAsync(t => t.Id == taskId);
         }
+        public async Task<TaskDetailsViewModel> GetTaskDetailsAsync(Guid taskId)
+        {
+            var task = await _context.Tasks
+                .Include(t=> t.Assignments).ThenInclude(a=>a.User)
+                .Include(t=>t.List) // Lay ten List
+                .FirstOrDefaultAsync(t=> t.Id == taskId);
+
+            if (task == null) return null;
+
+            //Map tu entity sang VM
+            return new TaskDetailsViewModel
+            {
+                Id = task.Id,
+                Title = task.Title,
+                Description = task.Description,
+                Priority = task.Priority,
+                DueDate = task.DueDate,
+                ListId = task.ListId,
+                ListName = task.List?.Title,
+                CreatedAt = DateTime.Now, // Vi du thoi, neu co DB lay sau
+
+                //Map assignees
+                Assignees = task.Assignments.Select(a => new MemberViewModel
+                {
+                    Id = a.UserId,
+                    FullName = a.User.FullName,
+                    AvatarUrl = a.User.AvatarUrl,
+                    Initials = a.User.FullName?.Substring(0, 1) ?? "U"
+                }).ToList(),
+
+                //Map Activities( Tam thoi trong)
+                Activities = new List<TaskHistoryViewModel>()
+            };
+        }
     }
 }

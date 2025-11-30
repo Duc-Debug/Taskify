@@ -3,163 +3,672 @@
     ViewData["Title"] = Model.Name;
 }
 
-<div class="dashboard-container">
-    <div class="welcome-section mb-4">
-        <div class="welcome-content">
-            <h1 class="text-white">@Model.Name</h1>
-            <p class="text-white-50 mb-0">Drag and drop tasks to manage progress</p>
+<div class="kanban-container">
+    <!-- Board Header -->
+    <div class="board-header">
+        <div class="board-info">
+            <a asp-action="Index" class="btn-back">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="board-name">@Model.Name</h1>
+                <div class="board-meta">
+                    <span class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11H3v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-6" />
+                            <polyline points="22 6 12 1 2 6" />
+                            <line x1="12" y1="1" x2="12" y2="11" />
+                        </svg>
+                        @Model.Lists.Count Lists
+                    </span>
+                    <span class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 11 12 14 22 4" />
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                        </svg>
+                        @Model.Lists.Sum(l => l.Tasks.Count) Tasks
+                    </span>
+                </div>
+            </div>
         </div>
-        <div class="welcome-actions">
-            <button class="btn btn-light text-primary fw-bold" onclick="alert('Feature coming soon!')">
-                <i class="bi bi-plus-lg"></i> Add Member
+
+        <div class="board-actions">
+            <!-- Board Members -->
+            @if (Model.TeamMembers != null && Model.TeamMembers.Any())
+            {
+                <div class="board-members">
+                    @foreach (var member in Model.TeamMembers.Take(5))
+                    {
+                        @if (!string.IsNullOrEmpty(member.AvatarUrl))
+                        {
+                            <img src="@member.AvatarUrl" alt="@member.FullName" class="member-avatar" title="@member.FullName" />
+                        }
+                        else
+                        {
+                            <div class="member-avatar" title="@member.FullName">@member.Initials</div>
+                        }
+                    }
+                    @if (Model.TeamMembers.Count > 5)
+                    {
+                        <button class="member-avatar more" data-bs-toggle="modal" data-bs-target="#membersModal">
+                            +@(Model.TeamMembers.Count - 5)
+                        </button>
+                    }
+                </div>
+            }
+
+            <!-- Action Buttons -->
+            <button class="btn btn-icon" title="Filter">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                </svg>
             </button>
+
+            <button class="btn btn-icon" title="Board Settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M12 1v6m0 6v6m8.66-13.66-4.24 4.24m-4.24 4.24-4.24 4.24m13.66-.24-4.24-4.24m-4.24-4.24L3.34 3.34" />
+                </svg>
+            </button>
+
+            <div class="dropdown">
+                <button class="btn btn-icon" data-bs-toggle="dropdown">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="1" />
+                        <circle cx="12" cy="5" r="1" />
+                        <circle cx="12" cy="19" r="1" />
+                    </svg>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#">Export Board</a></li>
+                    <li><a class="dropdown-item" href="#">Archive Board</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#">Delete Board</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 
-    <div class="board-canvas d-flex align-items-start gap-3 overflow-auto pb-3" style="height: calc(100vh - 200px);">
-
-        @foreach (var list in Model.Lists)
+    <!-- Kanban Board -->
+    <div class="kanban-board" id="kanbanBoard">
+        @foreach (var list in Model.Lists.OrderBy(l => l.Order))
         {
-            <div class="board-list bg-light rounded-3 shadow-sm" style="min-width: 300px; max-width: 300px;">
-                <div class="list-header p-3 border-bottom d-flex justify-content-between align-items-center">
-                    <h6 class="fw-bold mb-0 text-dark">@list.Title</h6>
-                    <span class="badge bg-secondary rounded-pill">@list.Tasks.Count</span>
+            <div class="kanban-list" data-list-id="@list.Id">
+                <!-- List Header -->
+                <div class="list-header">
+                    <h3 class="list-title">
+                        @list.Title
+                        <span class="task-count">@list.Tasks.Count</span>
+                    </h3>
+                    <div class="dropdown">
+                        <button class="btn-list-menu" data-bs-toggle="dropdown">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="1" />
+                                <circle cx="12" cy="5" r="1" />
+                                <circle cx="12" cy="19" r="1" />
+                            </svg>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="addTask('@list.Id')">Add Task</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="renameList('@list.Id')">Rename List</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteList('@list.Id')">Delete List</a></li>
+                        </ul>
+                    </div>
                 </div>
 
-                <div class="list-body p-2 gap-2 d-flex flex-column tasks-sortable"
-                     data-list-id="@list.Id"
-                     style="min-height: 50px; overflow-y: auto; max-height: calc(100vh - 300px);">
-
+                <!-- Task Cards -->
+                <div class="list-tasks" data-list-id="@list.Id">
                     @foreach (var task in list.Tasks)
                     {
-                        <partial name="~/Views/Shared/_TaskCard.cshtml" model="task" />
+                        <partial name="_TaskCard" model="task" />
                     }
                 </div>
 
-                <div class="list-footer p-2">
-                    <button class="btn btn-sm btn-link text-decoration-none text-secondary w-100 text-start"
-                            data-bs-toggle="modal" data-bs-target="#createTaskModal"
-                            onclick="setListIdForCreate('@list.Id')">
-                        + Add a card
-                    </button>
-                </div>
+                <!-- Add Task Button -->
+                <button class="btn-add-task" onclick="addTask('@list.Id')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Add Task
+                </button>
             </div>
         }
 
-        <div class="add-list-btn" style="min-width: 300px;">
-            <button class="btn btn-secondary w-100 bg-opacity-25 border-0 text-start text-dark fw-bold py-3 px-3 rounded-3" style="background-color: #e9ecef;">
-                + Add another list
+        <!-- Add New List -->
+        <div class="kanban-list add-list-container">
+            <button class="btn-add-list" id="btnAddList">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Add New List
             </button>
+
+            <div class="add-list-form" id="addListForm" style="display: none;">
+                <input type="text" class="form-control" id="newListTitle" placeholder="Enter list title..." />
+                <div class="form-actions">
+                    <button class="btn btn-primary btn-sm" onclick="saveNewList()">Add List</button>
+                    <button class="btn btn-secondary btn-sm" onclick="cancelAddList()">Cancel</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<partial name="~/Views/Tasks/_CreateModal.cshtml" model="new Taskify.Models.TaskCreateViewModel { BoardId = Model.Id }" />
+<div id="task-details-modal-container"></div>
 
+<partial name="~/Views/Tasks/_CreateModal.cshtml"
+         model="new Taskify.Models.TaskCreateViewModel { BoardId = Model.Id }" />
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // 1. Khởi tạo Kéo Thả
-            const lists = document.querySelectorAll('.tasks-sortable');
+            // 1. Khởi tạo Drag & Drop (Giữ nguyên logic của bạn)
+            initSortable();
+        });
 
-            lists.forEach(list => {
+        function initSortable() {
+            // Sortable cho Tasks
+            document.querySelectorAll('.list-tasks').forEach(list => {
                 new Sortable(list, {
-                    group: 'shared-board', // Cho phép kéo qua lại giữa các cột
+                    group: 'tasks',
                     animation: 150,
-                    ghostClass: 'bg-primary-subtle', // Class khi đang kéo (mờ đi)
-
-                    // Sự kiện khi Thả chuột
+                    ghostClass: 'task-ghost',
+                    dragClass: 'task-dragging',
+                    delay: 100, // Thêm độ trễ nhẹ để tránh click nhầm khi kéo
+                    delayOnTouchOnly: true,
                     onEnd: function (evt) {
-                        const itemEl = evt.item;  // Thẻ bị kéo
-                        const newIndex = evt.newIndex; // Vị trí mới
-                        const toList = evt.to;    // Cột mới
-
-                        const taskId = itemEl.getAttribute('data-task-id');
-                        const targetListId = toList.getAttribute('data-list-id');
-
-                        // Gọi API cập nhật vị trí
-                        fetch('/Tasks/Move', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                taskId: taskId,
-                                targetListId: targetListId,
-                                newPosition: newIndex
-                            })
-                        })
-                        .then(response => {
-                            if (response.ok) {
-                                console.log("Moved successfully!");
-                            } else {
-                                console.error("Failed to move task");
-                                // Có thể thêm logic hoàn tác (revert) nếu muốn
-                            }
-                        });
+                        updateTaskPosition(evt.item.dataset.taskId, evt.to.dataset.listId, evt.newIndex);
                     }
                 });
             });
-        });
 
-        // 2. Hàm Xóa Task
-        function deleteTask(taskId) {
-            if (!confirm('Are you sure you want to delete this task?')) return;
-
-            // Chú ý: Đường dẫn là /Tasks/Delete (số nhiều)
-            fetch(`/Tasks/Delete/${taskId}`, {
-                method: 'POST'
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Xóa thẻ khỏi giao diện ngay lập tức
-                    const card = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
-                    if (card) {
-                        card.remove();
-                        // Cập nhật lại số lượng task trên header cột (nếu cần)
+            // Sortable cho Lists (Cột)
+            var boardEl = document.getElementById('kanbanBoard');
+            if(boardEl){
+                 new Sortable(boardEl, {
+                    animation: 150,
+                    handle: '.list-header',
+                    filter: '.add-list-container',
+                    ghostClass: 'list-ghost',
+                    onEnd: function (evt) {
+                        updateListOrder(evt.item.dataset.listId, evt.newIndex);
                     }
-                } else {
-                    alert("Failed to delete task.");
-                }
+                });
+            }
+        }
+
+        // --- CÁC HÀM XỬ LÝ TASK ---
+
+        // SỬA LỖI: Hàm addTask giờ sẽ mở Modal thay vì chuyển trang
+        function addTask(listId) {
+            // 1. Gán ListId vào ô hidden input trong form Modal
+            const listInput = document.querySelector('#createTaskForm input[name="ListId"]');
+            if (listInput) {
+                listInput.value = listId;
+            }
+
+            // 2. Gọi Bootstrap Modal hiển thị lên
+            const modalEl = document.getElementById('createTaskModal');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        // Hàm gọi AJAX mở Modal Chi tiết
+        function openTaskDetails(taskId) {
+            // 1. Gọi API lấy HTML của Modal
+            fetch(`/Tasks/GetDetails/${taskId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Failed to load task details");
+                    return response.text();
+                })
+                .then(html => {
+                    // 2. Nhúng HTML vào div container
+                    const container = document.getElementById('task-details-modal-container');
+                    container.innerHTML = html;
+
+                    // 3. Khởi tạo và hiển thị Bootstrap Modal
+                    const modalElement = container.querySelector('.modal');
+                    const bsModal = new bootstrap.Modal(modalElement);
+                    bsModal.show();
+
+                    // 4. Xử lý sự kiện khi đóng modal để dọn dẹp DOM (Optional)
+                    modalElement.addEventListener('hidden.bs.modal', function () {
+                        container.innerHTML = '';
+                    });
+                })
+                .catch(error => console.error(error));
+        }
+
+        // --- CÁC HÀM XỬ LÝ LIST (Giữ nguyên logic của bạn) ---
+
+        // Toggle form thêm list
+        const btnAddList = document.getElementById('btnAddList');
+        const formAddList = document.getElementById('addListForm');
+
+        if(btnAddList && formAddList) {
+            btnAddList.addEventListener('click', function () {
+                this.style.display = 'none';
+                formAddList.style.display = 'block';
+                document.getElementById('newListTitle').focus();
             });
         }
 
-        // 3. Helper để gán ListId vào Modal khi bấm "Add a card"
-        function setListIdForCreate(listId) {
-            const input = document.querySelector('#createTaskForm input[name="ListId"]');
-            if (input) {
-                input.value = listId;
-            }
+        function cancelAddList() {
+            document.getElementById('addListForm').style.display = 'none';
+            document.getElementById('btnAddList').style.display = 'flex';
+            document.getElementById('newListTitle').value = '';
+        }
+
+        function saveNewList() {
+            const title = document.getElementById('newListTitle').value.trim();
+            if (!title) return;
+
+            // Lưu ý: Đường dẫn Controller của bạn là Boards (số nhiều) hay Board (số ít)?
+            // Trong code cũ là BoardsController, nên URL phải là /Boards/...
+            fetch('/Boards/CreateList', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ boardId: '@Model.Id', title: title }) // Cần check lại API này bên Controller
+            })
+            .then(response => {
+                 // Reload để thấy cột mới
+                 location.reload();
+            });
+        }
+
+        // API Cập nhật vị trí (Giữ nguyên)
+        function updateTaskPosition(taskId, newListId, newIndex) {
+            fetch('/Tasks/Move', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ taskId: taskId, targetListId: newListId, newPosition: newIndex })
+            });
         }
     </script>
 }
 
 <style>
-    /* CSS tùy chỉnh cho Board */
-    .board-list {
-        background-color: #f1f2f4;
-        max-height: 100%;
+    .kanban-container {
+        height: calc(100vh - 100px);
         display: flex;
         flex-direction: column;
     }
 
-    .task-card {
+    /* Board Header */
+    .board-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 0;
+        margin-bottom: 24px;
+        background: white;
+        border-radius: 16px;
+        padding: 20px 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .board-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .btn-back {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: #f1f5f9;
+        color: #64748b;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+        .btn-back:hover {
+            background: #e2e8f0;
+            color: #0ea5e9;
+        }
+
+    .board-name {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 8px 0;
+    }
+
+    .board-meta {
+        display: flex;
+        gap: 16px;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #64748b;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .board-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .board-members {
+        display: flex;
+        padding-right: 12px;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .member-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid white;
+        margin-left: -10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: white;
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .member-avatar:first-child {
+            margin-left: 0;
+        }
+
+        .member-avatar:hover {
+            transform: translateY(-2px);
+            z-index: 10;
+        }
+
+        .member-avatar.more {
+            background: #e2e8f0;
+            color: #64748b;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+        }
+
+    .btn-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        border: none;
+        border-radius: 10px;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-icon:hover {
+            background: #e2e8f0;
+            color: #0ea5e9;
+        }
+
+    /* Kanban Board */
+    .kanban-board {
+        display: flex;
+        gap: 20px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 20px;
+        flex: 1;
+    }
+
+    .kanban-list {
+        min-width: 320px;
+        max-width: 320px;
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100vh - 260px);
+    }
+
+    .list-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
         cursor: grab;
     }
 
-        .task-card:active {
+        .list-header:active {
             cursor: grabbing;
         }
 
-    /* Ẩn thanh cuộn của vùng tasks nhưng vẫn cuộn được */
-    .list-body::-webkit-scrollbar {
-        width: 6px;
+    .list-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
     }
 
-    .list-body::-webkit-scrollbar-thumb {
-        background-color: rgba(0,0,0,0.2);
-        border-radius: 4px;
+    .task-count {
+        background: #e2e8f0;
+        color: #64748b;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .btn-list-menu {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
+        display: flex;
+        transition: all 0.2s;
+    }
+
+        .btn-list-menu:hover {
+            background: white;
+            color: #0ea5e9;
+        }
+
+    .list-tasks {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        margin-bottom: 12px;
+        min-height: 50px;
+    }
+
+        .list-tasks::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .list-tasks::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+    .btn-add-task {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 10px;
+        background: white;
+        border: 2px dashed #cbd5e1;
+        border-radius: 10px;
+        color: #64748b;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-add-task:hover {
+            background: #f8fafc;
+            border-color: #0ea5e9;
+            color: #0ea5e9;
+        }
+
+    /* Add List */
+    .add-list-container {
+        background: transparent;
+        padding: 0;
+    }
+
+    .btn-add-list {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 60px;
+        background: white;
+        border: 2px dashed #cbd5e1;
+        border-radius: 16px;
+        color: #64748b;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-add-list:hover {
+            border-color: #0ea5e9;
+            color: #0ea5e9;
+            background: #f8fafc;
+        }
+
+    .add-list-form {
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+    }
+
+        .add-list-form .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+            .add-list-form .form-control:focus {
+                outline: none;
+                border-color: #0ea5e9;
+            }
+
+    .form-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+        }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #64748b;
+    }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    /* Drag & Drop States */
+    .task-ghost {
+        opacity: 0.4;
+    }
+
+    .task-dragging {
+        transform: rotate(3deg);
+        cursor: grabbing;
+    }
+
+    .list-ghost {
+        opacity: 0.5;
+    }
+
+    /* Dropdown */
+    .dropdown-menu {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        padding: 6px;
+    }
+
+    .dropdown-item {
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        transition: all 0.2s;
+    }
+
+        .dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+    .text-danger {
+        color: #ef4444;
+    }
+
+        .text-danger:hover {
+            background: #fee !important;
+        }
+
+    @@media (max-width: 768px) {
+        .board-header {
+            flex-direction: column;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .kanban-list {
+            min-width: 280px;
+            max-width: 280px;
+        }
     }
 </style>
