@@ -6,6 +6,7 @@
         public int TotalAssignedTasks { get; set; }
         public int PendingTasks { get; set; }
         public int CompletedTasks { get; set; }
+        public List<BoardSummaryViewModel> PersonalBoards { get; set; } = new List<BoardSummaryViewModel>();
 
         // Danh sách các nhóm của tôi
         public List<TeamSummaryViewModel> MyTeams { get; set; } = new List<TeamSummaryViewModel>();

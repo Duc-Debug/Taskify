@@ -28,7 +28,11 @@ namespace Taskify.Controllers
 
             return View(model);
         }
-
+        public IActionResult ComingSoon(string featureName)
+        {
+            ViewData["FeatureName"] = featureName;
+            return View("ComingSoon");
+        }
         public IActionResult Privacy()
         {
             return View();

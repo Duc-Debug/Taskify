@@ -16,14 +16,21 @@ namespace Taskify.Services
            var task = await _context.Tasks.FindAsync(taskId);
             if (task == null) return;
 
+            bool isListChanged=task.ListId != targetListId;
+            string oldListName = task.List?.Title;
+
             //Update ListId if change column
             task.ListId = targetListId;
-
             //Update Order, Comming Soon: Adjust orders of other tasks in the list accordingly
             task.Order =newPosition;
 
-            // Co the them thuoc tinh "Type" 
             _context.Tasks.Update(task);
+            //Ghi log
+            if (isListChanged)
+            {
+                var newList = await _context.TaskLists.FindAsync(targetListId);
+                await LogHistoryAsync(taskId, $"Moved from {oldListName} to {newList?.Title}");
+            }
             await _context.SaveChangesAsync();
         }
         public async Task<TaskItem> CreateTaskAsync(TaskCreateViewModel model, Guid userId)
@@ -36,11 +43,34 @@ namespace Taskify.Services
                 DueDate = model.DueDate,
                 Priority = model.Priority,
                 ListId = model.ListId,
-                Order = 999
+                Order = 999,
+                Assignments = new List<TaskAssignment>()
             };
             //Add User in Assignments
+            task.Assignments.Add(new TaskAssignment
+            {
+                Id = Guid.NewGuid(),
+                TaskId = task.Id,
+                UserId = userId
+
+            });
+
+            //2. Assign them cac thanh vien neu co chon tu form
+            if (model.SelectedAssigneeIds != null)
+            {
+                foreach(var assigneedId in model.SelectedAssigneeIds.Where(id => id != userId))
+                {
+                    task.Assignments.Add(new TaskAssignment
+                    {
+                        Id = Guid.NewGuid(),
+                        TaskId = task.Id,
+                        UserId = assigneedId
+                    });
+                } 
+            }
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
+            await LogHistoryAsync(task.Id, "Created task");
             return task;
         }
         public async Task DeleteTaskAsync(Guid taskId)
@@ -68,6 +98,12 @@ namespace Taskify.Services
 
             if (task == null) return null;
 
+            var histories = await _context.TaskHistories
+                .Where(h => h.TaskItemId == taskId)
+                .OrderByDescending(h => h.Timestamp)
+                .Take(10)
+                .ToListAsync();
+
             //Map tu entity sang VM
             return new TaskDetailsViewModel
             {
@@ -89,8 +125,13 @@ namespace Taskify.Services
                     Initials = a.User.FullName?.Substring(0, 1) ?? "U"
                 }).ToList(),
 
-                //Map Activities( Tam thoi trong)
-                Activities = new List<TaskHistoryViewModel>()
+
+                Activities = histories.Select(h => new TaskHistoryViewModel
+                {
+                    Action = h.Action,
+                    Timestamp = h.Timestamp,
+                    UserFullName = "Unkown"
+                }).ToList()
             };
         }
         public async Task<List<TaskDetailsViewModel>> GetTasksByUserIdAsync(Guid userId)
@@ -123,6 +164,19 @@ namespace Taskify.Services
                     Initials = !string.IsNullOrEmpty(a.User.FullName) ? a.User.FullName.Substring(0, 1) : "U"
                 }).ToList()
             }).ToList();
+        }
+        private async Task LogHistoryAsync(Guid taskId, string action)
+        {
+            var history = new TaskHistory
+            {
+                TaskItemId = taskId,
+                Action = action,
+                Timestamp = DateTime.Now
+            };
+            _context.TaskHistories.Add(history);
+            // SaveChangesAsync sẽ được gọi ở cuối các hàm Public, 
+            // nhưng gọi luôn ở đây để đảm bảo History được lưu ngay lập tức
+            await _context.SaveChangesAsync();
         }
     }
 }

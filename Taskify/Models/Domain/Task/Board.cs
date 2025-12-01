@@ -19,7 +19,7 @@ namespace Taskify.Models
         public Guid? TeamId { get; set; }
         [ForeignKey("TeamId")]
         public Team? Team { get; set; }
-
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public ICollection<TaskList> Lists { get; set; }
     }
 }

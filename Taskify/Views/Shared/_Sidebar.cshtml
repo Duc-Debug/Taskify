@@ -111,7 +111,11 @@
             <div class="upgrade-icon">✨</div>
             <h4>Upgrade to Pro</h4>
             <p>Get unlimited boards and advanced features</p>
-            <button class="btn-upgrade">Upgrade Now</button>
+            <a asp-controller="Home" asp-action="ComingSoon"
+                asp-route-featureName="Update Pro Plan"
+                class="btn-upgrade"
+               style="text-decoration: none; display: flex; justify-content: center; align-items: center;"> Update Now
+               </a>
         </div>
     </div>
 </aside>

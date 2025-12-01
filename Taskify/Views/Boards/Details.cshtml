@@ -2,297 +2,6 @@
 @{
     ViewData["Title"] = Model.Name;
 }
-
-<div class="kanban-container">
-    <!-- Board Header -->
-    <div class="board-header">
-        <div class="board-info">
-            <a asp-action="Index" class="btn-back">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
-            </a>
-            <div>
-                <h1 class="board-name">@Model.Name</h1>
-                <div class="board-meta">
-                    <span class="meta-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 11H3v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-6" />
-                            <polyline points="22 6 12 1 2 6" />
-                            <line x1="12" y1="1" x2="12" y2="11" />
-                        </svg>
-                        @Model.Lists.Count Lists
-                    </span>
-                    <span class="meta-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 11 12 14 22 4" />
-                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                        </svg>
-                        @Model.Lists.Sum(l => l.Tasks.Count) Tasks
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <div class="board-actions">
-            <!-- Board Members -->
-            @if (Model.TeamMembers != null && Model.TeamMembers.Any())
-            {
-                <div class="board-members">
-                    @foreach (var member in Model.TeamMembers.Take(5))
-                    {
-                        @if (!string.IsNullOrEmpty(member.AvatarUrl))
-                        {
-                            <img src="@member.AvatarUrl" alt="@member.FullName" class="member-avatar" title="@member.FullName" />
-                        }
-                        else
-                        {
-                            <div class="member-avatar" title="@member.FullName">@member.Initials</div>
-                        }
-                    }
-                    @if (Model.TeamMembers.Count > 5)
-                    {
-                        <button class="member-avatar more" data-bs-toggle="modal" data-bs-target="#membersModal">
-                            +@(Model.TeamMembers.Count - 5)
-                        </button>
-                    }
-                </div>
-            }
-
-            <!-- Action Buttons -->
-            <button class="btn btn-icon" title="Filter">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                </svg>
-            </button>
-
-            <button class="btn btn-icon" title="Board Settings">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3" />
-                    <path d="M12 1v6m0 6v6m8.66-13.66-4.24 4.24m-4.24 4.24-4.24 4.24m13.66-.24-4.24-4.24m-4.24-4.24L3.34 3.34" />
-                </svg>
-            </button>
-
-            <div class="dropdown">
-                <button class="btn btn-icon" data-bs-toggle="dropdown">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="1" />
-                        <circle cx="12" cy="5" r="1" />
-                        <circle cx="12" cy="19" r="1" />
-                    </svg>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#">Export Board</a></li>
-                    <li><a class="dropdown-item" href="#">Archive Board</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="#">Delete Board</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <!-- Kanban Board -->
-    <div class="kanban-board" id="kanbanBoard">
-        @foreach (var list in Model.Lists.OrderBy(l => l.Order))
-        {
-            <div class="kanban-list" data-list-id="@list.Id">
-                <!-- List Header -->
-                <div class="list-header">
-                    <h3 class="list-title">
-                        @list.Title
-                        <span class="task-count">@list.Tasks.Count</span>
-                    </h3>
-                    <div class="dropdown">
-                        <button class="btn-list-menu" data-bs-toggle="dropdown">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="1" />
-                                <circle cx="12" cy="5" r="1" />
-                                <circle cx="12" cy="19" r="1" />
-                            </svg>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" onclick="addTask('@list.Id')">Add Task</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="renameList('@list.Id')">Rename List</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteList('@list.Id')">Delete List</a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Task Cards -->
-                <div class="list-tasks" data-list-id="@list.Id">
-                    @foreach (var task in list.Tasks)
-                    {
-                        <partial name="_TaskCard" model="task" />
-                    }
-                </div>
-
-                <!-- Add Task Button -->
-                <button class="btn-add-task" onclick="addTask('@list.Id')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                    Add Task
-                </button>
-            </div>
-        }
-
-        <!-- Add New List -->
-        <div class="kanban-list add-list-container">
-            <button class="btn-add-list" id="btnAddList">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Add New List
-            </button>
-
-            <div class="add-list-form" id="addListForm" style="display: none;">
-                <input type="text" class="form-control" id="newListTitle" placeholder="Enter list title..." />
-                <div class="form-actions">
-                    <button class="btn btn-primary btn-sm" onclick="saveNewList()">Add List</button>
-                    <button class="btn btn-secondary btn-sm" onclick="cancelAddList()">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="task-details-modal-container"></div>
-
-<partial name="~/Views/Tasks/_CreateModal.cshtml"
-         model="new Taskify.Models.TaskCreateViewModel { BoardId = Model.Id }" />
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // 1. Khởi tạo Drag & Drop (Giữ nguyên logic của bạn)
-            initSortable();
-        });
-
-        function initSortable() {
-            // Sortable cho Tasks
-            document.querySelectorAll('.list-tasks').forEach(list => {
-                new Sortable(list, {
-                    group: 'tasks',
-                    animation: 150,
-                    ghostClass: 'task-ghost',
-                    dragClass: 'task-dragging',
-                    delay: 100, // Thêm độ trễ nhẹ để tránh click nhầm khi kéo
-                    delayOnTouchOnly: true,
-                    onEnd: function (evt) {
-                        updateTaskPosition(evt.item.dataset.taskId, evt.to.dataset.listId, evt.newIndex);
-                    }
-                });
-            });
-
-            // Sortable cho Lists (Cột)
-            var boardEl = document.getElementById('kanbanBoard');
-            if(boardEl){
-                 new Sortable(boardEl, {
-                    animation: 150,
-                    handle: '.list-header',
-                    filter: '.add-list-container',
-                    ghostClass: 'list-ghost',
-                    onEnd: function (evt) {
-                        updateListOrder(evt.item.dataset.listId, evt.newIndex);
-                    }
-                });
-            }
-        }
-
-        // --- CÁC HÀM XỬ LÝ TASK ---
-
-        // SỬA LỖI: Hàm addTask giờ sẽ mở Modal thay vì chuyển trang
-                function addTask(listId) {
-            console.log("Đang mở Modal cho ListId:", listId); // <--- Ktra xem ID có không
-
-            // 1. Tìm ô input ẩn
-            const listInput = document.querySelector('#createTaskForm input[name="ListId"]');
-
-            if (listInput) {
-                listInput.value = listId;
-                console.log("Đã gán ListId vào form:", listInput.value); // <--- Ktra xem gán được chưa
-            } else {
-                alert("LỖI: Không tìm thấy ô input ListId trong Modal! Hãy kiểm tra lại file _CreateModal.cshtml");
-                return;
-            }
-
-            // 2. Mở Modal
-            const modalEl = document.getElementById('createTaskModal');
-            if(modalEl){
-                const modal = new bootstrap.Modal(modalEl);
-                modal.show();
-            } else {
-                alert("LỖI: Không tìm thấy Modal trong HTML.");
-            }
-        }
-
-        // Hàm mở Modal Chi Tiết Task (AJAX)
-        function openTaskDetails(taskId) {
-            fetch(`/Tasks/GetDetails/${taskId}`)
-                .then(res => {
-                    if(!res.ok) throw new Error('Err');
-                    return res.text();
-                })
-                .then(html => {
-                    const container = document.getElementById('task-details-modal-container');
-                    container.innerHTML = html;
-                    const modal = new bootstrap.Modal(container.querySelector('.modal'));
-                    modal.show();
-                })
-                .catch(e => console.error(e));
-        }
-
-        // --- CÁC HÀM XỬ LÝ LIST (Giữ nguyên logic của bạn) ---
-
-        // Toggle form thêm list
-        const btnAddList = document.getElementById('btnAddList');
-        const formAddList = document.getElementById('addListForm');
-
-        if(btnAddList && formAddList) {
-            btnAddList.addEventListener('click', function () {
-                this.style.display = 'none';
-                formAddList.style.display = 'block';
-                document.getElementById('newListTitle').focus();
-            });
-        }
-
-        function cancelAddList() {
-            document.getElementById('addListForm').style.display = 'none';
-            document.getElementById('btnAddList').style.display = 'flex';
-            document.getElementById('newListTitle').value = '';
-        }
-
-        function saveNewList() {
-            const title = document.getElementById('newListTitle').value.trim();
-            if (!title) return;
-
-            // Lưu ý: Đường dẫn Controller của bạn là Boards (số nhiều) hay Board (số ít)?
-            // Trong code cũ là BoardsController, nên URL phải là /Boards/...
-            fetch('/Boards/CreateList', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ boardId: '@Model.Id', title: title }) // Cần check lại API này bên Controller
-            })
-            .then(response => {
-                 // Reload để thấy cột mới
-                 location.reload();
-            });
-        }
-
-        // API Cập nhật vị trí (Giữ nguyên)
-        function updateTaskPosition(taskId, newListId, newIndex) {
-            fetch('/Tasks/Move', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ taskId: taskId, targetListId: newListId, newPosition: newIndex })
-            });
-        }
-    </script>
-}
-
 <style>
     .kanban-container {
         height: calc(100vh - 100px);
@@ -673,3 +382,293 @@
         }
     }
 </style>
+<div class="kanban-container">
+    <!-- Board Header -->
+    <div class="board-header">
+        <div class="board-info">
+            <a asp-action="Index" class="btn-back">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="board-name">@Model.Name</h1>
+                <div class="board-meta">
+                    <span class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11H3v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-6" />
+                            <polyline points="22 6 12 1 2 6" />
+                            <line x1="12" y1="1" x2="12" y2="11" />
+                        </svg>
+                        @Model.Lists.Count Lists
+                    </span>
+                    <span class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 11 12 14 22 4" />
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                        </svg>
+                        @Model.Lists.Sum(l => l.Tasks.Count) Tasks
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="board-actions">
+            <!-- Board Members -->
+            @if (Model.TeamMembers != null && Model.TeamMembers.Any())
+            {
+                <div class="board-members">
+                    @foreach (var member in Model.TeamMembers.Take(5))
+                    {
+                        @if (!string.IsNullOrEmpty(member.AvatarUrl))
+                        {
+                            <img src="@member.AvatarUrl" alt="@member.FullName" class="member-avatar" title="@member.FullName" />
+                        }
+                        else
+                        {
+                            <div class="member-avatar" title="@member.FullName">@member.Initials</div>
+                        }
+                    }
+                    @if (Model.TeamMembers.Count > 5)
+                    {
+                        <button class="member-avatar more" data-bs-toggle="modal" data-bs-target="#membersModal">
+                            +@(Model.TeamMembers.Count - 5)
+                        </button>
+                    }
+                </div>
+            }
+
+            <!-- Action Buttons -->
+            <button class="btn btn-icon" title="Filter">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                </svg>
+            </button>
+
+            <button class="btn btn-icon" title="Board Settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M12 1v6m0 6v6m8.66-13.66-4.24 4.24m-4.24 4.24-4.24 4.24m13.66-.24-4.24-4.24m-4.24-4.24L3.34 3.34" />
+                </svg>
+            </button>
+
+            <div class="dropdown">
+                <button class="btn btn-icon" data-bs-toggle="dropdown">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="1" />
+                        <circle cx="12" cy="5" r="1" />
+                        <circle cx="12" cy="19" r="1" />
+                    </svg>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#">Export Board</a></li>
+                    <li><a class="dropdown-item" href="#">Archive Board</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#">Delete Board</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kanban Board -->
+    <div class="kanban-board" id="kanbanBoard">
+        @foreach (var list in Model.Lists.OrderBy(l => l.Order))
+        {
+            <div class="kanban-list" data-list-id="@list.Id">
+                <!-- List Header -->
+                <div class="list-header">
+                    <h3 class="list-title">
+                        @list.Title
+                        <span class="task-count">@list.Tasks.Count</span>
+                    </h3>
+                    <div class="dropdown">
+                        <button class="btn-list-menu" data-bs-toggle="dropdown">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="1" />
+                                <circle cx="12" cy="5" r="1" />
+                                <circle cx="12" cy="19" r="1" />
+                            </svg>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="addTask('@list.Id')">Add Task</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="renameList('@list.Id')">Rename List</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteList('@list.Id')">Delete List</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Task Cards -->
+                <div class="list-tasks" data-list-id="@list.Id">
+                    @foreach (var task in list.Tasks)
+                    {
+                        <partial name="_TaskCard" model="task" />
+                    }
+                </div>
+
+                <!-- Add Task Button -->
+                <button class="btn-add-task" onclick="addTask('@list.Id')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Add Task
+                </button>
+            </div>
+        }
+
+        <!-- Add New List -->
+        <div class="kanban-list add-list-container">
+            <button class="btn-add-list" id="btnAddList">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Add New List
+            </button>
+
+            <div class="add-list-form" id="addListForm" style="display: none;">
+                <input type="text" class="form-control" id="newListTitle" placeholder="Enter list title..." />
+                <div class="form-actions">
+                    <button class="btn btn-primary btn-sm" onclick="saveNewList()">Add List</button>
+                    <button class="btn btn-secondary btn-sm" onclick="cancelAddList()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="task-details-modal-container"></div>
+
+<partial name="~/Views/Tasks/_CreateModal.cshtml"
+         model="new Taskify.Models.TaskCreateViewModel { BoardId = Model.Id }" />
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Khởi tạo Drag & Drop (Giữ nguyên logic của bạn)
+            initSortable();
+        });
+
+        function initSortable() {
+            // Sortable cho Tasks
+            document.querySelectorAll('.list-tasks').forEach(list => {
+                new Sortable(list, {
+                    group: 'tasks',
+                    animation: 150,
+                    ghostClass: 'task-ghost',
+                    dragClass: 'task-dragging',
+                    delay: 100, // Thêm độ trễ nhẹ để tránh click nhầm khi kéo
+                    delayOnTouchOnly: true,
+                    onEnd: function (evt) {
+                        updateTaskPosition(evt.item.dataset.taskId, evt.to.dataset.listId, evt.newIndex);
+                    }
+                });
+            });
+
+            // Sortable cho Lists (Cột)
+            var boardEl = document.getElementById('kanbanBoard');
+            if(boardEl){
+                 new Sortable(boardEl, {
+                    animation: 150,
+                    handle: '.list-header',
+                    filter: '.add-list-container',
+                    ghostClass: 'list-ghost',
+                    onEnd: function (evt) {
+                        updateListOrder(evt.item.dataset.listId, evt.newIndex);
+                    }
+                });
+            }
+        }
+
+        // --- CÁC HÀM XỬ LÝ TASK ---
+
+        // SỬA LỖI: Hàm addTask giờ sẽ mở Modal thay vì chuyển trang
+                function addTask(listId) {
+            console.log("Đang mở Modal cho ListId:", listId); // <--- Ktra xem ID có không
+
+            // 1. Tìm ô input ẩn
+            const listInput = document.querySelector('#createTaskForm input[name="ListId"]');
+
+            if (listInput) {
+                listInput.value = listId;
+                console.log("Đã gán ListId vào form:", listInput.value); // <--- Ktra xem gán được chưa
+            } else {
+                alert("LỖI: Không tìm thấy ô input ListId trong Modal! Hãy kiểm tra lại file _CreateModal.cshtml");
+                return;
+            }
+
+            // 2. Mở Modal
+            const modalEl = document.getElementById('createTaskModal');
+            if(modalEl){
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            } else {
+                alert("LỖI: Không tìm thấy Modal trong HTML.");
+            }
+        }
+
+        // Hàm mở Modal Chi Tiết Task (AJAX)
+        function openTaskDetails(taskId) {
+            fetch(`/Tasks/GetDetails/${taskId}`)
+                .then(res => {
+                    if(!res.ok) throw new Error('Err');
+                    return res.text();
+                })
+                .then(html => {
+                    const container = document.getElementById('task-details-modal-container');
+                    container.innerHTML = html;
+                    const modal = new bootstrap.Modal(container.querySelector('.modal'));
+                    modal.show();
+                })
+                .catch(e => console.error(e));
+        }
+
+        // --- CÁC HÀM XỬ LÝ LIST (Giữ nguyên logic của bạn) ---
+
+        // Toggle form thêm list
+        const btnAddList = document.getElementById('btnAddList');
+        const formAddList = document.getElementById('addListForm');
+
+        if(btnAddList && formAddList) {
+            btnAddList.addEventListener('click', function () {
+                this.style.display = 'none';
+                formAddList.style.display = 'block';
+                document.getElementById('newListTitle').focus();
+            });
+        }
+
+        function cancelAddList() {
+            document.getElementById('addListForm').style.display = 'none';
+            document.getElementById('btnAddList').style.display = 'flex';
+            document.getElementById('newListTitle').value = '';
+        }
+
+        function saveNewList() {
+            const title = document.getElementById('newListTitle').value.trim();
+            if (!title) return;
+
+            // Lưu ý: Đường dẫn Controller của bạn là Boards (số nhiều) hay Board (số ít)?
+            // Trong code cũ là BoardsController, nên URL phải là /Boards/...
+            fetch('/Boards/CreateList', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ boardId: '@Model.Id', title: title }) // Cần check lại API này bên Controller
+            })
+            .then(response => {
+                 // Reload để thấy cột mới
+                 location.reload();
+            });
+        }
+
+        // API Cập nhật vị trí (Giữ nguyên)
+        function updateTaskPosition(taskId, newListId, newIndex) {
+            fetch('/Tasks/Move', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ taskId: taskId, targetListId: newListId, newPosition: newIndex })
+            });
+        }
+    </script>
+}
+
