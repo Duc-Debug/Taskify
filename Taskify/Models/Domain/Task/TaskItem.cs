@@ -8,7 +8,7 @@ namespace Taskify.Models
         public Guid Id { get; set; } // Đang là Guid
         [Required, MaxLength(200)]
         public string Title { get; set; }
-        public string Description { get; set; }
+        public string? Description { get; set; }
         public DateTime? DueDate { get; set; }
         public int Order { get; set; } // Để sắp xếp thứ tự trên Board
         public TaskPriority Priority { get; set; } = TaskPriority.Medium;

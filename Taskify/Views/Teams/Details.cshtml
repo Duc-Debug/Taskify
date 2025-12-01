@@ -1,0 +1,818 @@
+﻿@model Taskify.Models.TeamDetailsViewModel
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="team-details-container">
+    <!-- Team Header -->
+    <div class="team-header">
+        <a asp-action="Index" class="btn-back">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+        </a>
+
+        <div class="team-header-content">
+            <div class="team-info">
+                <div class="team-avatar-large">
+                    <span>@Model.Name.Substring(0, Math.Min(2, Model.Name.Length)).ToUpper()</span>
+                </div>
+                <div>
+                    <h1 class="team-name">@Model.Name</h1>
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <p class="team-description">@Model.Description</p>
+                    }
+                    <div class="team-meta">
+                        <span class="meta-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                            @Model.Members.Count members
+                        </span>
+                        <span class="meta-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                <line x1="9" y1="3" x2="9" y2="21" />
+                            </svg>
+                            @Model.Boards.Count boards
+                        </span>
+                        <span class="meta-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                            Created @Model.CreatedAt.ToString("MMM dd, yyyy")
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.IsOwner)
+            {
+                <div class="team-actions">
+                    <button class="btn btn-secondary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                        Edit Team
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn-icon" data-bs-toggle="dropdown">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="1" />
+                                <circle cx="12" cy="5" r="1" />
+                                <circle cx="12" cy="19" r="1" />
+                            </svg>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">Team Settings</a></li>
+                            <li><a class="dropdown-item" href="#">Export Data</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#">Delete Team</a></li>
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-navigation">
+        <button class="tab-btn active" data-tab="members">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            Members
+            <span class="tab-count">@Model.Members.Count</span>
+        </button>
+        <button class="tab-btn" data-tab="boards">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+            </svg>
+            Boards
+            <span class="tab-count">@Model.Boards.Count</span>
+        </button>
+        <button class="tab-btn" data-tab="activity">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+            Activity
+        </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tabs-content">
+        <!-- Members Tab -->
+        <div class="tab-panel active" id="members-panel">
+            <div class="panel-header">
+                <h2>Team Members</h2>
+                @if (Model.IsOwner)
+                {
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="8.5" cy="7" r="4" />
+                            <line x1="20" y1="8" x2="20" y2="14" />
+                            <line x1="23" y1="11" x2="17" y2="11" />
+                        </svg>
+                        Add Member
+                    </button>
+                }
+            </div>
+
+            <div class="members-list">
+                @foreach (var member in Model.Members)
+                {
+                    <div class="member-card">
+                        <div class="member-avatar-wrapper">
+                            @if (!string.IsNullOrEmpty(member.AvatarUrl))
+                            {
+                                <img src="@member.AvatarUrl" alt="@member.FullName" class="member-avatar-lg" />
+                            }
+                            else
+                            {
+                                <div class="member-avatar-lg">@member.Initials</div>
+                            }
+                            @if (member.IsOnline)
+                            {
+                                <span class="online-indicator"></span>
+                            }
+                        </div>
+                        <div class="member-info">
+                            <h4>@member.FullName</h4>
+                            <p>@member.Email</p>
+                        </div>
+                        <div class="member-role">
+                            @if (member.IsOwner)
+                            {
+                                <span class="role-badge owner">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    </svg>
+                                    Owner
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="role-badge member">Member</span>
+                            }
+                        </div>
+                        @if (Model.IsOwner && !member.IsOwner)
+                        {
+                            <div class="member-actions">
+                                <button class="btn-icon-sm" title="Change Role">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="3" />
+                                        <path d="M12 1v6m0 6v6m8.66-13.66-4.24 4.24m-4.24 4.24-4.24 4.24m13.66-.24-4.24-4.24m-4.24-4.24L3.34 3.34" />
+                                    </svg>
+                                </button>
+                                <button class="btn-icon-sm danger" title="Remove Member" onclick="removeMember('@member.Id')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Boards Tab -->
+        <div class="tab-panel" id="boards-panel">
+            <div class="panel-header">
+                <h2>Team Boards</h2>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createBoardModal">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Create Board
+                </button>
+            </div>
+
+            @if (Model.Boards != null && Model.Boards.Any())
+            {
+                <div class="boards-grid">
+                    @foreach (var board in Model.Boards)
+                    {
+                        <a asp-controller="Boards" asp-action="Details" asp-route-id="@board.Id" class="board-card">
+                            <div class="board-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                    <line x1="9" y1="3" x2="9" y2="21" />
+                                </svg>
+                            </div>
+                            <h3>@board.Name</h3>
+                            <div class="board-stats">
+                                <span>@board.Lists.Count lists</span>
+                                <span>•</span>
+                                <span>@board.Lists.Sum(l => l.Tasks.Count) tasks</span>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-panel">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <line x1="9" y1="3" x2="9" y2="21" />
+                    </svg>
+                    <h3>No boards yet</h3>
+                    <p>Create your first board to get started</p>
+                </div>
+            }
+        </div>
+
+        <!-- Activity Tab -->
+        <div class="tab-panel" id="activity-panel">
+            <div class="panel-header">
+                <h2>Recent Activity</h2>
+            </div>
+            <div class="activity-timeline">
+                <div class="activity-item">
+                    <div class="activity-avatar">JD</div>
+                    <div class="activity-content">
+                        <p><strong>John Doe</strong> created a new board <strong>"Project Alpha"</strong></p>
+                        <span class="activity-time">2 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-avatar">SM</div>
+                    <div class="activity-content">
+                        <p><strong>Sarah Miller</strong> joined the team</p>
+                        <span class="activity-time">5 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-avatar">MC</div>
+                    <div class="activity-content">
+                        <p><strong>Mike Chen</strong> completed 5 tasks in <strong>"Marketing Board"</strong></p>
+                        <span class="activity-time">1 day ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Member Modal -->
+<partial name="_AddMemberModal" model="Model" />
+
+@section Scripts {
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabName = this.dataset.tab;
+
+                // Update active tab button
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                // Update active panel
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(tabName + '-panel').classList.add('active');
+            });
+        });
+
+        function removeMember(memberId) {
+            if (confirm('Are you sure you want to remove this member?')) {
+                fetch(`/Teams/RemoveMember`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teamId: '@Model.Id', memberId: memberId })
+                })
+                .then(response => {
+                    if (response.ok) location.reload();
+                });
+            }
+        }
+    </script>
+}
+
+<style>
+    .team-details-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Team Header */
+    .team-header {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: #f1f5f9;
+        color: #64748b;
+        text-decoration: none;
+        transition: all 0.2s;
+        margin-bottom: 20px;
+    }
+
+        .btn-back:hover {
+            background: #e2e8f0;
+            color: #0ea5e9;
+        }
+
+    .team-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 24px;
+    }
+
+    .team-info {
+        display: flex;
+        gap: 20px;
+        flex: 1;
+    }
+
+    .team-avatar-large {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 32px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .team-name {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 8px 0;
+    }
+
+    .team-description {
+        font-size: 15px;
+        color: #64748b;
+        line-height: 1.6;
+        margin: 0 0 12px 0;
+    }
+
+    .team-meta {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #64748b;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .team-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    /* Tabs */
+    .tabs-navigation {
+        display: flex;
+        gap: 8px;
+        background: white;
+        padding: 8px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .tab-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        background: none;
+        border: none;
+        border-radius: 8px;
+        color: #64748b;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .tab-btn:hover {
+            background: #f8fafc;
+            color: #0ea5e9;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            color: #0ea5e9;
+        }
+
+    .tab-count {
+        background: #e2e8f0;
+        color: #64748b;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 12px;
+    }
+
+    .tab-btn.active .tab-count {
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        color: white;
+    }
+
+    /* Tab Panels */
+    .tabs-content {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .tab-panel {
+        display: none;
+    }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+        .panel-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+
+    /* Members List */
+    .members-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .member-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: #f8fafc;
+        border-radius: 12px;
+        transition: all 0.2s;
+    }
+
+        .member-card:hover {
+            background: #f1f5f9;
+        }
+
+    .member-avatar-wrapper {
+        position: relative;
+    }
+
+    .member-avatar-lg {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 18px;
+    }
+
+    .online-indicator {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 14px;
+        height: 14px;
+        background: #10b981;
+        border: 3px solid #f8fafc;
+        border-radius: 50%;
+    }
+
+    .member-info {
+        flex: 1;
+    }
+
+        .member-info h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0 0 4px 0;
+        }
+
+        .member-info p {
+            font-size: 13px;
+            color: #64748b;
+            margin: 0 0 4px 0;
+        }
+
+    .member-job-title {
+        font-size: 12px;
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    .member-role {
+        margin-right: 12px;
+    }
+
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+        .role-badge.owner {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .role-badge.member {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+    .member-actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    /* Boards Grid */
+    .boards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .board-card {
+        padding: 24px;
+        background: #f8fafc;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+        .board-card:hover {
+            background: white;
+            border-color: #0ea5e9;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+    .board-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-bottom: 16px;
+    }
+
+    .board-card h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0 0 8px 0;
+    }
+
+    .board-stats {
+        display: flex;
+        gap: 8px;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    /* Activity Timeline */
+    .activity-timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .activity-item {
+        display: flex;
+        gap: 16px;
+    }
+
+    .activity-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+        .activity-content p {
+            font-size: 14px;
+            color: #475569;
+            margin: 0 0 4px 0;
+        }
+
+    .activity-time {
+        font-size: 12px;
+        color: #94a3b8;
+    }
+
+    /* Empty Panel */
+    .empty-panel {
+        text-align: center;
+        padding: 60px 20px;
+        color: #cbd5e1;
+    }
+
+        .empty-panel h3 {
+            color: #64748b;
+            margin: 16px 0 8px;
+        }
+
+        .empty-panel p {
+            color: #94a3b8;
+        }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
+        }
+
+    .btn-secondary {
+        background: #f8fafc;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+    }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+            border-color: #0ea5e9;
+            color: #0ea5e9;
+        }
+
+    .btn-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        border: none;
+        border-radius: 10px;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-icon:hover {
+            background: #f1f5f9;
+            color: #0ea5e9;
+        }
+
+    .btn-icon-sm {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .btn-icon-sm:hover {
+            border-color: #0ea5e9;
+            color: #0ea5e9;
+        }
+
+        .btn-icon-sm.danger:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: #fee;
+        }
+
+    .dropdown-menu {
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        padding: 6px;
+    }
+
+    .dropdown-item {
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        transition: all 0.2s;
+    }
+
+        .dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+    .text-danger {
+        color: #ef4444;
+    }
+
+        .text-danger:hover {
+            background: #fee !important;
+        }
+
+    @@media (max-width: 1024px) {
+        .team-header-content {
+            flex-direction: column;
+        }
+
+        .tabs-navigation {
+            overflow-x: auto;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .team-info {
+            flex-direction: column;
+        }
+
+        .boards-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .member-card {
+            flex-wrap: wrap;
+        }
+    }
+</style>

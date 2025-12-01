@@ -93,5 +93,36 @@ namespace Taskify.Services
                 Activities = new List<TaskHistoryViewModel>()
             };
         }
+        public async Task<List<TaskDetailsViewModel>> GetTasksByUserIdAsync(Guid userId)
+        {
+            var tasks = await _context.Tasks
+                .Include(t=>t.List)
+                .Include(t=>t.Assignments).ThenInclude(a=>a.User)
+                //Loc cac task ma user dc assign 
+                .Where(t=> t.Assignments.Any(a=>a.UserId==userId))
+                .OrderByDescending(t=>t.DueDate)
+                .ToListAsync();
+
+            //Map sang VM
+            return tasks.Select(task => new TaskDetailsViewModel
+            {
+                Id = task.Id,
+                Title = task.Title,
+                Description = task.Description,
+                Priority = task.Priority,
+                DueDate = task.DueDate,
+                ListId = task.ListId,
+                ListName = task.List?.Title,
+                //Chua co DB CreateAt nen lay DateTime Now
+                CreatedAt = DateTime.Now,
+                Assignees = task.Assignments.Select(a => new MemberViewModel
+                {
+                    Id = a.UserId,
+                    FullName = a.User.FullName,
+                    AvatarUrl = a.User.AvatarUrl,
+                    Initials = !string.IsNullOrEmpty(a.User.FullName) ? a.User.FullName.Substring(0, 1) : "U"
+                }).ToList()
+            }).ToList();
+        }
     }
 }

@@ -1,64 +1,244 @@
-﻿@model Taskify.Models.BoardViewModel
+﻿@model Taskify.Models.TaskDetailsViewModel
 @{
-    ViewData["Title"] = Model.Name;
+    ViewData["Title"] = Model.Title;
 }
 
-<div class="kanban-container">
-    <div class="board-header">
-        <div class="board-info">
-            <a asp-action="Index" class="btn-back">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7" />
+<div class="task-details-page">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav">
+        <a asp-controller="Board" asp-action="Index" class="breadcrumb-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+            </svg>
+            Boards
+        </a>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6" />
+        </svg>
+        <a asp-controller="Board" asp-action="Details" asp-route-id="@Model.ListId" class="breadcrumb-link">
+            @Model.ListName
+        </a>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6" />
+        </svg>
+        <span class="breadcrumb-current">@Model.Title</span>
+    </nav>
+
+    <!-- Task Header -->
+    <div class="task-header-page">
+        <div class="header-left">
+            <div class="task-icon-large">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 11 12 14 22 4" />
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                 </svg>
-            </a>
+            </div>
             <div>
-                <h1 class="board-name">@Model.Name</h1>
-                <div class="board-meta">
-                    <span class="meta-item">@Model.Lists.Count Lists</span>
-                    <span class="meta-item">@Model.Lists.Sum(l => l.Tasks.Count) Tasks</span>
+                <h1 class="task-title-page">@Model.Title</h1>
+                <div class="task-meta-info">
+                    <span class="priority-badge priority-@Model.Priority.ToString().ToLower()">
+                        @Model.Priority Priority
+                    </span>
+                    @if (Model.DueDate.HasValue)
+                    {
+                        var daysUntilDue = (Model.DueDate.Value.Date - DateTime.Now.Date).Days;
+                        var dueDateClass = daysUntilDue < 0 ? "overdue" : daysUntilDue <= 2 ? "urgent" : "normal";
+
+                        <span class="due-date-badge @dueDateClass">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                            @if (daysUntilDue < 0)
+                            {
+                                <text>Overdue</text>
+                            }
+                            else if (daysUntilDue == 0)
+                            {
+                                <text>Due today</text>
+                            }
+                            else
+                            {
+                                @Model.DueDate.Value.ToString("MMM dd, yyyy")
+                            }
+                        </span>
+                    }
                 </div>
             </div>
         </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="openEditModal()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                Edit
+            </button>
+            <button class="btn btn-outline-danger" onclick="deleteTask()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                Delete
+            </button>
+        </div>
     </div>
 
-    <div class="kanban-board" id="kanbanBoard">
-        @foreach (var list in Model.Lists.OrderBy(l => l.Order))
-        {
-            <div class="kanban-list" data-list-id="@list.Id">
-                <div class="list-header">
-                    <h3 class="list-title">
-                        @list.Title
-                        <span class="task-count">@list.Tasks.Count</span>
-                    </h3>
-                    <div class="dropdown">
-                        <button class="btn-list-menu" data-bs-toggle="dropdown">•••</button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteList('@list.Id')">Delete List</a></li>
-                        </ul>
+    <!-- Main Content -->
+    <div class="task-content-layout">
+        <!-- Main Column -->
+        <div class="task-main-column">
+            <!-- Description Section -->
+            <div class="content-section">
+                <div class="section-header-page">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                    <h2>Description</h2>
+                </div>
+                <div class="description-content">
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <p>@Model.Description</p>
+                    }
+                    else
+                    {
+                        <p class="empty-description">No description added yet.</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Activity Section -->
+            <div class="content-section">
+                <div class="section-header-page">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                    </svg>
+                    <h2>Activity</h2>
+                </div>
+
+                <!-- Add Comment -->
+                <div class="add-comment-page">
+                    <div class="user-avatar-page">U</div>
+                    <div class="comment-form">
+                        <textarea class="comment-textarea" placeholder="Write a comment..." rows="3"></textarea>
+                        <button class="btn btn-primary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13" />
+                                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                            </svg>
+                            Comment
+                        </button>
                     </div>
                 </div>
 
-                <div class="list-tasks" data-list-id="@list.Id">
-                    @foreach (var task in list.Tasks)
+                <!-- Activity Timeline -->
+                <div class="activity-timeline-page">
+                    @if (Model.Activities != null && Model.Activities.Any())
                     {
-                        <partial name="~/Views/Shared/_TaskCard.cshtml" model="task" />
+                        @foreach (var activity in Model.Activities)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-avatar">
+                                    @activity.UserFullName.Substring(0, 1)
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="timeline-header">
+                                        <strong>@activity.UserFullName</strong>
+                                        <span class="timeline-time">@((DateTime.Now - activity.Timestamp).TotalHours < 24 ? (DateTime.Now - activity.Timestamp).Hours + "h ago" : activity.Timestamp.ToString("MMM dd, yyyy"))</span>
+                                    </div>
+                                    <p class="timeline-text">@activity.Action</p>
+                                </div>
+                            </div>
+                        }
                     }
                 </div>
+            </div>
+        </div>
 
-                <button class="btn-add-task" onclick="openCreateTaskModal('@list.Id')">
-                    + Add Task
+        <!-- Sidebar Column -->
+        <div class="task-sidebar-column">
+            <!-- Assignees Card -->
+            <div class="sidebar-card">
+                <h3>Members</h3>
+                <div class="assignees-grid">
+                    @if (Model.Assignees != null && Model.Assignees.Any())
+                    {
+                        @foreach (var assignee in Model.Assignees)
+                        {
+                            <div class="assignee-card">
+                                @if (!string.IsNullOrEmpty(assignee.AvatarUrl))
+                                {
+                                    <img src="@assignee.AvatarUrl" alt="@assignee.FullName" class="assignee-avatar-page" />
+                                }
+                                else
+                                {
+                                    <div class="assignee-avatar-page">@assignee.Initials</div>
+                                }
+                                <span>@assignee.FullName</span>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="empty-text">No members assigned</p>
+                    }
+                </div>
+                <button class="btn-sidebar-action">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Add Member
                 </button>
             </div>
-        }
 
-        <div class="kanban-list add-list-container">
-            <button class="btn-add-list" id="btnAddList">+ Add New List</button>
-            <div class="add-list-form" id="addListForm" style="display: none;">
-                <input type="text" class="form-control" id="newListTitle" placeholder="Enter list title..." />
-                <div class="form-actions mt-2">
-                    <button class="btn btn-primary btn-sm" onclick="saveNewList()">Add</button>
-                    <button class="btn btn-secondary btn-sm" onclick="cancelAddList()">Cancel</button>
+            <!-- Details Card -->
+            <div class="sidebar-card">
+                <h3>Details</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Created</span>
+                    <span class="detail-value">@Model.CreatedAt.ToString("MMM dd, yyyy")</span>
                 </div>
+                <div class="detail-row">
+                    <span class="detail-label">Creator</span>
+                    <span class="detail-value">@Model.CreatorName</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">List</span>
+                    <span class="detail-value">@Model.ListName</span>
+                </div>
+            </div>
+
+            <!-- Actions Card -->
+            <div class="sidebar-card">
+                <h3>Actions</h3>
+                <button class="btn-sidebar-action">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                    Move to List
+                </button>
+                <button class="btn-sidebar-action">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                    Copy Task
+                </button>
+                <button class="btn-sidebar-action">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="21 8 21 21 3 21 3 8" />
+                        <rect x="1" y="3" width="22" height="5" />
+                        <line x1="10" y1="12" x2="14" y2="12" />
+                    </svg>
+                    Archive
+                </button>
             </div>
         </div>
     </div>
@@ -66,142 +246,495 @@
 
 <div id="task-details-modal-container"></div>
 
-<partial name="~/Views/Tasks/_CreateModal.cshtml"
-         model="new Taskify.Models.TaskCreateViewModel { BoardId = Model.Id }" />
-
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Khởi tạo Kéo thả
-            document.querySelectorAll('.list-tasks').forEach(list => {
-                new Sortable(list, {
-                    group: 'tasks',
-                    animation: 150,
-                    ghostClass: 'task-ghost',
-                    onEnd: function(evt) {
-                        updateTaskPosition(evt.item.dataset.taskId, evt.to.dataset.listId, evt.newIndex);
-                    }
-                });
-            });
-        });
-
-        // --- 1. XỬ LÝ TẠO TASK MỚI ---
-        function openCreateTaskModal(listId) {
-            // Gán ListId vào form ẩn trong Modal
-            const listInput = document.querySelector('#createTaskForm input[name="ListId"]');
-            if (listInput) listInput.value = listId;
-
-            // Mở Modal bằng Bootstrap
-            const modalEl = document.getElementById('createTaskModal');
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
-        }
-
-        // --- 2. XỬ LÝ XEM CHI TIẾT TASK ---
-        // Hàm này được gọi khi click vào Card (trong file _TaskCard.cshtml)
+        // Hàm gọi AJAX mở Modal Chi tiết
         function openTaskDetails(taskId) {
+            // 1. Gọi API lấy HTML của Modal
             fetch(`/Tasks/GetDetails/${taskId}`)
-                .then(res => {
-                    if (!res.ok) throw new Error("Lỗi tải chi tiết task");
-                    return res.text();
+                .then(response => {
+                    if (!response.ok) throw new Error("Failed to load task details");
+                    return response.text();
                 })
                 .then(html => {
-                    // Nhúng HTML vào container và bật Modal
+                    // 2. Nhúng HTML vào div container
                     const container = document.getElementById('task-details-modal-container');
                     container.innerHTML = html;
-                    const modal = new bootstrap.Modal(container.querySelector('.modal'));
-                    modal.show();
+
+                    // 3. Khởi tạo và hiển thị Bootstrap Modal
+                    const modalElement = container.querySelector('.modal');
+                    const bsModal = new bootstrap.Modal(modalElement);
+                    bsModal.show();
+
+                    // 4. Xử lý sự kiện khi đóng modal để dọn dẹp DOM (Optional)
+                    modalElement.addEventListener('hidden.bs.modal', function () {
+                        container.innerHTML = '';
+                    });
                 })
-                .catch(err => console.error(err));
-        }
-
-        // --- 3. XỬ LÝ KÉO THẢ ---
-        function updateTaskPosition(taskId, newListId, newIndex) {
-            fetch('/Tasks/Move', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ taskId: taskId, targetListId: newListId, newPosition: newIndex })
-            });
-        }
-
-        // --- 4. XỬ LÝ LIST ---
-        document.getElementById('btnAddList').addEventListener('click', function() {
-            this.style.display = 'none';
-            document.getElementById('addListForm').style.display = 'block';
-            document.getElementById('newListTitle').focus();
-        });
-
-        function cancelAddList() {
-            document.getElementById('addListForm').style.display = 'none';
-            document.getElementById('btnAddList').style.display = 'flex';
-        }
-
-        function saveNewList() {
-            const title = document.getElementById('newListTitle').value;
-            if(!title) return;
-            // Gọi API tạo List (Cần đảm bảo bạn có API này trong BoardsController)
-            fetch('/Boards/CreateList', {
-                 method: 'POST',
-                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                 body: `boardId=@Model.Id&title=${encodeURIComponent(title)}`
-            }).then(() => location.reload());
+                .catch(error => console.error(error));
         }
     </script>
 }
-
 <style>
-    /* CSS Của bạn giữ nguyên hoặc thêm vào đây */
-    .kanban-container {
-        height: calc(100vh - 100px);
-        display: flex;
-        flex-direction: column;
+    .task-details-page {
+        max-width: 1200px;
+        margin: 0 auto;
     }
 
-    .kanban-board {
+    /* Breadcrumb */
+    .breadcrumb-nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+    }
+
+    .breadcrumb-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #64748b;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+        .breadcrumb-link:hover {
+            color: #0ea5e9;
+        }
+
+    .breadcrumb-current {
+        color: #1e293b;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    /* Task Header */
+    .task-header-page {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 32px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        margin-bottom: 24px;
+    }
+
+    .header-left {
         display: flex;
         gap: 20px;
-        overflow-x: auto;
-        padding-bottom: 20px;
         flex: 1;
     }
 
-    .kanban-list {
-        min-width: 300px;
-        max-width: 300px;
-        background: #f8fafc;
-        border-radius: 12px;
-        padding: 12px;
+    .task-icon-large {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .task-title-page {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 12px 0;
+        line-height: 1.3;
+    }
+
+    .task-meta-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    /* Content Layout */
+    .task-content-layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 24px;
+    }
+
+    /* Main Column */
+    .task-main-column {
         display: flex;
         flex-direction: column;
+        gap: 24px;
     }
 
-    .list-tasks {
-        flex: 1;
-        overflow-y: auto;
-        min-height: 50px;
+    .content-section {
+        background: white;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
-    .task-ghost {
-        opacity: 0.5;
-        background: #e2e8f0;
+    .section-header-page {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
     }
 
-    .btn-add-task {
-        margin-top: 8px;
-        width: 100%;
-        padding: 8px;
-        border: none;
-        background: transparent;
-        color: #64748b;
-        border-radius: 8px;
-        text-align: left;
-        font-weight: 500;
-        transition: 0.2s;
-    }
-
-        .btn-add-task:hover {
-            background: #e2e8f0;
-            color: #0f172a;
+        .section-header-page svg {
+            color: #0ea5e9;
         }
+
+        .section-header-page h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+
+    .description-content p {
+        color: #475569;
+        line-height: 1.7;
+        font-size: 15px;
+        margin: 0;
+    }
+
+    .empty-description {
+        color: #94a3b8;
+        font-style: italic;
+    }
+
+    /* Add Comment */
+    .add-comment-page {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .user-avatar-page {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .comment-form {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .comment-textarea {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 14px;
+        resize: vertical;
+        font-family: inherit;
+    }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+    /* Activity Timeline */
+    .activity-timeline-page {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 16px;
+    }
+
+    .timeline-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    .timeline-content {
+        flex: 1;
+    }
+
+    .timeline-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 6px;
+    }
+
+        .timeline-header strong {
+            color: #1e293b;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+    .timeline-time {
+        color: #94a3b8;
+        font-size: 13px;
+    }
+
+    .timeline-text {
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Sidebar */
+    .task-sidebar-column {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .sidebar-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+        .sidebar-card h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 16px 0;
+        }
+
+    .assignees-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .assignee-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        background: #f8fafc;
+        border-radius: 10px;
+    }
+
+    .assignee-avatar-page {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .assignee-card span {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1e293b;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+    .detail-label {
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .detail-value {
+        font-size: 13px;
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .btn-sidebar-action {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 10px 12px;
+        background: #f8fafc;
+        border: none;
+        border-radius: 8px;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: 6px;
+    }
+
+        .btn-sidebar-action:hover {
+            background: #f1f5f9;
+            color: #0ea5e9;
+        }
+
+    .empty-text {
+        color: #94a3b8;
+        font-size: 13px;
+        text-align: center;
+        padding: 16px 0;
+        margin: 0;
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
+        }
+
+    .btn-secondary {
+        background: #f8fafc;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+    }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+            border-color: #0ea5e9;
+            color: #0ea5e9;
+        }
+
+    .btn-outline-danger {
+        background: white;
+        color: #ef4444;
+        border: 2px solid #ef4444;
+    }
+
+        .btn-outline-danger:hover {
+            background: #fee;
+            border-color: #dc2626;
+            color: #dc2626;
+        }
+
+    /* Badges */
+    .priority-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+        .priority-badge.priority-high {
+            background: #fee;
+            color: #dc2626;
+        }
+
+        .priority-badge.priority-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-badge.priority-low {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+    .due-date-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+        .due-date-badge.normal {
+            background: #eff6ff;
+            color: #1e40af;
+        }
+
+        .due-date-badge.urgent {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .due-date-badge.overdue {
+            background: #fee;
+            color: #dc2626;
+        }
+
+    @@media (max-width: 1024px) {
+        .task-content-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .task-sidebar-column {
+            order: -1;
+        }
+
+        .task-header-page {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+    }
 </style>

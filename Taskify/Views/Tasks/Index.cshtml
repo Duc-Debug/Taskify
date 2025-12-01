@@ -4,8 +4,7 @@
     ViewData["Title"] = "My Tasks";
 }
 
-@* <div class="container-fluid">
-    <!-- Page Header -->
+<div class="container-fluid">
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
@@ -16,9 +15,10 @@
                     <p class="text-muted mb-0">Manage and track your tasks efficiently</p>
                 </div>
                 <div class="d-flex gap-2">
-                    <a asp-action="Create" class="btn btn-primary">
+                    <button class="btn btn-primary" onclick="openCreateTaskModal_Index()">
                         <i class="fas fa-plus me-2"></i>Add Task
-                    </a>
+                    </button>
+                    
                     <div class="dropdown">
                         <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                             <i class="fas fa-filter me-2"></i>Filter
@@ -35,7 +35,6 @@
         </div>
     </div>
 
-    <!-- Stats Cards -->
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
             <div class="stats-card bg-primary-subtle">
@@ -43,7 +42,7 @@
                     <i class="fas fa-tasks"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>@(ViewBag.TotalTasks ?? Model.Count())</h3>
+                    <h3>@ViewBag.TotalTasks</h3>
                     <p>Total Tasks</p>
                 </div>
             </div>
@@ -54,7 +53,7 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>@(ViewBag.CompletedTasks ?? Model.Count(t => t.Status == Taskify.Models.TaskStatus.Completed))</h3>
+                    <h3>@ViewBag.CompletedTasks</h3>
                     <p>Completed</p>
                 </div>
             </div>
@@ -65,7 +64,7 @@
                     <i class="fas fa-spinner"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>@(ViewBag.InProgressTasks ?? Model.Count(t => t.Status == Taskify.Models.TaskStatus.InProgress))</h3>
+                    <h3>@ViewBag.InProgressTasks</h3>
                     <p>In Progress</p>
                 </div>
             </div>
@@ -76,48 +75,26 @@
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div class="stats-info">
-                    <h3>@(ViewBag.OverdueTasks ?? Model.Count(t => t.DueDate.HasValue && t.DueDate.Value < DateTime.Now && t.Status != Taskify.Models.TaskStatus.Completed))</h3>
+                    <h3>@ViewBag.OverdueTasks</h3>
                     <p>Overdue</p>
                 </div> 
             </div>
         </div>
     </div>
 
-    <!-- Filter Tabs & Search -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                        <!-- Tabs -->
                         <ul class="nav nav-pills" id="taskTabs" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="all-tab" data-bs-toggle="pill"
-                                        data-bs-target="#all" type="button">
+                                <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all" type="button">
                                     All <span class="badge bg-secondary ms-2">@Model.Count()</span>
                                 </button>
                             </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="pending-tab" data-bs-toggle="pill"
-                                        data-bs-target="#pending" type="button">
-                                    Pending <span class="badge bg-secondary ms-2">@Model.Count(t => t.Status == Taskify.Models.TaskStatus.Pending)</span>
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="progress-tab" data-bs-toggle="pill"
-                                        data-bs-target="#progress" type="button">
-                                    In Progress <span class="badge bg-primary ms-2">@Model.Count(t => t.Status == Taskify.Models.TaskStatus.InProgress)</span>
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="completed-tab" data-bs-toggle="pill"
-                                        data-bs-target="#completed" type="button">
-                                    Completed <span class="badge bg-success ms-2">@Model.Count(t => t.Status == Taskify.Models.TaskStatus.Completed)</span>
-                                </button>
-                            </li>
-                        </ul>
+                            </ul>
 
-                        <!-- Search & Sort -->
                         <div class="d-flex gap-2">
                             <div class="search-box">
                                 <i class="fas fa-search"></i>
@@ -139,21 +116,26 @@
         </div>
     </div>
 
-    <!-- Tasks Content -->
     <div class="tab-content" id="taskTabsContent">
         <div class="tab-pane fade show active" id="all">
             <div class="row" id="tasksList">
-                @if (Model.Any())
+                @if (Model != null && Model.Any())
                 {
                     @foreach (var task in Model)
                     {
-                        <div class="col-12 task-item"
+                        <div class="col-12 task-item mb-2"
                              data-task-id="@task.Id"
                              data-priority="@((int)task.Priority)"
-                             data-status="@task.Status"
                              data-created-date="@task.CreatedAt.ToString("yyyy-MM-dd")"
                              data-title="@task.Title">
-                            @await Html.PartialAsync("_TaskCard", task)
+                             
+                             <partial name="~/Views/Shared/_TaskCard.cshtml" model="@(new Taskify.Models.TaskCardViewModel { 
+                                 Id = task.Id, 
+                                 Title = task.Title, 
+                                 Priority = task.Priority, 
+                                 DueDate = task.DueDate,
+                                 Assignees = task.Assignees
+                             })" />
                         </div>
                     }
                 }
@@ -164,89 +146,18 @@
                             <i class="fas fa-clipboard-list"></i>
                             <h4>No tasks yet</h4>
                             <p>Create your first task to get started</p>
-                            <a asp-action="Create" class="btn btn-primary">
+                            <button class="btn btn-primary" onclick="openCreateTaskModal_Index()">
                                 <i class="fas fa-plus me-2"></i>Add Task
-                            </a>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-
-        <div class="tab-pane fade" id="pending">
-            <div class="row">
-                @if (Model.Any(t => t.Status == Taskify.Models.TaskStatus.Pending))
-                {
-                    @foreach (var task in Model.Where(t => t.Status == Taskify.Models.TaskStatus.Pending))
-                    {
-                        <div class="col-12">
-                            @await Html.PartialAsync("_TaskCard", task)
-                        </div>
-                    }
-                }
-                else
-                {
-                    <div class="col-12">
-                        <div class="empty-state">
-                            <i class="fas fa-clock"></i>
-                            <h5>No pending tasks</h5>
-                            <p class="text-muted">All tasks are either in progress or completed</p>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-
-        <div class="tab-pane fade" id="progress">
-            <div class="row">
-                @if (Model.Any(t => t.Status == Taskify.Models.TaskStatus.InProgress))
-                {
-                    @foreach (var task in Model.Where(t => t.Status == Taskify.Models.TaskStatus.InProgress))
-                    {
-                        <div class="col-12">
-                            @await Html.PartialAsync("_TaskCard", task)
-                        </div>
-                    }
-                }
-                else
-                {
-                    <div class="col-12">
-                        <div class="empty-state">
-                            <i class="fas fa-tasks"></i>
-                            <h5>No tasks in progress</h5>
-                            <p class="text-muted">Start working on your pending tasks</p>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-
-        <div class="tab-pane fade" id="completed">
-            <div class="row">
-                @if (Model.Any(t => t.Status == Taskify.Models.TaskStatus.Completed))
-                {
-                    @foreach (var task in Model.Where(t => t.Status == Taskify.Models.TaskStatus.Completed))
-                    {
-                        <div class="col-12">
-                            @await Html.PartialAsync("_TaskCard", task)
-                        </div>
-                    }
-                }
-                else
-                {
-                    <div class="col-12">
-                        <div class="empty-state">
-                            <i class="fas fa-check-circle"></i>
-                            <h5>No completed tasks yet</h5>
-                            <p class="text-muted">Keep working to complete your tasks</p>
+                            </button>
                         </div>
                     </div>
                 }
             </div>
         </div>
     </div>
-</div> *@
+</div>
 
+<div id="task-details-modal-container"></div>
 @section Scripts {
     <script>
         function filterTasks() {

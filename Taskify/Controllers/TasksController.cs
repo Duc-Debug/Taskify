@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Taskify.Models;
 using Taskify.Services;
+using System.Security.Claims;
 
 namespace Taskify.Controllers
 {
@@ -24,20 +25,17 @@ namespace Taskify.Controllers
             return Ok(new {success = true});
         }
         [HttpPost]
-        public async Task<IActionResult> Create (TaskCreateViewModel model)
+        public async Task<IActionResult> Create(TaskCreateViewModel model)
         {
-            //Logic tao task tu Modal
             if (ModelState.IsValid)
             {
-                //Lay UserId tu Cookie cu
-                var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value);
+                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
                 await _taskService.CreateTaskAsync(model, userId);
-                
-                //Quay lai trang Board cu
                 return RedirectToAction("Details", "Boards", new { id = model.BoardId });
-               
             }
-            //
+
+            // Nếu lỗi dữ liệu -> Vẫn reload lại trang Board (nhưng nên kèm thông báo lỗi nếu muốn xịn hơn)
+            // Tạm thời cứ để redirect để trải nghiệm mượt mà
             return RedirectToAction("Details", "Boards", new { id = model.BoardId });
         }
         [HttpPost]
@@ -58,6 +56,32 @@ namespace Taskify.Controllers
             if (viewModel == null) return NotFound();
 
             return PartialView("_DetailsModal", viewModel);
+        }
+        [HttpGet]
+        public async Task<IActionResult> Index(string filter = "all")
+        {
+            // Lay User
+            var userIdstring = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if(string.IsNullOrEmpty(userIdstring)) return RedirectToAction("Login","Account");
+            var userId = Guid.Parse(userIdstring);
+            //Lay DL tu Service
+            var tasks = await _taskService.GetTasksByUserIdAsync(userId);
+            //Tinh Stats 
+            ViewBag.TotalTasks = tasks.Count;
+            ViewBag.CompletedTasks = tasks.Count(t => false);
+            ViewBag.InProgressTasks = tasks.Count(t => false);
+            ViewBag.OverdueTasks = tasks.Count(t => t.DueDate.HasValue && t.DueDate.Value < DateTime.Now);
+
+            switch (filter)
+            {
+                case "today":
+                    tasks = tasks.Where(t => t.DueDate.HasValue && t.DueDate.Value.Date == DateTime.Today).ToList();
+                    break;
+                case "overdue":
+                    tasks = tasks.Where(t => t.DueDate.HasValue && t.DueDate.Value < DateTime.Now).ToList();
+                    break;
+            }
+            return View(tasks);
         }
         //Class DTO(Data Transfer Object) nhan du lieu tu Js
         public class MoveTaskRequest

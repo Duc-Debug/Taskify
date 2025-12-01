@@ -36,7 +36,11 @@ namespace Taskify.Data
                 .WithMany(u => u.TeamMembers) 
                 .HasForeignKey(tm => tm.UserId)
                 .OnDelete(DeleteBehavior.Restrict); // Xóa User -> Không xóa Team
-
+            modelBuilder.Entity<Team>()
+                .HasOne(t => t.Owner)
+                .WithMany()
+                .HasForeignKey(t => t.OwnerId)
+                .OnDelete(DeleteBehavior.Restrict);
             // --- BOARD (Logic Cá nhân/Team) ---
             modelBuilder.Entity<Board>()
                 .HasOne(b => b.Team)

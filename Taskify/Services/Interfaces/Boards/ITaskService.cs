@@ -10,5 +10,6 @@ namespace Taskify.Services
         Task DeleteTaskAsync(Guid taskId);
         Task<TaskItem> GetTaskByIdAsync(Guid taskId);
         Task<TaskDetailsViewModel> GetTaskDetailsAsync(Guid taskId);
+        Task<List<TaskDetailsViewModel>> GetTasksByUserIdAsync(Guid userId);
     }
 }

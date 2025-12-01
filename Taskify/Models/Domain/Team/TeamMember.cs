@@ -13,7 +13,10 @@ namespace Taskify.Models
         public Guid UserId { get; set; }
         [ForeignKey("UserId")]
         public User User { get; set; }
-      
+
         public TeamRole Role { get; set; } = TeamRole.Member;
+
+        // Bổ sung ngày tham gia
+        public DateTime JoinedDate { get; set; } = DateTime.Now;
     }
 }

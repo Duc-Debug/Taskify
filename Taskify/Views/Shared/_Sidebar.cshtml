@@ -42,8 +42,8 @@
         </a>
 
         <!-- Teams -->
-        <a asp-controller="Team" asp-action="Index"
-           class="nav-item @(currentController == "Team" ? "active" : "")">
+        <a asp-controller="Teams" asp-action="Index"
+           class="nav-item @(currentController == "Teams" ? "active" : "")">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                 <circle cx="9" cy="7" r="4" />
@@ -58,8 +58,8 @@
         <div class="nav-section-title">Personal</div>
 
         <!-- My Tasks -->
-        <a asp-controller="Task" asp-action="Index"
-           class="nav-item @(currentController == "Task" && currentAction == "Index" ? "active" : "")">
+        <a asp-controller="Tasks" asp-action="Index"
+           class="nav-item @(currentController == "Tasks" && currentAction == "Index" ? "active" : "")">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />

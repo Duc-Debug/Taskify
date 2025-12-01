@@ -205,43 +205,44 @@
         // --- CÁC HÀM XỬ LÝ TASK ---
 
         // SỬA LỖI: Hàm addTask giờ sẽ mở Modal thay vì chuyển trang
-        function addTask(listId) {
-            // 1. Gán ListId vào ô hidden input trong form Modal
+                function addTask(listId) {
+            console.log("Đang mở Modal cho ListId:", listId); // <--- Ktra xem ID có không
+
+            // 1. Tìm ô input ẩn
             const listInput = document.querySelector('#createTaskForm input[name="ListId"]');
+
             if (listInput) {
                 listInput.value = listId;
+                console.log("Đã gán ListId vào form:", listInput.value); // <--- Ktra xem gán được chưa
+            } else {
+                alert("LỖI: Không tìm thấy ô input ListId trong Modal! Hãy kiểm tra lại file _CreateModal.cshtml");
+                return;
             }
 
-            // 2. Gọi Bootstrap Modal hiển thị lên
+            // 2. Mở Modal
             const modalEl = document.getElementById('createTaskModal');
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
+            if(modalEl){
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+            } else {
+                alert("LỖI: Không tìm thấy Modal trong HTML.");
+            }
         }
 
-        // Hàm gọi AJAX mở Modal Chi tiết
+        // Hàm mở Modal Chi Tiết Task (AJAX)
         function openTaskDetails(taskId) {
-            // 1. Gọi API lấy HTML của Modal
             fetch(`/Tasks/GetDetails/${taskId}`)
-                .then(response => {
-                    if (!response.ok) throw new Error("Failed to load task details");
-                    return response.text();
+                .then(res => {
+                    if(!res.ok) throw new Error('Err');
+                    return res.text();
                 })
                 .then(html => {
-                    // 2. Nhúng HTML vào div container
                     const container = document.getElementById('task-details-modal-container');
                     container.innerHTML = html;
-
-                    // 3. Khởi tạo và hiển thị Bootstrap Modal
-                    const modalElement = container.querySelector('.modal');
-                    const bsModal = new bootstrap.Modal(modalElement);
-                    bsModal.show();
-
-                    // 4. Xử lý sự kiện khi đóng modal để dọn dẹp DOM (Optional)
-                    modalElement.addEventListener('hidden.bs.modal', function () {
-                        container.innerHTML = '';
-                    });
+                    const modal = new bootstrap.Modal(container.querySelector('.modal'));
+                    modal.show();
                 })
-                .catch(error => console.error(error));
+                .catch(e => console.error(e));
         }
 
         // --- CÁC HÀM XỬ LÝ LIST (Giữ nguyên logic của bạn) ---

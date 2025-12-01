@@ -38,6 +38,7 @@ namespace Taskify
             builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<ITaskService, TaskService>();
+            builder.Services.AddScoped<ITeamService, TeamService>();
 
             var app = builder.Build();
 
