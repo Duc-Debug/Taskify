@@ -88,10 +88,6 @@
                         </label>
                         <select class="form-select" id="teamSelect" name="TeamId">
                             <option value="">Choose a team...</option>
-                            <!-- These would be populated from the server -->
-                            <option value="team1">Marketing Team</option>
-                            <option value="team2">Development Team</option>
-                            <option value="team3">Design Team</option>
                         </select>
                     </div>
 
@@ -457,16 +453,34 @@
     document.querySelectorAll('input[name="BoardType"]').forEach(radio => {
         radio.addEventListener('change', function() {
             const teamGroup = document.getElementById('teamSelectionGroup');
+            const teamSelect = document.getElementById('teamSelect');
+
             if (this.value === 'team') {
                 teamGroup.style.display = 'block';
-                document.getElementById('teamSelect').required = true;
+                teamSelect.required = true;
+
+                // Gọi API lấy danh sách team nếu chưa có
+                if (teamSelect.options.length <= 1) {
+                    fetch('/Boards/GetUserTeams')
+                        .then(response => response.json())
+                        .then(data => {
+                            data.forEach(team => {
+                                const option = document.createElement('option');
+                                option.value = team.id;
+                                option.textContent = team.name;
+                                teamSelect.appendChild(option);
+                            });
+                        });
+                }
             } else {
                 teamGroup.style.display = 'none';
-                document.getElementById('teamSelect').required = false;
+                teamSelect.required = false;
+                teamSelect.value = ""; // Reset giá trị team
             }
         });
     });
 
+    //Đoạn từ đây có thể xóa
     // Reset form when modal is closed
     document.getElementById('createBoardModal').addEventListener('hidden.bs.modal', function() {
         document.getElementById('createBoardForm').reset();

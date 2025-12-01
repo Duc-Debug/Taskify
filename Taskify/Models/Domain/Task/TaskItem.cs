@@ -21,6 +21,8 @@ namespace Taskify.Models
 
         public int? CategoryId { get; set; } // Category của bạn bên kia dùng int hay Guid? Kiểm tra lại nhé. Nếu Category dùng int thì để int.
         public Category Category { get; set; }
+        // [MỚI THÊM] Thêm dòng này để BoardService có thể Include và xóa History
+        public ICollection<TaskHistory> TaskHistories { get; set; }
 
         public ICollection<TaskAssignment> Assignments { get; set; }
         public ICollection<TaskComment> Comments { get; set; }

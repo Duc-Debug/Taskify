@@ -11,6 +11,8 @@ namespace Taskify.Services
         Task<BoardViewModel> GetBoardDetailsAsync(Guid boardId);
 
         // Tạo Board mới
-        Task CreateBoardAsync(string name, Guid userId);
+        Task CreateBoardAsync(BoardCreateViewModel model, Guid userId);
+        Task UpdateBoardAsync(BoardEditViewModel model, Guid userId);
+        Task DeleteBoardAsync(Guid boardId, Guid userId);
     }
 }
