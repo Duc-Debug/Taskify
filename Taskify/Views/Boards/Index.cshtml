@@ -3,6 +3,9 @@
     ViewData["Title"] = "My Boards";
     var boards = Model ?? new List<BoardViewModel>();//Tranh lỗi trang nếu null
 }
+<!-- CSS Libraries -->
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 <style>
     .boards-container {
         max-width: 1400px;
@@ -10,27 +13,7 @@
     }
 
     /* Page Header */
-    .page-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 32px;
-        gap: 20px;
-    }
-
-    .header-content h1 {
-        font-size: 32px;
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0 0 8px 0;
-    }
-
-    .header-content p {
-        font-size: 16px;
-        color: #64748b;
-        margin: 0;
-    }
-
+    
     /* Filter Tabs */
     .filter-tabs {
         display: flex;
@@ -84,36 +67,7 @@
     .search-section {
         margin-bottom: 32px;
     }
-
-    .search-input-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        background: white;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 12px 20px;
-        max-width: 400px;
-        transition: all 0.3s;
-    }
-
-        .search-input-wrapper:focus-within {
-            border-color: #0ea5e9;
-            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-        }
-
-        .search-input-wrapper svg {
-            color: #94a3b8;
-            flex-shrink: 0;
-        }
-
-        .search-input-wrapper input {
-            border: none;
-            outline: none;
-            font-size: 14px;
-            width: 100%;
-            color: #1e293b;
-        }
+           
 
     /* Boards Grid */
     .boards-grid {
@@ -254,13 +208,6 @@
         z-index: 10;
     }
 
-    .dropdown-menu {
-        min-width: 160px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        border: 1px solid #e2e8f0;
-        margin-top: 4px;
-    }
-
     .board-footer {
         padding-top: 16px;
         border-top: 1px solid #f1f5f9;
@@ -272,29 +219,7 @@
     }
 
     /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 80px 20px;
-    }
-
-    .empty-icon {
-        margin: 0 auto 24px;
-        color: #cbd5e1;
-    }
-
-    .empty-state h3 {
-        font-size: 24px;
-        font-weight: 700;
-        color: #1e293b;
-        margin: 0 0 8px 0;
-    }
-
-    .empty-state p {
-        font-size: 16px;
-        color: #64748b;
-        margin: 0 0 32px 0;
-    }
-
+    
 
     @@media (max-width: 768px) {
         .page-header {
@@ -360,7 +285,7 @@
 
     <!-- Search Bar -->
     <div class="search-section">
-        <div class="search-input-wrapper">
+        <div class="common-search-box">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.35-4.35" />
