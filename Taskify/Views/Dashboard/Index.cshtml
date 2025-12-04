@@ -2,6 +2,8 @@
 @{
     ViewData["Title"] = "Dashboard";
 }
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 <style>
     .dashboard-container {
         max-width: 1400px;
@@ -412,45 +414,6 @@
             color: #64748b;
             margin: 0 0 16px 0;
         }
-
-    /* Buttons */
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-        text-decoration: none;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
-        color: white;
-    }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
-        }
-
-    .btn-secondary {
-        background: white;
-        color: #0ea5e9;
-    }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-    .btn-sm {
-        padding: 8px 16px;
-        font-size: 13px;
-    }
 
     @@media (max-width: 768px) {
         .welcome-section {

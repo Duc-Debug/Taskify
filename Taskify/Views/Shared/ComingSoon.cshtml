@@ -2,182 +2,8 @@
     ViewData["Title"] = "Coming Soon";
     var featureName = ViewData["FeatureName"]?.ToString() ?? "This Feature";
 }
-
-<div class="coming-soon-container">
-    <div class="coming-soon-content">
-        <!-- Animated Icon -->
-        <div class="feature-icon-wrapper">
-            <div class="icon-circle circle-1"></div>
-            <div class="icon-circle circle-2"></div>
-            <div class="icon-circle circle-3"></div>
-            <div class="feature-icon">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-            </div>
-        </div>
-
-        <!-- Badge -->
-        <div class="status-badge">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-            </svg>
-            In Development
-        </div>
-
-        <!-- Main Content -->
-        <h1 class="coming-soon-title">
-            @featureName is <br />
-            <span class="gradient-text">Coming Soon!</span>
-        </h1>
-
-        <p class="coming-soon-description">
-            We're working hard to bring you this amazing feature.
-            Our team is crafting something special that will enhance your experience.
-        </p>
-
-        <!-- Features List -->
-        <div class="features-preview">
-            <div class="feature-item">
-                <div class="feature-check">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                </div>
-                <span>Intuitive user interface</span>
-            </div>
-            <div class="feature-item">
-                <div class="feature-check">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                </div>
-                <span>Powerful functionality</span>
-            </div>
-            <div class="feature-item">
-                <div class="feature-check">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                </div>
-                <span>Seamless integration</span>
-            </div>
-        </div>
-
-        <!-- Progress Bar -->
-        <div class="progress-section">
-            <div class="progress-header">
-                <span class="progress-label">Development Progress</span>
-                <span class="progress-value">75%</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 75%"></div>
-            </div>
-        </div>
-
-        <!-- Notify Me Form -->
-        <div class="notify-section">
-            <h3>Get notified when it's ready</h3>
-            <p>Be the first to know when this feature launches</p>
-            <form class="notify-form" onsubmit="submitNotification(event)">
-                <div class="input-wrapper">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                        <polyline points="22,6 12,13 2,6" />
-                    </svg>
-                    <input type="email" placeholder="Enter your email" required />
-                </div>
-                <button type="submit" class="btn-notify">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                    </svg>
-                    Notify Me
-                </button>
-            </form>
-        </div>
-
-        <!-- Timeline -->
-        <div class="timeline-section">
-            <h3>Development Roadmap</h3>
-            <div class="timeline">
-                <div class="timeline-item completed">
-                    <div class="timeline-marker">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                    </div>
-                    <div class="timeline-content">
-                        <h4>Planning & Design</h4>
-                        <p>Feature specifications and UI/UX design</p>
-                    </div>
-                </div>
-                <div class="timeline-item completed">
-                    <div class="timeline-marker">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                    </div>
-                    <div class="timeline-content">
-                        <h4>Development Started</h4>
-                        <p>Core functionality implementation</p>
-                    </div>
-                </div>
-                <div class="timeline-item active">
-                    <div class="timeline-marker">
-                        <div class="pulse"></div>
-                    </div>
-                    <div class="timeline-content">
-                        <h4>Testing & Refinement</h4>
-                        <p>Quality assurance and bug fixes</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-marker"></div>
-                    <div class="timeline-content">
-                        <h4>Launch</h4>
-                        <p>Feature goes live for all users</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="action-buttons">
-            <a href="javascript:history.back()" class="btn btn-secondary">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
-                Go Back
-            </a>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                    <polyline points="9 22 9 12 15 12 15 22" />
-                </svg>
-                Back to Dashboard
-            </a>
-        </div>
-
-        <!-- Social Proof -->
-        <div class="social-proof">
-            <div class="proof-item">
-                <strong>500+</strong>
-                <span>Users Waiting</span>
-            </div>
-            <div class="proof-item">
-                <strong>Q1 2025</strong>
-                <span>Expected Launch</span>
-            </div>
-            <div class="proof-item">
-                <strong>24/7</strong>
-                <span>Development</span>
-            </div>
-        </div>
-    </div>
-</div>
-
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 <style>
     .coming-soon-container {
         min-height: calc(100vh - 70px);
@@ -606,41 +432,6 @@
         margin-bottom: 48px;
     }
 
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 14px 28px;
-        border: none;
-        border-radius: 12px;
-        font-size: 15px;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
-        color: white;
-    }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
-        }
-
-    .btn-secondary {
-        background: white;
-        color: #64748b;
-        border: 2px solid #e2e8f0;
-    }
-
-        .btn-secondary:hover {
-            border-color: #0ea5e9;
-            color: #0ea5e9;
-        }
-
     /* Social Proof */
     .social-proof {
         display: flex;
@@ -653,7 +444,7 @@
         flex-direction: column;
         gap: 4px;
     }
-
+        /*Button*/
         .proof-item strong {
             font-size: 28px;
             font-weight: 700;
@@ -688,6 +479,182 @@
         }
     }
 </style>
+<div class="coming-soon-container">
+    <div class="coming-soon-content">
+        <!-- Animated Icon -->
+        <div class="feature-icon-wrapper">
+            <div class="icon-circle circle-1"></div>
+            <div class="icon-circle circle-2"></div>
+            <div class="icon-circle circle-3"></div>
+            <div class="feature-icon">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Badge -->
+        <div class="status-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+            </svg>
+            In Development
+        </div>
+
+        <!-- Main Content -->
+        <h1 class="coming-soon-title">
+            @featureName is <br />
+            <span class="gradient-text">Coming Soon!</span>
+        </h1>
+
+        <p class="coming-soon-description">
+            We're working hard to bring you this amazing feature.
+            Our team is crafting something special that will enhance your experience.
+        </p>
+
+        <!-- Features List -->
+        <div class="features-preview">
+            <div class="feature-item">
+                <div class="feature-check">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                </div>
+                <span>Intuitive user interface</span>
+            </div>
+            <div class="feature-item">
+                <div class="feature-check">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                </div>
+                <span>Powerful functionality</span>
+            </div>
+            <div class="feature-item">
+                <div class="feature-check">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                </div>
+                <span>Seamless integration</span>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-section">
+            <div class="progress-header">
+                <span class="progress-label">Development Progress</span>
+                <span class="progress-value">75%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 75%"></div>
+            </div>
+        </div>
+
+        <!-- Notify Me Form -->
+        <div class="notify-section">
+            <h3>Get notified when it's ready</h3>
+            <p>Be the first to know when this feature launches</p>
+            <form class="notify-form" onsubmit="submitNotification(event)">
+                <div class="input-wrapper">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                    <input type="email" placeholder="Enter your email" required />
+                </div>
+                <button type="submit" class="btn-notify">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                    Notify Me
+                </button>
+            </form>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline-section">
+            <h3>Development Roadmap</h3>
+            <div class="timeline">
+                <div class="timeline-item completed">
+                    <div class="timeline-marker">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </div>
+                    <div class="timeline-content">
+                        <h4>Planning & Design</h4>
+                        <p>Feature specifications and UI/UX design</p>
+                    </div>
+                </div>
+                <div class="timeline-item completed">
+                    <div class="timeline-marker">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </div>
+                    <div class="timeline-content">
+                        <h4>Development Started</h4>
+                        <p>Core functionality implementation</p>
+                    </div>
+                </div>
+                <div class="timeline-item active">
+                    <div class="timeline-marker">
+                        <div class="pulse"></div>
+                    </div>
+                    <div class="timeline-content">
+                        <h4>Testing & Refinement</h4>
+                        <p>Quality assurance and bug fixes</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h4>Launch</h4>
+                        <p>Feature goes live for all users</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="action-buttons">
+            <a href="javascript:history.back()" class="btn btn-secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                Go Back
+            </a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Social Proof -->
+        <div class="social-proof">
+            <div class="proof-item">
+                <strong>500+</strong>
+                <span>Users Waiting</span>
+            </div>
+            <div class="proof-item">
+                <strong>Q1 2025</strong>
+                <span>Expected Launch</span>
+            </div>
+            <div class="proof-item">
+                <strong>24/7</strong>
+                <span>Development</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 <script>
     function submitNotification(event) {

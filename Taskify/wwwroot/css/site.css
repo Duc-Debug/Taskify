@@ -20,3 +20,51 @@ html {
 body {
   margin-bottom: 60px;
 }
+/*Button */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+    color: white;
+}
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
+    }
+
+.btn-secondary {
+    background: white;
+    color: #0ea5e9;
+}
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 13px;
+}
+.btn-lg {
+    padding: 16px 32px;
+    font-size: 16px;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+/*Form*/
