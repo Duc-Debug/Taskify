@@ -28,8 +28,12 @@ namespace Taskify
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                                     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-            builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(connectionString));
+            //SQL Server
+            //builder.Services.AddDbContext<AppDbContext>(options =>
+            //    options.UseSqlServer(connectionString));
+            //SQLite
+            builder.Services.AddDbContext<AppDbContext>(options =>options.UseSqlite(connectionString));
+
 
             //Dang ky services
             builder.Services.AddScoped<IHomeService, HomeService>();

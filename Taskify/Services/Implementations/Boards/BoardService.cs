@@ -22,6 +22,16 @@ namespace Taskify.Services
                     Id = b.Id,
                     Name = b.Name,
                     TeamId = b.TeamId ?? Guid.Empty,
+                    TeamName = b.Team != null ? b.Team.Name : null,
+                    TeamMembers = b.Team !=null
+                        ? b.Team.Members.Select(m=> new MemberViewModel
+                        {
+                            Id=m.UserId,
+                            FullName=m.User.FullName,
+                            AvatarUrl=m.User.FullName.Substring(0,1)
+                        }).ToList()
+                        :new List<MemberViewModel>(),
+
                     // Đếm số lượng List và Task để hiển thị ra ngoài Dashboard (nếu cần)
                     Lists = b.Lists.Select(l => new TaskListViewModel
                     {
@@ -133,9 +143,9 @@ namespace Taskify.Services
                         .ThenInclude(t => t.Comments)    // Load Comments
                 .Include(b => b.Lists)
                     .ThenInclude(l => l.Tasks)
-                        .ThenInclude(t => t.TaskHistories) 
+                        .ThenInclude(t => t.TaskHistories)
                 .FirstOrDefaultAsync(b => b.Id == boardId);
-           
+
             if (board != null && board.OwnerId == userId)
             {
                 _context.Boards.Remove(board);

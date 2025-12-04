@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Taskify.Models;
 using Taskify.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace Taskify.Controllers
 {

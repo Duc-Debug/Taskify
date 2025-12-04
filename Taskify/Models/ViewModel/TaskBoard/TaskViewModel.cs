@@ -45,7 +45,7 @@ namespace Taskify.Models
         [Required(ErrorMessage = "Title cannot be blank")]
         public string Title { get; set; }
 
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Required]
         public Guid ListId { get; set; } // Bắt buộc phải biết nằm ở cột nào

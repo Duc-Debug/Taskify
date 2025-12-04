@@ -3,209 +3,6 @@
     ViewData["Title"] = "My Teams";
 }
 
-<div class="teams-container">
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="header-content">
-            <h1>My Teams</h1>
-            <p>Collaborate with your teams and manage projects together</p>
-        </div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTeamModal">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Create New Team
-        </button>
-    </div>
-
-    <!-- Stats Summary -->
-    <div class="stats-summary">
-        <div class="stat-box">
-            <div class="stat-icon teams">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">Total Teams</span>
-                <span class="stat-value">@Model.Count</span>
-            </div>
-        </div>
-
-        <div class="stat-box">
-            <div class="stat-icon members">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                </svg>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">Total Members</span>
-                <span class="stat-value">@Model.Sum(t => t.MemberCount)</span>
-            </div>
-        </div>
-
-        <div class="stat-box">
-            <div class="stat-icon boards">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                    <line x1="9" y1="3" x2="9" y2="21" />
-                </svg>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">Active Boards</span>
-                <span class="stat-value">@Model.Sum(t => t.Boards?.Count ?? 0)</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Teams Grid -->
-    @if (Model != null && Model.Any())
-    {
-        <div class="teams-grid">
-            @foreach (var team in Model)
-            {
-                <div class="team-card">
-                    <a asp-action="Details" asp-route-id="@team.Id" class="team-link">
-                        <!-- Team Header -->
-                        <div class="team-card-header">
-                            <div class="team-avatar">
-                                <span>@team.Name.Substring(0, Math.Min(2, team.Name.Length)).ToUpper()</span>
-                            </div>
-                            <div class="team-menu">
-                                <button class="btn-menu" onclick="event.preventDefault(); event.stopPropagation(); showTeamMenu('@team.Id')">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="1" />
-                                        <circle cx="12" cy="5" r="1" />
-                                        <circle cx="12" cy="19" r="1" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Team Content -->
-                        <div class="team-content">
-                            <h3 class="team-name">@team.Name</h3>
-                            @if (!string.IsNullOrEmpty(team.Description))
-                            {
-                                <p class="team-description">@team.Description</p>
-                            }
-                            else
-                            {
-                                <p class="team-description empty">No description</p>
-                            }
-                        </div>
-
-                        <!-- Team Stats -->
-                        <div class="team-stats">
-                            <div class="team-stat-item">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                    <circle cx="9" cy="7" r="4" />
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                </svg>
-                                <span>@team.MemberCount members</span>
-                            </div>
-                            <div class="team-stat-item">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                                    <line x1="9" y1="3" x2="9" y2="21" />
-                                </svg>
-                                <span>@(team.Boards?.Count ?? 0) boards</span>
-                            </div>
-                        </div>
-
-                        <!-- Team Members Avatars -->
-                        <div class="team-members-preview">
-                            @if (team.Members != null && team.Members.Any())
-                            {
-                                <div class="members-avatars">
-                                    @foreach (var member in team.Members.Take(5))
-                                    {
-                                        @if (!string.IsNullOrEmpty(member.AvatarUrl))
-                                        {
-                                            <img src="@member.AvatarUrl" alt="@member.FullName" class="member-avatar" title="@member.FullName" />
-                                        }
-                                        else
-                                        {
-                                            <div class="member-avatar" title="@member.FullName">@member.Initials</div>
-                                        }
-                                    }
-                                    @if (team.Members.Count > 5)
-                                    {
-                                        <div class="member-avatar more">+@(team.Members.Count - 5)</div>
-                                    }
-                                </div>
-                            }
-                        </div>
-
-                        <!-- Team Role Badge -->
-                        @if (team.IsOwner)
-                        {
-                            <div class="team-role-badge owner">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                                </svg>
-                                Owner
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="team-role-badge member">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                    <circle cx="12" cy="7" r="4" />
-                                </svg>
-                                Member
-                            </div>
-                        }
-                    </a>
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <!-- Empty State -->
-        <div class="empty-state">
-            <div class="empty-icon">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-            </div>
-            <h3>No teams yet</h3>
-            <p>Create your first team to start collaborating with others</p>
-            <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createTeamModal">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Create Your First Team
-            </button>
-        </div>
-    }
-</div>
-
-<!-- Create Team Modal -->
-<partial name="_CreateModal" model="new Taskify.Models.TeamCreateViewModel()" />
-
-@section Scripts {
-    <script>
-        function showTeamMenu(teamId) {
-            console.log('Show menu for team:', teamId);
-            // Implement dropdown menu
-        }
-    </script>
-}
-
 <style>
     .teams-container {
         max-width: 1400px;
@@ -535,3 +332,205 @@
         }
     }
 </style>
+<div class="teams-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1>My Teams</h1>
+            <p>Collaborate with your teams and manage projects together</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTeamModal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Create New Team
+        </button>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="stats-summary">
+        <div class="stat-box">
+            <div class="stat-icon teams">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">Total Teams</span>
+                <span class="stat-value">@Model.Count</span>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-icon members">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">Total Members</span>
+                <span class="stat-value">@Model.Sum(t => t.MemberCount)</span>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-icon boards">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <line x1="9" y1="3" x2="9" y2="21" />
+                </svg>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">Active Boards</span>
+                <span class="stat-value">@Model.Sum(t => t.Boards?.Count ?? 0)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teams Grid -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="teams-grid">
+            @foreach (var team in Model)
+            {
+                <div class="team-card">
+                    <a asp-action="Details" asp-route-id="@team.Id" class="team-link">
+                        <!-- Team Header -->
+                        <div class="team-card-header">
+                            <div class="team-avatar">
+                                <span>@team.Name.Substring(0, Math.Min(2, team.Name.Length)).ToUpper()</span>
+                            </div>
+                            <div class="team-menu">
+                                <button class="btn-menu" onclick="event.preventDefault(); event.stopPropagation(); showTeamMenu('@team.Id')">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="1" />
+                                        <circle cx="12" cy="5" r="1" />
+                                        <circle cx="12" cy="19" r="1" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Team Content -->
+                        <div class="team-content">
+                            <h3 class="team-name">@team.Name</h3>
+                            @if (!string.IsNullOrEmpty(team.Description))
+                            {
+                                <p class="team-description">@team.Description</p>
+                            }
+                            else
+                            {
+                                <p class="team-description empty">No description</p>
+                            }
+                        </div>
+
+                        <!-- Team Stats -->
+                        <div class="team-stats">
+                            <div class="team-stat-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                    <circle cx="9" cy="7" r="4" />
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                </svg>
+                                <span>@team.MemberCount members</span>
+                            </div>
+                            <div class="team-stat-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                    <line x1="9" y1="3" x2="9" y2="21" />
+                                </svg>
+                                <span>@(team.Boards?.Count ?? 0) boards</span>
+                            </div>
+                        </div>
+
+                        <!-- Team Members Avatars -->
+                        <div class="team-members-preview">
+                            @if (team.Members != null && team.Members.Any())
+                            {
+                                <div class="members-avatars">
+                                    @foreach (var member in team.Members.Take(5))
+                                    {
+                                        @if (!string.IsNullOrEmpty(member.AvatarUrl))
+                                        {
+                                            <img src="@member.AvatarUrl" alt="@member.FullName" class="member-avatar" title="@member.FullName" />
+                                        }
+                                        else
+                                        {
+                                            <div class="member-avatar" title="@member.FullName">@member.Initials</div>
+                                        }
+                                    }
+                                    @if (team.Members.Count > 5)
+                                    {
+                                        <div class="member-avatar more">+@(team.Members.Count - 5)</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Team Role Badge -->
+                        @if (team.IsOwner)
+                        {
+                            <div class="team-role-badge owner">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                Owner
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="team-role-badge member">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                                Member
+                            </div>
+                        }
+                    </a>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+            </div>
+            <h3>No teams yet</h3>
+            <p>Create your first team to start collaborating with others</p>
+            <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createTeamModal">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Create Your First Team
+            </button>
+        </div>
+    }
+</div>
+
+<!-- Create Team Modal -->
+<partial name="_CreateModal" model="new Taskify.Models.TeamCreateViewModel()" />
+
+@section Scripts {
+    <script>
+        function showTeamMenu(teamId) {
+            console.log('Show menu for team:', teamId);
+            // Implement dropdown menu
+        }
+    </script>
+}

@@ -469,7 +469,7 @@
                         </div>
 
                         <!-- Board Members -->
-                        @if (board.TeamMembers != null && board.TeamMembers.Any())
+                        @* @if (board.TeamMembers != null && board.TeamMembers.Any())
                         {
                             <div class="board-members">
                                 @foreach (var member in board.TeamMembers.Take(4))
@@ -505,8 +505,29 @@
                                 </svg>
                                 Personal Board
                             </div>
+                        } *@
+                        @if (board.TeamId != Guid.Empty)
+                        {
+                            <div class="board-type-badge" style="background: #e0f2fe; color: #0369a1;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                    <circle cx="9" cy="7" r="4" />
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                </svg>
+                                @(board.TeamName ?? "Team Board")
+                            </div>
                         }
-
+                        else
+                        {
+                            <div class="board-type-badge">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                                Personal Board
+                            </div>
+                        }
                         <!-- Board Footer -->
                         <div class="board-footer">
                             <span class="last-updated">Updated recently</span>
