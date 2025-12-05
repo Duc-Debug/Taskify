@@ -1,25 +1,59 @@
-﻿.kanban-container {
-    height: calc(100vh - 100px);
+﻿/* ==========================================================================
+   KANBAN BOARD STYLES
+   ========================================================================== */
+
+/* 1. Main Layout & Container */
+.kanban-container {
+    height: calc(100vh - 100px); /* Trừ đi chiều cao Navbar + Margin */
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* Ngăn cuộn trang chính, chỉ cuộn board */
 }
 
-/* Board Header specific */
+/* 2. Board Header (Phần thông tin trên cùng) */
 .board-header {
-    background: white;
-    border-radius: 16px;
-    padding: 16px 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 16px 24px;
     margin-bottom: 24px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    flex-shrink: 0; /* Giữ cố định header không bị co */
+    border: 1px solid #e2e8f0;
 }
 
 .board-info {
     display: flex;
     align-items: center;
     gap: 16px;
+}
+
+/* Nút quay lại (Back) riêng của trang này */
+.btn-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: #64748b;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+    .btn-back:hover {
+        background: #e2e8f0;
+        color: #0ea5e9;
+    }
+
+.board-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 4px 0;
 }
 
 .board-meta {
@@ -42,24 +76,52 @@
     gap: 12px;
 }
 
+/* Khu vực hiển thị thành viên (Members Area) */
 .board-members {
     display: flex;
-    padding-right: 12px;
+    align-items: center;
+    padding-right: 16px;
     border-right: 1px solid #e2e8f0;
-    /* Uses .avatar-group logic internally */
+    margin-right: 4px;
 }
+    /* Style bổ trợ để avatar xếp chồng đẹp trong header */
+    .board-members .member-avatar {
+        margin-left: -8px;
+        border: 2px solid white;
+    }
 
-/* Kanban Horizontal Scroll */
+        .board-members .member-avatar:first-child {
+            margin-left: 0;
+        }
+
+
+/* 3. KANBAN BOARD (Vùng cuộn ngang chứa các cột) */
 .kanban-board {
     display: flex;
-    gap: 20px;
+    gap: 24px;
     overflow-x: auto;
     overflow-y: hidden;
-    padding-bottom: 20px;
-    flex: 1;
+    padding-bottom: 20px; /* Chừa không gian cho thanh cuộn */
+    flex: 1; /* Chiếm toàn bộ chiều cao còn lại */
+    align-items: flex-start; /* Để các cột có chiều cao tự nhiên */
 }
 
-/* List Column */
+    /* Tùy chỉnh thanh cuộn ngang */
+    .kanban-board::-webkit-scrollbar {
+        height: 10px;
+    }
+
+    .kanban-board::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 5px;
+    }
+
+    .kanban-board::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+
+/* 4. KANBAN LIST (Cột danh sách) */
 .kanban-list {
     min-width: 320px;
     max-width: 320px;
@@ -68,16 +130,19 @@
     padding: 16px;
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 260px);
+    max-height: 100%; /* Giới hạn chiều cao bằng container cha */
     border: 1px solid #e2e8f0;
+    flex-shrink: 0; /* Đảm bảo cột không bị bóp méo */
 }
 
+/* Header của cột */
 .list-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 16px;
-    cursor: grab;
+    cursor: grab; /* Icon bàn tay để kéo cột */
+    padding: 4px 0;
 }
 
     .list-header:active {
@@ -103,16 +168,37 @@
     font-weight: 600;
 }
 
-/* Task List Area */
+.btn-list-menu {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    transition: all 0.2s;
+}
+
+    .btn-list-menu:hover {
+        background: white;
+        color: #0ea5e9;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+/* 5. TASK LIST AREA (Vùng chứa task - Cuộn dọc) */
 .list-tasks {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
     margin-bottom: 12px;
-    min-height: 50px;
-    padding-right: 4px; /* Space for scrollbar */
+    min-height: 50px; /* Chiều cao tối thiểu để dễ thả task vào cột trống */
+    padding-right: 4px; /* Tránh nội dung đè lên scrollbar */
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Khoảng cách giữa các thẻ task */
 }
-    /* Custom Scrollbar for list */
+
+    /* Tùy chỉnh thanh cuộn dọc bên trong cột */
     .list-tasks::-webkit-scrollbar {
         width: 6px;
     }
@@ -122,15 +208,22 @@
         border-radius: 3px;
     }
 
-/* Add Task Button */
+    .list-tasks::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+
+/* 6. BUTTONS & FORMS (Thêm task, Thêm list) */
+
+/* Nút thêm task (Nằm cuối cột) */
 .btn-add-task {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     width: 100%;
-    padding: 10px;
-    background: white;
+    padding: 12px;
+    background: transparent;
     border: 2px dashed #cbd5e1;
     border-radius: 10px;
     color: #64748b;
@@ -141,16 +234,18 @@
 }
 
     .btn-add-task:hover {
-        background: #f8fafc;
+        background: white;
         border-color: #0ea5e9;
         color: #0ea5e9;
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.1);
     }
 
-/* Add List Column */
+/* Cột thêm danh sách mới (Add New List Column) */
 .add-list-container {
     background: transparent;
     border: none;
     padding: 0;
+    box-shadow: none;
 }
 
 .btn-add-list {
@@ -159,8 +254,8 @@
     justify-content: center;
     gap: 8px;
     width: 100%;
-    min-height: 60px;
-    background: white;
+    min-height: 56px;
+    background: rgba(255, 255, 255, 0.6);
     border: 2px dashed #cbd5e1;
     border-radius: 16px;
     color: #64748b;
@@ -168,26 +263,79 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    backdrop-filter: blur(4px);
 }
 
     .btn-add-list:hover {
+        background: white;
         border-color: #0ea5e9;
         color: #0ea5e9;
-        background: #f8fafc;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
-/* Dragging States */
-.task-ghost {
-    opacity: 0.4;
-    background: #cbd5e1;
+/* Form nhập tên list mới */
+.add-list-form {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
+.form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+
+/* 7. DRAG & DROP STATES (Hiệu ứng kéo thả) */
+
+/* Khi đang kéo task */
 .task-dragging {
-    transform: rotate(3deg);
+    transform: rotate(2deg); /* Nghiêng nhẹ tạo cảm giác đang cầm */
+    opacity: 0.9;
     cursor: grabbing;
+    background: white;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2) !important;
+    z-index: 1000;
 }
 
+/* Vùng bóng mờ nơi sẽ thả task xuống */
+.task-ghost {
+    background: #f1f5f9;
+    border: 2px dashed #cbd5e1;
+    opacity: 0.8;
+    border-radius: 12px;
+}
+    /* Ẩn nội dung bên trong vùng ghost để chỉ thấy khung */
+    .task-ghost > * {
+        opacity: 0;
+    }
+
+/* Khi kéo cả cột (List) */
 .list-ghost {
-    opacity: 0.5;
+    opacity: 0.4;
+    background: #e2e8f0;
+    border-radius: 16px;
     border: 2px dashed #94a3b8;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .board-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .board-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .kanban-list {
+        min-width: 280px;
+        max-width: 280px;
+    }
 }

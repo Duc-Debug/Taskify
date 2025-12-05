@@ -1,9 +1,14 @@
-﻿/* Layout Grid cho Teams */
+﻿/* ==========================================================================
+   TEAMS MODULE STYLES
+   ========================================================================== */
+
+/* 1. Layout & Container */
 .teams-container {
     max-width: 1400px;
     margin: 0 auto;
 }
 
+/* 2. Stats Summary (3 hộp thống kê trên cùng) */
 .stats-summary {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -11,13 +16,6 @@
     margin-bottom: 40px;
 }
 
-.teams-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 24px;
-}
-
-/* Stat Box (Team specific style) */
 .stat-box {
     display: flex;
     align-items: center;
@@ -26,7 +24,13 @@
     padding: 24px;
     border-radius: 16px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s;
 }
+
+    .stat-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    }
 
 .stat-icon {
     width: 56px;
@@ -37,8 +41,10 @@
     justify-content: center;
     color: white;
     flex-shrink: 0;
+    font-size: 24px; /* Kích thước icon SVG */
 }
 
+    /* Màu icon theo từng loại */
     .stat-icon.teams {
         background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
     }
@@ -57,18 +63,60 @@
     gap: 4px;
 }
 
+.stat-label {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
+}
+
 .stat-value {
     font-size: 28px;
     font-weight: 700;
     color: #1e293b;
+    line-height: 1;
 }
 
-/* Team Card Specifics */
+/* 3. Teams Grid System */
+.teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+/* 4. Team Card Design */
+.team-card {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s;
+    height: 100%; /* Đảm bảo các card bằng nhau */
+    display: flex;
+    flex-direction: column;
+}
+
+    .team-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+        border-color: #0ea5e9;
+    }
+
 .team-link {
     display: block;
+    padding: 24px;
     text-decoration: none;
     color: inherit;
-    height: 100%; /* Full height để click được */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Card Header: Avatar & Menu */
+.team-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
 }
 
 .team-avatar {
@@ -82,10 +130,14 @@
     color: white;
     font-size: 24px;
     font-weight: 700;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2);
 }
 
+/* Card Content: Name & Desc */
 .team-content {
     margin-bottom: 20px;
+    flex: 1; /* Đẩy footer xuống dưới cùng */
 }
 
 .team-name {
@@ -107,8 +159,15 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    min-height: 42px; /* Giữ chiều cao cố định cho 2 dòng */
 }
 
+    .team-description.empty {
+        font-style: italic;
+        color: #94a3b8;
+    }
+
+/* Card Stats (Members count, Boards count) */
 .team-stats {
     display: flex;
     gap: 16px;
@@ -127,11 +186,46 @@
     font-weight: 500;
 }
 
+    .team-stat-item svg {
+        color: #94a3b8;
+    }
+
+/* Members Preview (Avatar list) */
 .team-members-preview {
     margin-bottom: 16px;
+    min-height: 36px; /* Giữ chỗ nếu chưa có thành viên */
 }
 
-/* Responsive */
+/* Lưu ý: .members-avatars và .member-avatar sẽ dùng style từ site.css (.avatar-group)
+   Ở đây ta chỉ cần chỉnh margin nếu cần thiết */
+.members-avatars {
+    display: flex;
+    align-items: center;
+}
+
+/* Role Badge (Owner/Member) */
+.team-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    align-self: flex-start; /* Căn trái badge */
+}
+
+    .team-role-badge.owner {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .team-role-badge.member {
+        background: #e0f2fe;
+        color: #0369a1;
+    }
+
+/* 5. Responsive Design */
 @media (max-width: 1024px) {
     .stats-summary {
         grid-template-columns: 1fr;
@@ -141,5 +235,9 @@
 @media (max-width: 768px) {
     .teams-grid {
         grid-template-columns: 1fr;
+    }
+
+    .team-card {
+        height: auto; /* Trên mobile để chiều cao tự nhiên */
     }
 }

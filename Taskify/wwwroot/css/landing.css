@@ -1,8 +1,13 @@
-﻿/* Hero Section */
+﻿/* ==========================================================================
+   LANDING PAGE STYLES
+   ========================================================================== */
+
+/* --- 1. Hero Section (Banner chính) --- */
 .hero-section {
     background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
     padding: 80px 24px 120px;
     overflow: hidden;
+    position: relative;
 }
 
 .hero-container {
@@ -14,6 +19,7 @@
     align-items: center;
 }
 
+/* Badge (Trusted by...) */
 .hero-badge {
     display: inline-flex;
     align-items: center;
@@ -26,18 +32,21 @@
     font-weight: 600;
     color: #64748b;
     margin-bottom: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
     .hero-badge svg {
-        color: #f59e0b;
+        color: #f59e0b; /* Màu vàng ngôi sao/icon */
     }
 
+/* Typography đặc thù cho Landing */
 .hero-title {
     font-size: 56px;
     font-weight: 800;
     line-height: 1.1;
     color: #1e293b;
     margin-bottom: 24px;
+    letter-spacing: -0.02em;
 }
 
 .gradient-text {
@@ -52,30 +61,34 @@
     line-height: 1.7;
     color: #64748b;
     margin-bottom: 32px;
-    max-width: 500px;
+    max-width: 550px;
 }
 
+/* Hero Buttons */
 .hero-actions {
     display: flex;
     gap: 16px;
     margin-bottom: 48px;
+    flex-wrap: wrap;
 }
 
 .btn-hero {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     padding: 16px 32px;
     border-radius: 12px;
     font-size: 16px;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-hero-primary {
     background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
     color: white;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
 }
 
     .btn-hero-primary:hover {
@@ -93,11 +106,15 @@
     .btn-hero-secondary:hover {
         border-color: #0ea5e9;
         color: #0ea5e9;
+        background: #f8fafc;
     }
 
+/* Stats (Con số ấn tượng) */
 .hero-stats {
     display: flex;
     gap: 48px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0,0,0,0.05);
 }
 
 .stat-item {
@@ -115,12 +132,25 @@
     .stat-item span {
         font-size: 14px;
         color: #64748b;
+        font-weight: 500;
     }
 
-/* Hero Visual Animation */
+/* --- 2. Hero Visual Animation (Phần ảnh động bên phải) --- */
 .hero-visual {
     position: relative;
     height: 500px;
+    perspective: 1000px;
+}
+
+/* Animation Keyframes */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
 }
 
 .visual-card {
@@ -130,29 +160,35 @@
     padding: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     animation: float 6s ease-in-out infinite;
+    border: 1px solid rgba(255,255,255,0.5);
+    backdrop-filter: blur(10px);
 }
 
     .visual-card.card-1 {
-        top: 0;
+        top: 20px;
         left: 0;
-        width: 220px;
+        width: 240px;
         animation-delay: 0s;
+        z-index: 2;
     }
 
     .visual-card.card-2 {
-        top: 120px;
-        right: 40px;
-        width: 200px;
-        animation-delay: 1s;
+        top: 140px;
+        right: 20px;
+        width: 220px;
+        animation-delay: 2s; /* Chậm hơn để tạo nhịp điệu */
+        z-index: 1;
     }
 
     .visual-card.card-3 {
-        bottom: 40px;
-        left: 60px;
-        width: 210px;
-        animation-delay: 2s;
+        bottom: 60px;
+        left: 80px;
+        width: 230px;
+        animation-delay: 4s;
+        z-index: 3;
     }
 
+/* Nội dung bên trong Card Visual */
 .card-header {
     display: flex;
     align-items: center;
@@ -164,6 +200,13 @@
 
 .card-icon {
     font-size: 20px;
+    background: #f1f5f9;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
 }
 
 .card-header span {
@@ -185,19 +228,23 @@
     font-size: 13px;
     color: #475569;
     font-weight: 500;
+    border-left: 3px solid #cbd5e1;
 }
 
-@keyframes float {
-    0%, 100% {
-        transform: translateY(0px);
-    }
-
-    50% {
-        transform: translateY(-20px);
-    }
+/* Màu riêng cho từng card task giả lập */
+.card-1 .card-task {
+    border-left-color: #0ea5e9;
 }
 
-/* Features Section */
+.card-2 .card-task {
+    border-left-color: #f59e0b;
+}
+
+.card-3 .card-task {
+    border-left-color: #10b981;
+}
+
+/* --- 3. Features Section (Tính năng) --- */
 .features-section {
     padding: 100px 24px;
     background: white;
@@ -211,8 +258,11 @@
 .section-header {
     text-align: center;
     margin-bottom: 64px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }
-/* Override site.css if conflict */
+
 .section-badge {
     display: inline-block;
     padding: 6px 16px;
@@ -236,10 +286,10 @@
 .section-description {
     font-size: 18px;
     color: #64748b;
-    max-width: 600px;
-    margin: 0 auto;
+    line-height: 1.6;
 }
 
+/* Features Grid */
 .features-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -250,13 +300,15 @@
     padding: 32px;
     background: #f8fafc;
     border-radius: 20px;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
 }
 
     .feature-card:hover {
         background: white;
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
-        transform: translateY(-4px);
+        transform: translateY(-8px);
+        border-color: #e2e8f0;
     }
 
 .feature-icon {
@@ -266,14 +318,35 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     color: white;
+    font-size: 24px;
 }
 
+    /* Màu Icon cho từng loại feature */
     .feature-icon.kanban {
         background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
     }
-/* ... (Các màu icon khác tương tự file gốc) ... */
+
+    .feature-icon.team {
+        background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+    }
+
+    .feature-icon.automation {
+        background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    }
+
+    .feature-icon.analytics {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .feature-icon.mobile {
+        background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+    }
+
+    .feature-icon.integrations {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    }
 
 .feature-card h3 {
     font-size: 20px;
@@ -289,15 +362,114 @@
     margin: 0;
 }
 
-/* Responsive Landing */
-@media (max-width: 968px) {
+/* --- 4. CTA Section (Kêu gọi hành động cuối trang) --- */
+.cta-section {
+    background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+    padding: 100px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+    /* Hiệu ứng nền trang trí cho CTA (Optional) */
+    .cta-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+.cta-container {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.cta-content {
+    color: white;
+}
+
+    .cta-content h2 {
+        font-size: 48px;
+        font-weight: 800;
+        margin-bottom: 24px;
+        letter-spacing: -0.02em;
+    }
+
+    .cta-content p {
+        font-size: 20px;
+        opacity: 0.9;
+        margin-bottom: 40px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+.cta-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.btn-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 18px 48px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s;
+    background: white;
+    color: #0ea5e9;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.btn-cta-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    background: #fff;
+    color: #8b5cf6;
+}
+
+.cta-note {
+    font-size: 14px;
+    opacity: 0.8;
+    margin-top: 12px;
+}
+
+/* --- 5. Responsive Styles (Media Queries) --- */
+@media (max-width: 992px) {
     .hero-container {
         grid-template-columns: 1fr;
-        gap: 48px;
+        gap: 60px;
+        text-align: center;
+    }
+
+    .hero-description {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-actions {
+        justify-content: center;
+    }
+
+    .hero-stats {
+        justify-content: center;
     }
 
     .hero-visual {
         height: 400px;
+        max-width: 600px;
+        margin: 0 auto;
     }
 
     .features-grid {
@@ -305,12 +477,48 @@
     }
 }
 
-@media (max-width: 640px) {
-    .hero-actions {
-        flex-direction: column;
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 40px;
+    }
+
+    .section-title {
+        font-size: 32px;
+    }
+
+    .cta-content h2 {
+        font-size: 32px;
     }
 
     .features-grid {
         grid-template-columns: 1fr;
+    }
+
+    .visual-card {
+        transform: scale(0.9);
+    }
+
+    .hero-visual {
+        height: 350px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 32px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-hero {
+        width: 100%;
+    }
+
+    .hero-stats {
+        flex-direction: column;
+        gap: 24px;
     }
 }
