@@ -3,10 +3,11 @@
     ViewData["Title"] = "Register";
     Layout = "_LayoutPublic";
 }
-<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-<link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
-
+@section Styles {
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/landing.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
+}
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">

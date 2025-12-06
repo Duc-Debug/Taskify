@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Taskify.Models;
 using Taskify.Services;
-using Microsoft.AspNetCore.Identity;
 
 namespace Taskify.Controllers
 {
@@ -93,6 +94,71 @@ namespace Taskify.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
+        }
+
+        //---Method to Profile ----
+        // -------- PROFILE (GET) ------------
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            // 1. Lấy ID của user đang đăng nhập từ Cookie/Claims
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+            {
+                return RedirectToAction("Login");
+            }
+
+            // 2. Gọi Service để lấy thông tin chi tiết (Bạn cần implement hàm này)
+            // Lưu ý: Tôi giả định bạn sẽ thêm hàm GetUserProfileAsync vào IAccountService
+            var userProfile = await _accountService.GetUserProfileAsync(userId);
+
+            if (userProfile == null)
+            {
+                return NotFound();
+            }
+
+            return View(userProfile);
+        }
+
+        // -------- UPDATE PROFILE (POST) ------------
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile(ProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Nếu dữ liệu không hợp lệ, trả về view kèm lỗi
+                return View("Profile", model);
+            }
+
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+            {
+                return RedirectToAction("Login");
+            }
+
+            // 3. Gọi Service để cập nhật database (Bạn cần implement hàm này)
+            var result = await _accountService.UpdateProfileAsync(userId, model);
+
+            if (result)
+            {
+                TempData["SuccessMessage"] = "Profile updated successfully!";
+                return RedirectToAction("Profile");
+            }
+            else
+            {
+                ModelState.AddModelError("", "An error occurred while updating profile.");
+                return View("Profile", model);
+            }
+        }
+
+        // -------- CHANGE PASSWORD VIEW (GET) ------------
+        [Authorize]
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View();
         }
     }
 }
