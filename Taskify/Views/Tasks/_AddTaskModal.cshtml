@@ -1,4 +1,5 @@
 ﻿<!-- Quick Add Task Modal -->
+
 <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -115,63 +116,6 @@
         </div>
     </div>
 </div>
-
-<style>
-    .bg-gradient-primary {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    }
-
-    .modal-content {
-        border: none;
-        border-radius: 15px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    }
-
-    .modal-header {
-        border-bottom: none;
-        padding: 25px 30px;
-    }
-
-    .modal-body {
-        padding: 30px;
-    }
-
-    .modal-footer {
-        border-top: 1px solid #e5e7eb;
-        padding: 20px 30px;
-    }
-
-    .btn-group-quick-dates {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-
-        .btn-group-quick-dates .btn {
-            border-radius: 20px;
-        }
-
-    .btn-group {
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        border-radius: 8px;
-        overflow: hidden;
-    }
-
-        .btn-group .btn {
-            border-radius: 0 !important;
-        }
-
-    .invalid-feedback {
-        display: none;
-        font-size: 0.875rem;
-        color: #dc3545;
-    }
-
-    .was-validated .form-control:invalid ~ .invalid-feedback,
-    .was-validated .form-select:invalid ~ .invalid-feedback {
-        display: block;
-    }
-</style>
 
 <script>
     // Initialize modal

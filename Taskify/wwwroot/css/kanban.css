@@ -8,6 +8,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden; /* Ngăn cuộn trang chính, chỉ cuộn board */
+    width: 100%; /* Thêm cho chắc chắn */
+    max-width: 100%; /* Thêm để đảm bảo không tràn */
 }
 
 /* 2. Board Header (Phần thông tin trên cùng) */

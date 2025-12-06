@@ -61,7 +61,8 @@ body {
     margin-top: 70px; /* Khớp với chiều cao navbar */
     padding: 30px;
     transition: margin-left 0.3s ease;
-    width: 100%; /* Fix lỗi tràn content */
+    min-width:0;
+    width: 100%;/* Fix lỗi tràn content */
 }
 
     .main-content.sidebar-collapsed {
