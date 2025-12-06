@@ -2,7 +2,9 @@
 @{
     ViewData["Title"] = Model.Name;
 }
-
+@section Styles {
+    <link rel="stylesheet" href="~/css/teams.css" asp-append-version="true" />
+}
 <div class="team-details-container">
     <!-- Team Header -->
     <div class="team-header">
@@ -303,7 +305,7 @@
     </script>
 }
 
-<style>
+@* <style>
     .team-details-container {
         max-width: 1400px;
         margin: 0 auto;
@@ -815,4 +817,4 @@
             flex-wrap: wrap;
         }
     }
-</style>
+</style> *@

@@ -35,6 +35,9 @@ namespace Taskify.Services
             await _context.SaveChangesAsync();
             return newUser;
         }
+
+      
+
         public async Task<User> ValidateUserAsync(string email, string password)
         {
             var user = await _context.Users
@@ -47,5 +50,26 @@ namespace Taskify.Services
             return null;
 
         }
+        public async Task<ProfileViewModel> GetUserProfileAsync(Guid userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return null;
+            var profile = new ProfileViewModel
+            {
+                FullName = user.FullName,
+                Email = user.Email,
+                DateOfBirth = DateTime.Now,
+                Address = "",
+                Bio = "",
+                AvatarUrl = "https://ui-avatars.com/api/?name=" + Uri.EscapeDataString(user.FullName)
+            };
+            return profile;
+
+        }
+        public Task<bool> UpdateProfileAsync(Guid userId, ProfileViewModel model)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }
