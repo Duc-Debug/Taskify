@@ -5,9 +5,17 @@
 @section Styles {
     <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
 }
+
 <div class="profile-container">
+    <!-- Header -->
     <div class="profile-header">
-        <h2>My Profile</h2>
+        <h2>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            My Profile
+        </h2>
         <p>Manage your personal information and preferences</p>
     </div>
 
@@ -27,28 +35,64 @@
                         </div>
                     }
                 </div>
-                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('avatarUpload').click()">
+                <button type="button" class="btn-change-photo" onclick="document.getElementById('avatarUpload').click()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
                     Change Photo
                 </button>
                 <input type="file" id="avatarUpload" style="display: none;" accept="image/*" />
             </div>
 
             <div class="stats-section">
-                <h3>Statistics</h3>
+                <h3>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                    Statistics
+                </h3>
                 <div class="stat-item">
-                    <span class="stat-label">Total Tasks</span>
+                    <span class="stat-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                        Total Tasks
+                    </span>
                     <span class="stat-value">@Model.TotalTasks</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Completed</span>
+                    <span class="stat-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px; color: #059669;">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Completed
+                    </span>
                     <span class="stat-value text-success">@Model.CompletedTasks</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Pending</span>
+                    <span class="stat-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px; color: #d97706;">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Pending
+                    </span>
                     <span class="stat-value text-warning">@Model.PendingTasks</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Member Since</span>
+                    <span class="stat-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Member Since
+                    </span>
                     <span class="stat-value">@Model.MemberSince.ToString("MMM yyyy")</span>
                 </div>
             </div>
@@ -62,6 +106,9 @@
                 @if (TempData["SuccessMessage"] != null)
                 {
                     <div class="alert alert-success">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
                         @TempData["SuccessMessage"]
                     </div>
                 }
@@ -71,33 +118,68 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label asp-for="FullName">Full Name</label>
-                            <input asp-for="FullName" class="form-control" />
+                            <label asp-for="FullName">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                Full Name
+                            </label>
+                            <input asp-for="FullName" class="form-control" placeholder="Enter your full name" />
                             <span asp-validation-for="FullName" class="text-danger"></span>
                         </div>
 
                         <div class="form-group">
-                            <label asp-for="Email">Email Address</label>
-                            <input asp-for="Email" class="form-control" />
+                            <label asp-for="Email">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                                Email Address
+                            </label>
+                            <input asp-for="Email" class="form-control" placeholder="your@email.com" />
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label asp-for="DateOfBirth">Date of Birth</label>
+                            <label asp-for="DateOfBirth">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                Date of Birth
+                            </label>
                             <input asp-for="DateOfBirth" class="form-control" type="date" />
                             <span asp-validation-for="DateOfBirth" class="text-danger"></span>
                         </div>
 
                         <div class="form-group">
-                            <label asp-for="Address">Address</label>
-                            <input asp-for="Address" class="form-control" />
+                            <label asp-for="Address">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
+                                Address
+                            </label>
+                            <input asp-for="Address" class="form-control" placeholder="Your address" />
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label asp-for="Bio">Bio</label>
+                        <label asp-for="Bio">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            Bio
+                        </label>
                         <textarea asp-for="Bio" class="form-control" rows="4" placeholder="Tell us about yourself..."></textarea>
                     </div>
                 </div>
@@ -109,8 +191,14 @@
                         <div class="custom-checkbox">
                             <input asp-for="EmailNotifications" type="checkbox" id="emailNotif" />
                             <label for="emailNotif">
-                                <strong>Email Notifications</strong>
-                                <span class="checkbox-desc">Receive email updates about your tasks</span>
+                                <strong>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                    Email Notifications
+                                </strong>
+                                <span class="checkbox-desc">Receive email updates about your tasks and activities</span>
                             </label>
                         </div>
                     </div>
@@ -119,16 +207,33 @@
                         <div class="custom-checkbox">
                             <input asp-for="TaskReminders" type="checkbox" id="taskReminders" />
                             <label for="taskReminders">
-                                <strong>Task Reminders</strong>
-                                <span class="checkbox-desc">Get reminders for upcoming task deadlines</span>
+                                <strong>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                    </svg>
+                                    Task Reminders
+                                </strong>
+                                <span class="checkbox-desc">Get timely reminders for upcoming task deadlines</span>
                             </label>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                    <a asp-action="ChangePassword" class="btn btn-outline">Change Password</a>
+                    <button type="submit" class="btn-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Save Changes
+                    </button>
+                    <a asp-action="ChangePassword" class="btn-outline">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        Change Password
+                    </a>
                 </div>
             </form>
         </div>
@@ -137,4 +242,259 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Avatar upload preview
+        document.getElementById('avatarUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatarWrapper = document.querySelector('.avatar-wrapper');
+                    const existingImage = avatarWrapper.querySelector('.avatar-image');
+                    const placeholder = avatarWrapper.querySelector('.avatar-placeholder');
+
+                    if (existingImage) {
+                        existingImage.src = e.target.result;
+                    } else if (placeholder) {
+                        placeholder.remove();
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'avatar-image';
+                        img.alt = 'Profile Picture';
+                        avatarWrapper.appendChild(img);
+                    }
+
+                    // Add upload animation
+                    avatarWrapper.style.animation = 'none';
+                    setTimeout(() => {
+                        avatarWrapper.style.animation = 'pulse 0.6s ease';
+                    }, 10);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Add pulse animation for avatar
+        const style = document.createElement('style');
+        style.textContent = `
+            @@keyframes pulse {
+                0%, 100% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.05);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Form validation enhancement
+        const form = document.querySelector('.profile-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const submitButton = form.querySelector('.btn-primary');
+                if (submitButton && form.checkValidity()) {
+                    // Add loading state
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = `
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px; animation: spin 1s linear infinite;">
+                            <line x1="12" y1="2" x2="12" y2="6"></line>
+                            <line x1="12" y1="18" x2="12" y2="22"></line>
+                            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                            <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                            <line x1="2" y1="12" x2="6" y2="12"></line>
+                            <line x1="18" y1="12" x2="22" y2="12"></line>
+                            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                            <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                        </svg>
+                        Saving...
+                    `;
+                }
+            });
+        }
+
+        // Auto-hide success message
+        const successAlert = document.querySelector('.alert-success');
+        if (successAlert) {
+            setTimeout(() => {
+                successAlert.style.transition = 'all 0.5s ease';
+                successAlert.style.opacity = '0';
+                successAlert.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    successAlert.remove();
+                }, 500);
+            }, 5000);
+        }
+
+        // Add smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Character counter for Bio textarea
+        const bioTextarea = document.querySelector('textarea[name="Bio"]');
+        if (bioTextarea) {
+            const maxLength = 500;
+            const counter = document.createElement('div');
+            counter.style.cssText = 'text-align: right; margin-top: 6px; font-size: 13px; color: #64748b; font-weight: 500;';
+            counter.textContent = `${bioTextarea.value.length} / ${maxLength} characters`;
+            bioTextarea.parentElement.appendChild(counter);
+
+            bioTextarea.addEventListener('input', function() {
+                const length = this.value.length;
+                counter.textContent = `${length} / ${maxLength} characters`;
+
+                if (length > maxLength * 0.9) {
+                    counter.style.color = '#d97706';
+                }
+                if (length >= maxLength) {
+                    counter.style.color = '#dc2626';
+                    counter.style.fontWeight = '600';
+                }
+                if (length < maxLength * 0.9) {
+                    counter.style.color = '#64748b';
+                    counter.style.fontWeight = '500';
+                }
+            });
+        }
+
+        // Add focus indicators for accessibility
+        const inputs = document.querySelectorAll('.form-control, .custom-checkbox input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transition = 'all 0.3s ease';
+            });
+        });
+
+        // Checkbox animation
+        const checkboxes = document.querySelectorAll('.custom-checkbox input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const parent = this.closest('.custom-checkbox');
+                if (this.checked) {
+                    parent.style.borderColor = '#0ea5e9';
+                    parent.style.background = 'linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 100%)';
+                } else {
+                    parent.style.borderColor = '#e2e8f0';
+                    parent.style.background = 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)';
+                }
+            });
+
+            // Initialize state
+            if (checkbox.checked) {
+                const parent = checkbox.closest('.custom-checkbox');
+                parent.style.borderColor = '#0ea5e9';
+                parent.style.background = 'linear-gradient(135deg, #e0f2fe 0%, #ddd6fe 100%)';
+            }
+        });
+
+        // Add spinning animation for loading states
+        const spinStyle = document.createElement('style');
+        spinStyle.textContent = `
+            @@keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+        `;
+        document.head.appendChild(spinStyle);
+
+        // Stats animation on page load
+        const statValues = document.querySelectorAll('.stat-value');
+        statValues.forEach((stat, index) => {
+            const finalValue = parseInt(stat.textContent) || stat.textContent;
+            if (typeof finalValue === 'number' && !isNaN(finalValue)) {
+                stat.textContent = '0';
+                setTimeout(() => {
+                    let current = 0;
+                    const increment = finalValue / 30;
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= finalValue) {
+                            stat.textContent = finalValue;
+                            clearInterval(timer);
+                        } else {
+                            stat.textContent = Math.floor(current);
+                        }
+                    }, 30);
+                }, index * 100);
+            }
+        });
+
+        // Tooltip for stat items
+        const statItems = document.querySelectorAll('.stat-item');
+        statItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(6px) scale(1.02)';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0) scale(1)';
+            });
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + S to save
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                const submitBtn = document.querySelector('.btn-primary');
+                if (submitBtn) {
+                    submitBtn.click();
+                }
+            }
+
+            // Esc to focus out of inputs
+            if (e.key === 'Escape') {
+                document.activeElement.blur();
+            }
+        });
+
+        // Add save indicator
+        let saveTimeout;
+        const formInputs = document.querySelectorAll('.form-control, input[type="checkbox"]');
+        formInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                clearTimeout(saveTimeout);
+                const indicator = document.createElement('div');
+                indicator.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+                    color: #0284c7;
+                    padding: 12px 20px;
+                    border-radius: 10px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
+                `;
+                indicator.textContent = 'Unsaved changes';
+
+                const existingIndicator = document.querySelector('[data-save-indicator]');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+
+                indicator.setAttribute('data-save-indicator', 'true');
+                document.body.appendChild(indicator);
+
+                saveTimeout = setTimeout(() => {
+                    indicator.style.animation = 'slideOut 0.3s ease forwards';
+                    setTimeout(() => indicator.remove(), 300);
+                }, 3000);
+            });
+        });
+    </script>
 }
