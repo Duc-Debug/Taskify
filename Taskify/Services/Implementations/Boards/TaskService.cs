@@ -75,7 +75,11 @@ namespace Taskify.Services
         }
         public async Task DeleteTaskAsync(Guid taskId)
         {
-            var task = await _context.Tasks.FindAsync(taskId);
+           var task= await _context.Tasks
+                .Include(t=>t.Assignments)
+                .Include(t=>t.Comments)
+                .Include(t=>t.TaskHistories)
+                .FirstOrDefaultAsync(t=> t.Id == taskId);
             if (task != null)
             {
                 _context.Tasks.Remove(task);

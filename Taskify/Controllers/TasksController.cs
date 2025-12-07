@@ -46,8 +46,15 @@ namespace Taskify.Controllers
         }
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _taskService.DeleteTaskAsync(id);
-            return Ok(new { success = true });
+            try
+            {
+                await _taskService.DeleteTaskAsync(id);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
         }
         [HttpGet]
         public async Task<IActionResult> GetDetails(Guid id)

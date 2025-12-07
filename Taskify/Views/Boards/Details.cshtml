@@ -223,7 +223,27 @@
                 alert("LỖI: Không tìm thấy ô input ListId trong Modal! Hãy kiểm tra lại file _CreateModal.cshtml");
                 return;
             }
+                  function deleteTask(taskId) {
+            // 1. Xác nhận trước khi xóa
+            if (!confirm('Are you sure you want to delete thiso task?')) return;
 
+            // 2. Gọi API xóa
+            fetch(`/Tasks/Delete/${taskId}`, {
+                method: 'POST' // Khớp với [HttpPost] trong Controller
+            })
+            .then(response => {
+                if (response.ok) {
+                    // 3. Nếu thành công -> Xóa card khỏi giao diện ngay lập tức
+                    const taskCard = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+                    if (taskCard) taskCard.remove();
+
+                    location.reload();
+                } else {
+                    alert("Cannot delete task. Please try again.");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
             // 2. Mở Modal
             const modalEl = document.getElementById('createTaskModal');
             if(modalEl){
