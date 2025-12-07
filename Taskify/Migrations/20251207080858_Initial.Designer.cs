@@ -11,8 +11,8 @@ using Taskify.Data;
 namespace Taskify.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251203162130_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251207080858_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
