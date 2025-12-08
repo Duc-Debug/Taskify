@@ -68,6 +68,7 @@ namespace Taskify.Services
                         Title = t.Title,
                         Priority = t.Priority,
                         DueDate = t.DueDate,
+                        Status=t.Status,
                         Assignees = t.Assignments.Select(a => new MemberViewModel
                         {
                             Id = a.User.Id,
@@ -149,6 +150,29 @@ namespace Taskify.Services
             if (board != null && board.OwnerId == userId)
             {
                 _context.Boards.Remove(board);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task CreateListAsync(Guid boardId, string title, Guid userId)
+        {
+          var board = await _context.Boards
+                .Include(b => b.Lists)
+                .FirstOrDefaultAsync(b => b.Id == boardId);
+            if (board != null && (board.OwnerId == userId || board.TeamId !=null))
+            {
+                var newOrder = board.Lists.Any() ? board.Lists.Max(l => l.Order) + 1 : 0;
+
+                // 3. Tạo List mới
+                var newList = new TaskList
+                {
+                    Id = Guid.NewGuid(),
+                    BoardId = boardId,
+                    Title = title,
+                    Order = newOrder,
+                    Tasks = new List<TaskItem>() // Khởi tạo list rỗng
+                };
+                _context.TaskLists.Add(newList);
                 await _context.SaveChangesAsync();
             }
         }

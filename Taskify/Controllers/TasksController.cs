@@ -22,7 +22,7 @@ namespace Taskify.Controllers
         {
             if (request == null) return BadRequest();
             await _taskService.MoveTaskAsync(request.TaskId, request.TargetListId, request.NewPosition);
-            return Ok(new {success = true});
+            return Ok(new { success = true });
         }
         [HttpPost]
         public async Task<IActionResult> Create(TaskCreateViewModel model)
@@ -69,15 +69,20 @@ namespace Taskify.Controllers
         {
             // Lay User
             var userIdstring = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if(string.IsNullOrEmpty(userIdstring)) return RedirectToAction("Login","Account");
+            if (string.IsNullOrEmpty(userIdstring)) return RedirectToAction("Login", "Account");
             var userId = Guid.Parse(userIdstring);
+
+            ViewBag.CurrentFilter = filter;
             //Lay DL tu Service
             var tasks = await _taskService.GetTasksByUserIdAsync(userId);
             //Tinh Stats 
             ViewBag.TotalTasks = tasks.Count;
-            ViewBag.CompletedTasks = tasks.Count(t => false);
-            ViewBag.InProgressTasks = tasks.Count(t => false);
-            ViewBag.OverdueTasks = tasks.Count(t => t.DueDate.HasValue && t.DueDate.Value < DateTime.Now);
+            ViewBag.PendingTasks = tasks.Count(t => t.Status == Models.TaskStatus.Pending);
+            ViewBag.CompletedTasks = tasks.Count(t => t.Status == Models.TaskStatus.Completed);
+            ViewBag.InProgressTasks = tasks.Count(t => t.Status == Models.TaskStatus.InProgress);
+            ViewBag.OverdueTasks = tasks.Count(t => t.DueDate.HasValue 
+                                                    && t.DueDate.Value.Date < DateTime.Now.Date 
+                                                    && t.Status != Models.TaskStatus.Completed);
 
             switch (filter)
             {
@@ -85,7 +90,7 @@ namespace Taskify.Controllers
                     tasks = tasks.Where(t => t.DueDate.HasValue && t.DueDate.Value.Date == DateTime.Today).ToList();
                     break;
                 case "overdue":
-                    tasks = tasks.Where(t => t.DueDate.HasValue && t.DueDate.Value < DateTime.Now).ToList();
+                    tasks = tasks.Where(t => t.DueDate.HasValue && t.DueDate.Value.Date < DateTime.Now.Date && t.Status != Models.TaskStatus.Completed).ToList();
                     break;
             }
             return View(tasks);

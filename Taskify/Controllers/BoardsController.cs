@@ -89,7 +89,6 @@ namespace Taskify.Controllers
                 return Content($"KHÔNG XÓA ĐƯỢC BOARD! Lỗi Database: {ex.Message} - {ex.InnerException?.Message}");
             }
         }
-
         [HttpPost]
         public async Task<IActionResult> Edit(BoardEditViewModel model)
         {
@@ -97,5 +96,21 @@ namespace Taskify.Controllers
             await _boardService.UpdateBoardAsync(model, userId);
             return RedirectToAction(nameof(Details), new { id = model.Id });
         }
+        [HttpPost]
+        public async Task<IActionResult> CreateList([FromBody] CreateListRequest request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.Title))
+            {
+                return BadRequest("Dữ liệu không hợp lệ.");
+            }
+            var userId = GetCurrentUserId();
+            await _boardService.CreateListAsync(request.BoardId, request.Title, userId);
+            return Ok(new { success = true });
+        }
+    }
+    public class CreateListRequest
+    {
+        public Guid BoardId { get; set; }
+        public string Title { get; set; }
     }
 }

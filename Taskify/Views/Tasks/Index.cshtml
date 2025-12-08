@@ -9,6 +9,25 @@
 }
 
 <div class="mytasks-container">
+    @{
+        var currentFilter = ViewBag.CurrentFilter as string ?? "all";
+        string filterLable = "Filter";
+        switch (currentFilter)
+        {
+            case "today":
+                filterLable = "Today";
+                break;
+            case "week":
+                filterLable = "This Week";
+                break;
+            case "overdue":
+                filterLable = "Overdue";
+                break;
+            default:
+                filterLable = "Filter";
+                break;
+        }
+    }
     <!-- Page Header -->
     <div class="page-header">
         <div class="header-content">
@@ -36,14 +55,22 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
                     </svg>
-                    Filter
+                    @filterLable
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="?filter=all">All Tasks</a></li>
-                    <li><a class="dropdown-item" href="?filter=today">Today</a></li>
-                    <li><a class="dropdown-item" href="?filter=week">This Week</a></li>
-                    <li><a class="dropdown-item" href="?filter=overdue">Overdue</a></li>
-                </ul>
+               <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+                <a class="dropdown-item @(currentFilter == "all" ? "active" : "")" href="?filter=all">All Tasks</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(currentFilter == "today" ? "active" : "")" href="?filter=today">Today</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(currentFilter == "week" ? "active" : "")" href="?filter=week">This Week</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(currentFilter == "overdue" ? "active" : "")" href="?filter=overdue">Overdue</a>
+            </li>
+        </ul>
             </div>
         </div>
     </div>
@@ -105,43 +132,49 @@
     </div>
 
     <!-- Filters & Search Bar -->
-    <div class="toolbar-card">
-        <div class="toolbar-tabs">
-            <ul class="nav nav-pills" id="taskTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all" type="button">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="8" y1="6" x2="21" y2="6"/>
-                            <line x1="8" y1="12" x2="21" y2="12"/>
-                            <line x1="8" y1="18" x2="21" y2="18"/>
-                            <line x1="3" y1="6" x2="3.01" y2="6"/>
-                            <line x1="3" y1="12" x2="3.01" y2="12"/>
-                            <line x1="3" y1="18" x2="3.01" y2="18"/>
+   
+           <div class="toolbar-card mb-4">
+                <div class="toolbar-tabs">
+                    <div class="nav nav-pills">
+                        <button class="nav-link active" data-filter="all">
+                            All Tasks <span class="tab-badge ms-2">@ViewBag.TotalTasks</span>
+                        </button>
+                        <button class="nav-link" data-filter="pending">
+                            Pending <span class="tab-badge ms-2">@ViewBag.PendingTasks</span>
+                        </button>
+                        <button class="nav-link" data-filter="inprogress">
+                            In Progress <span class="tab-badge ms-2">@ViewBag.InProgressTasks</span>
+                        </button>
+                        <button class="nav-link" data-filter="completed">
+                            Completed <span class="tab-badge ms-2">@ViewBag.CompletedTasks</span>
+                        </button>
+                        <button class="nav-link" data-filter="overdue">
+                            Overdue <span class="tab-badge ms-2 bg-danger text-white">@ViewBag.OverdueTasks</span>
+                        </button>
+                    </div>
+                </div>
+    
+                 <div class="toolbar-actions">
+                    <div class="common-search-box">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
                         </svg>
-                        All 
-                        <span class="tab-badge">@Model.Count()</span>
-                    </button>
-                </li>
-            </ul>
-        </div>
-
-        <div class="toolbar-actions">
-            <div class="common-search-box">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.35-4.35"/>
-                </svg>
-            </div>
+                    </div>
             
-            <select class="sort-select" onchange="sortTasks(this.value)">
-                <option value="date-desc">Date (Newest)</option>
-                <option value="date-asc">Date (Oldest)</option>
-                <option value="priority-high">Priority (High to Low)</option>
-                <option value="priority-low">Priority (Low to High)</option>
-                <option value="name-asc">Name (A-Z)</option>
-                <option value="name-desc">Name (Z-A)</option>
-            </select>
-        </div>
+                    <select class="sort-select" onchange="sortTasks(this.value)">
+                        <option value="date-desc">Date (Newest)</option>
+                        <option value="date-asc">Date (Oldest)</option>
+                        <option value="priority-high">Priority (High to Low)</option>
+                        <option value="priority-low">Priority (Low to High)</option>
+                        <option value="name-asc">Name (A-Z)</option>
+                        <option value="name-desc">Name (Z-A)</option>
+                    </select>
+                </div>
+            </div>
+  
+
+      
     </div>
 
     <!-- Tasks List -->
@@ -152,19 +185,25 @@
                 {
                     @foreach (var task in Model)
                     {
-                        <div class="task-item-wrapper"
+                            bool isOverdue = task.Status != Taskify.Models.TaskStatus.Completed
+                                                            && task.DueDate.HasValue
+                                                            &&task.DueDate.Value.Date < DateTime.Now.Date;
+                        
+                        <div class="task-item-wrapper @(task.Status == Taskify.Models.TaskStatus.Completed ? "opacity-50" : "")"
                              data-task-id="@task.Id"
                              data-priority="@((int)task.Priority)"
-                             data-created-date="@task.CreatedAt.ToString("yyyy-MM-dd")"
-                             data-title="@task.Title">
-                             
-                             <partial name="~/Views/Shared/_TaskCard.cshtml" model="@(new Taskify.Models.TaskCardViewModel { 
+                             data-title="@task.Title.ToLower()"
+                             data-status="@task.Status.ToString().ToLower()" 
+                             data-overdue="@isOverdue.ToString().ToLower()">
+         
+                            <partial name="~/Views/Shared/_TaskCard.cshtml" model="@(new Taskify.Models.TaskCardViewModel { 
                                  Id = task.Id, 
                                  Title = task.Title, 
                                  Priority = task.Priority, 
                                  DueDate = task.DueDate,
-                                 Assignees = task.Assignees
-                             })" />
+                                 Assignees = task.Assignees,
+                                 Status = task.Status, 
+                            })" />
                         </div>
                     }
                 }
@@ -234,6 +273,45 @@
 
             tasks.forEach(task => tasksList.appendChild(task));
         }
+        document.addEventListener('DOMContentLoaded', function() {
+        // Lấy tất cả nút filter
+        const filterBtns = document.querySelectorAll('[data-filter]');
+        const taskItems = document.querySelectorAll('.task-item-wrapper');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 1. Update UI (Active class)
+                filterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                // 2. Lấy loại filter (all, pending, overdue...)
+                const filterType = this.getAttribute('data-filter');
+
+                // 3. Lọc danh sách
+                taskItems.forEach(item => {
+                    const status = item.getAttribute('data-status'); // pending, inprogress...
+                    const isOverdue = item.getAttribute('data-overdue') === 'true';
+
+                    let shouldShow = false;
+
+                    if (filterType === 'all') {
+                        shouldShow = true;
+                    } 
+                    else if (filterType === 'overdue') {
+                        shouldShow = isOverdue;
+                    } 
+                    else {
+                        // So sánh status (pending == pending, etc)
+                        // Lưu ý: data-status trong HTML đang là lowercase (nhờ .ToLower())
+                        shouldShow = (status === filterType);
+                    }
+
+                    // 4. Ẩn/Hiện
+                    item.style.display = shouldShow ? 'block' : 'none';
+                });
+            });
+        });
+    });
     </script>
 }
 

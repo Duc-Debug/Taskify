@@ -18,8 +18,10 @@ namespace Taskify.Services
                 .Where(ta => ta.UserId == userId);
             var totalTasks = await userTasksQuery.CountAsync();
             var completedTasks = await userTasksQuery.CountAsync(ta => ta.Task.Status == Models.TaskStatus.Completed);
-              
-            var pendingTasks = totalTasks - completedTasks;
+
+            var pendingTasks = await userTasksQuery.CountAsync(ta =>
+         ta.Task.Status == Models.TaskStatus.Pending ||
+         ta.Task.Status == Models.TaskStatus.InProgress);
             // 2. Lấy Board Cá Nhân (MỚI THÊM)
             var personalBoards = await _context.Boards
                 .Where(b => b.OwnerId == userId && b.TeamId == null) // Board của mình & không thuộc team

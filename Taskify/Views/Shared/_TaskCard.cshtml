@@ -56,7 +56,16 @@
     </div>
 
     <!-- Due Date (if exists) -->
-    @if (Model.DueDate.HasValue)
+    @if (Model.Status == Taskify.Models.TaskStatus.Completed)
+    {
+        <div class="card-due-date" style="background: #d1fae5; color: #059669;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span>Completed</span>
+        </div>
+    }
+    else if (Model.DueDate.HasValue)
     {
         var daysUntilDue = (Model.DueDate.Value.Date - DateTime.Now.Date).Days;
         var dueDateClass = daysUntilDue < 0 ? "overdue" : daysUntilDue <= 2 ? "urgent" : "normal";

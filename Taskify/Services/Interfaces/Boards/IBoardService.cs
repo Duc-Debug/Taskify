@@ -14,5 +14,6 @@ namespace Taskify.Services
         Task CreateBoardAsync(BoardCreateViewModel model, Guid userId);
         Task UpdateBoardAsync(BoardEditViewModel model, Guid userId);
         Task DeleteBoardAsync(Guid boardId, Guid userId);
+        Task CreateListAsync(Guid boardId, string title, Guid userId);
     }
 }

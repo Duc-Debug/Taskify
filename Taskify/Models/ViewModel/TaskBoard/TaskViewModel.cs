@@ -13,6 +13,8 @@ namespace Taskify.Models
         public int CommentsCount { get; set; }
         public int AttachmentsCount { get; set; }
 
+        public TaskStatus Status { get; set; }
+
         // Hiển thị avatar những người được giao
         public List<MemberViewModel> Assignees { get; set; } = new List<MemberViewModel>();
     }
@@ -26,7 +28,7 @@ namespace Taskify.Models
         public TaskPriority Priority { get; set; }
         public DateTime? DueDate { get; set; }
         public DateTime CreatedAt { get; set; }
-
+        public TaskStatus Status { get; set; }
         public Guid ListId { get; set; }
         public string ListName { get; set; }
 

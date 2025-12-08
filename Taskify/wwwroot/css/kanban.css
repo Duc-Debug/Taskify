@@ -302,10 +302,11 @@
 .list-tasks {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: visible;
     margin-bottom: 16px;
     min-height: 60px;
     padding-right: 4px;
+    padding-bottom: 50px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -573,6 +574,7 @@
 /* Task hover state trong list */
 .list-tasks .task-card {
     transition: all 0.3s ease;
+    overflow: visible !important;
 }
 
     .list-tasks .task-card:hover {

@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="~/css/tasks.css" asp-append-version="true" />
 
 }
+<style>
+    .cursor-pointer { cursor: pointer; opacity: 0.8; transition: 0.2s; }
+    .cursor-pointer:hover { opacity: 1; transform: scale(1.05); }
+</style>
 
 <div class="kanban-container">
     <!-- Board Header -->
@@ -155,6 +159,11 @@
 
             <div class="add-list-form" id="addListForm" style="display: none;">
                 <input type="text" class="form-control" id="newListTitle" placeholder="Enter list title..." />
+                <div class="quick-names mb-3 d-flex gap-2">
+        <span class="badge bg-secondary cursor-pointer" onclick="setListName('To Do')">To Do</span>
+        <span class="badge bg-primary cursor-pointer" onclick="setListName('Doing')">Doing</span>
+        <span class="badge bg-success cursor-pointer" onclick="setListName('Done')">Done</span>
+    </div>
                 <div class="form-actions">
                     <button class="btn btn-primary btn-sm" onclick="saveNewList()">Add List</button>
                     <button class="btn btn-secondary btn-sm" onclick="cancelAddList()">Cancel</button>
@@ -290,22 +299,36 @@
             document.getElementById('newListTitle').value = '';
         }
 
-        function saveNewList() {
-            const title = document.getElementById('newListTitle').value.trim();
-            if (!title) return;
+       function saveNewList() {
+    const titleInput = document.getElementById('newListTitle');
+    const title = titleInput.value.trim();
+    
+    if (!title) {
+        titleInput.focus();
+        return;
+    }
 
-            // Lưu ý: Đường dẫn Controller của bạn là Boards (số nhiều) hay Board (số ít)?
-            // Trong code cũ là BoardsController, nên URL phải là /Boards/...
-            fetch('/Boards/CreateList', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ boardId: '@Model.Id', title: title }) // Cần check lại API này bên Controller
-            })
-            .then(response => {
-                 // Reload để thấy cột mới
-                 location.reload();
-            });
+    // Gọi API
+    fetch('/Boards/CreateList', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json' 
+        },
+        // Đảm bảo tên thuộc tính khớp với CreateListRequest (boardId, title)
+        body: JSON.stringify({ 
+            boardId: '@Model.Id', 
+            title: title 
+        }) 
+    })
+    .then(response => {
+        if (response.ok) {
+             location.reload(); // Tải lại trang để hiện cột mới
+        } else {
+            alert("Failed to create list.");
         }
+    })
+    .catch(err => console.error(err));
+}
 
         // API Cập nhật vị trí (Giữ nguyên)
         function updateTaskPosition(taskId, newListId, newIndex) {
@@ -315,6 +338,11 @@
                 body: JSON.stringify({ taskId: taskId, targetListId: newListId, newPosition: newIndex })
             });
         }
+        // Hàm điền tên nhanh
+function setListName(name) {
+    document.getElementById('newListTitle').value = name;
+    document.getElementById('newListTitle').focus();
+}
     </script>
 }
 
