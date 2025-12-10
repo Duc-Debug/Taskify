@@ -107,6 +107,7 @@ namespace Taskify.Services
                     break;
 
                 case "blank":
+                    board.Lists.Add(new TaskList { Id = Guid.NewGuid(), Title = "Backlog", Order = 0 });
                     break;
 
                 case "kanban":
@@ -175,6 +176,26 @@ namespace Taskify.Services
                 _context.TaskLists.Add(newList);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task UpdateListOrderAsync(Guid boardId, Guid listId, int newIndex)
+        {
+           var list = await _context.TaskLists
+                .Where(l => l.BoardId == boardId)
+                .OrderBy(l => l.Order)
+                .ToListAsync();
+
+            var listToMove = list.FirstOrDefault(l => l.Id == listId);
+            if(listToMove == null) return;
+            list.Remove(listToMove);
+
+            if(newIndex < 0) newIndex = 0;
+            if( newIndex > list.Count) newIndex = list.Count;
+            list.Insert(newIndex, listToMove);
+
+            for(int i=0; i< list.Count; i++) list[i].Order = i;
+           _context.TaskLists.UpdateRange(list);
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -21,7 +21,7 @@
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-icon" title="Edit" onclick="openEditTaskModal('@Model.Id')">
+                    <button class="btn-icon" title="Edit" onclick="editTask('@Model.Id')">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -57,7 +57,7 @@
                                     <polyline points="10 9 9 9 8 9" />
                                 </svg>
                                 <h4>Description</h4>
-                                <button class="btn-edit-desc" onclick="toggleDescriptionEdit()">Edit</button>
+                               
                             </div>
                             <div class="description-display" id="descDisplay">
                                 @if (!string.IsNullOrEmpty(Model.Description))
@@ -314,7 +314,20 @@
             });
         }
     }
-
+     function editTask(taskId) {
+        fetch(`/Tasks/Edit/${taskId}`)
+            .then(res => {
+                if(!res.ok) throw new Error('Cannot load edit form');
+                return res.text();
+            })
+            .then(html => {
+                const container = document.getElementById('edit-task-modal-container');
+                container.innerHTML = html;
+                const modal = new bootstrap.Modal(container.querySelector('.modal'));
+                modal.show();
+            })
+            .catch(e => console.error(e));
+    }
     function moveTask() {
         // Show move task modal
         console.log('Move task');

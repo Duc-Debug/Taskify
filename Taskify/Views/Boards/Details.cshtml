@@ -69,16 +69,16 @@
             }
 
             <!-- Action Buttons -->
-            <button class="btn btn-icon" title="Filter">
+            @* <button class="btn btn-icon" title="Filter">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
                 </svg>
-            </button>
+            </button> *@
 
             <button class="btn btn-icon" title="Board Settings">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
                     <circle cx="12" cy="12" r="3" />
-                    <path d="M12 1v6m0 6v6m8.66-13.66-4.24 4.24m-4.24 4.24-4.24 4.24m13.66-.24-4.24-4.24m-4.24-4.24L3.34 3.34" />
                 </svg>
             </button>
 
@@ -215,7 +215,23 @@
                 });
             }
         }
-
+        function updateListOrder(listId, newIndex) {
+            console.log(`Moving List ${listId} to position ${newIndex}`);
+                fetch('/Boards/MoveList', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                        BoardId:'@Model.Id',
+                                        ListId: listId, 
+                                        NewIndex: newIndex })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        alert("Failed to move list.");
+                    }
+                        })
+               .catch(err => console.error("Error:",err));
+        }
         // --- CÁC HÀM XỬ LÝ TASK ---
 
         // SỬA LỖI: Hàm addTask giờ sẽ mở Modal thay vì chuyển trang
@@ -261,6 +277,31 @@
             } else {
                 alert("LỖI: Không tìm thấy Modal trong HTML.");
             }
+        }
+                // Hàm mở Modal Sửa Task
+        function editTask(taskId) {
+            // 1. Gọi AJAX để lấy HTML của Modal Sửa
+            fetch(`/Tasks/Edit/${taskId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Could not load task");
+                    return response.text();
+                })
+                .then(html => {
+                    // 2. Nhúng HTML vào một div container (bạn cần tạo div này trong view chính)
+                    let container = document.getElementById('edit-task-modal-container');
+                    if (!container) {
+                        container = document.createElement('div');
+                        container.id = 'edit-task-modal-container';
+                        document.body.appendChild(container);
+                    }
+                    container.innerHTML = html;
+
+                    // 3. Hiển thị Modal
+                    const modalEl = container.querySelector('.modal');
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                })
+                .catch(error => console.error(error));
         }
 
         // Hàm mở Modal Chi Tiết Task (AJAX)

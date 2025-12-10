@@ -107,10 +107,23 @@ namespace Taskify.Controllers
             await _boardService.CreateListAsync(request.BoardId, request.Title, userId);
             return Ok(new { success = true });
         }
+        [HttpPost]
+        public async Task<IActionResult> MoveList([FromBody] MoveListRequest request)
+        {
+            if(request == null) return BadRequest("Dữ liệu không hợp lệ.");
+           await _boardService.UpdateListOrderAsync(request.BoardId, request.ListId, request.NewIndex);
+            return Ok(new { success = true });
+        }
     }
     public class CreateListRequest
     {
         public Guid BoardId { get; set; }
         public string Title { get; set; }
+    }
+    public class MoveListRequest
+    {
+        public Guid BoardId { get; set; }
+        public Guid ListId { get; set; }
+        public int NewIndex { get; set; }
     }
 }

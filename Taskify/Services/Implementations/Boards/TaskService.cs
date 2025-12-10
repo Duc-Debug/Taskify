@@ -32,7 +32,7 @@ namespace Taskify.Services
                     // Chuẩn hóa tên về chữ thường để so sánh
                     var listTitle = targetList.Title.Trim().ToLower();
 
-                    if (listTitle == "to do" || listTitle == "todo")
+                    if (listTitle == "to do" || listTitle == "todo"||listTitle=="backlog")
                     {
                         task.Status = Models.TaskStatus.Pending;
                     }
@@ -57,6 +57,24 @@ namespace Taskify.Services
 
         public async Task<TaskItem> CreateTaskAsync(TaskCreateViewModel model, Guid userId)
         {
+            var status =Models.TaskStatus.Pending;
+            var list = await _context.TaskLists.FindAsync(model.ListId);
+            if(list != null)
+            {
+                var listTitle = list.Title.Trim().ToLower();
+                if (listTitle == "done" || listTitle == "completed" || listTitle == "complete" || listTitle == "finished")
+                {
+                    status = Models.TaskStatus.Completed;
+                }
+                else if (listTitle == "to do" || listTitle == "todo"||listTitle=="backlog")
+                {
+                    status = Models.TaskStatus.Pending;
+                }
+                else
+                {
+                    status = Models.TaskStatus.InProgress;
+                }
+            }
             var task = new TaskItem
             {
                 Id = Guid.NewGuid(),
@@ -65,6 +83,7 @@ namespace Taskify.Services
                 DueDate = model.DueDate,
                 Priority = model.Priority,
                 ListId = model.ListId,
+                Status = status,
                 Order = 999,
                 Assignments = new List<TaskAssignment>()
             };
@@ -205,6 +224,64 @@ namespace Taskify.Services
             // SaveChangesAsync sẽ được gọi ở cuối các hàm Public, 
             // nhưng gọi luôn ở đây để đảm bảo History được lưu ngay lập tức
             await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateTaskAsync(TaskEditViewModel model, Guid userId)
+        {
+            var task = await _context.Tasks
+                .Include(t => t.Assignments)
+                .FirstOrDefaultAsync(t => t.Id == model.Id);
+            if (task == null) return;
+
+            task.Title = model.Title;
+            task.Description = model.Description;
+            task.Priority = model.Priority;
+            task.DueDate = model.DueDate;
+            _context.TaskAssignments.RemoveRange(task.Assignments);
+            if(model.SelectedAssigneeIds != null)
+            {
+                foreach(var assigneeId in model.SelectedAssigneeIds)
+                {
+                    task.Assignments.Add(new TaskAssignment
+                    {
+                        Id = Guid.NewGuid(),
+                        TaskId = task.Id,
+                        UserId = assigneeId
+                    });
+                }
+            }
+
+            _context.Tasks.Update(task);
+            await LogHistoryAsync(task.Id, "Updated task details");
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<TaskEditViewModel> GetTaskForEditAsync(Guid taskId)
+        {
+           var task = await _context.Tasks
+                .Include(t => t.Assignments)
+                .Include(t => t.List)
+                .FirstOrDefaultAsync(t => t.Id == taskId);
+            if (task == null) return null;
+            var assignedUserIds = task.Assignments.Select(a => a.UserId).ToList();
+            return new TaskEditViewModel
+            {
+                Id = task.Id,
+                Title = task.Title,
+                Description = task.Description,
+                Priority = task.Priority,
+                DueDate = task.DueDate,
+                BoardId = task.List.BoardId,
+                ListId = task.ListId,
+                SelectedAssigneeIds = assignedUserIds,
+                //AvailableMembers = await _context.BoardMembers
+                //    .Where(bm => bm.BoardId == task.List.BoardId)
+                //    .Select(bm => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                //    {
+                //        Value = bm.UserId.ToString(),
+                //        Text = bm.User.FullName
+                //    }).ToListAsync()
+            };
         }
     }
 }

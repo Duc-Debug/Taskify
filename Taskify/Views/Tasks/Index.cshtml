@@ -32,13 +32,9 @@
     <div class="page-header">
         <div class="header-content">
             <div class="header-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="9 11 12 14 22 4"/>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                </svg>
             </div>
             <div>
-                <h1>My Tasks</h1>
+                <h1>My Tasks</h1>           
                 <p>Manage and track your tasks efficiently</p>
             </div>
         </div>
@@ -155,12 +151,6 @@
                 </div>
     
                  <div class="toolbar-actions">
-                    <div class="common-search-box">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <path d="m21 21-4.35-4.35"/>
-                        </svg>
-                    </div>
             
                     <select class="sort-select" onchange="sortTasks(this.value)">
                         <option value="date-desc">Date (Newest)</option>
@@ -171,6 +161,13 @@
                         <option value="name-desc">Name (Z-A)</option>
                     </select>
                 </div>
+                <div class="common-search-box search-box">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                      <input type="text" id="taskSearchInput" placeholder="Search tasks..."/>
+                    </div>
             </div>
   
 
@@ -232,8 +229,9 @@
     </div>
 </div>
 
+<partial name="_CreateModal" model="new Taskify.Models.TaskCreateViewModel()" />
 <div id="task-details-modal-container"></div>
-
+<div id="edit-task-modal-container"></div>
 @section Scripts {
     <script>
         function filterTasks() {
@@ -273,45 +271,106 @@
 
             tasks.forEach(task => tasksList.appendChild(task));
         }
+       
         document.addEventListener('DOMContentLoaded', function() {
         // Lấy tất cả nút filter
+        const searchInput = document.getElementById('taskSearchInput');
         const filterBtns = document.querySelectorAll('[data-filter]');
         const taskItems = document.querySelectorAll('.task-item-wrapper');
 
+        let currentFilter ='all';
+        searchInput.addEventListener('input', function() {
+            filterAndSearch();
+        });
+           
         filterBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                // 1. Update UI (Active class)
+            btn.addEventListener('click', function(e) {
+                // Nếu dùng thẻ <a> trong dropdown thì chặn chuyển trang
+                if(this.tagName === 'A') e.preventDefault(); 
+
+                // Update giao diện active (nếu cần)
                 filterBtns.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
 
-                // 2. Lấy loại filter (all, pending, overdue...)
-                const filterType = this.getAttribute('data-filter');
-
-                // 3. Lọc danh sách
-                taskItems.forEach(item => {
-                    const status = item.getAttribute('data-status'); // pending, inprogress...
-                    const isOverdue = item.getAttribute('data-overdue') === 'true';
-
-                    let shouldShow = false;
-
-                    if (filterType === 'all') {
-                        shouldShow = true;
-                    } 
-                    else if (filterType === 'overdue') {
-                        shouldShow = isOverdue;
-                    } 
-                    else {
-                        // So sánh status (pending == pending, etc)
-                        // Lưu ý: data-status trong HTML đang là lowercase (nhờ .ToLower())
-                        shouldShow = (status === filterType);
-                    }
-
-                    // 4. Ẩn/Hiện
-                    item.style.display = shouldShow ? 'block' : 'none';
-                });
+                // Update biến filter
+                currentFilter = this.getAttribute('data-filter');
+                
+                // Gọi hàm lọc chung
+                filterAndSearch();
             });
         });
+        function filterAndSearch() {
+            const searchTerm = searchInput.value.toLowerCase();
+
+            taskItems.forEach(item => {
+                // Lấy dữ liệu từ data attribute
+               
+                const title = item.getAttribute('data-title') || ''; 
+                const status = item.getAttribute('data-status');
+                const isOverdue = item.getAttribute('data-overdue') === 'true';
+
+                // -- Logic 1: Check Search --
+                const matchesSearch = title.includes(searchTerm);
+
+                // -- Logic 2: Check Filter --
+                let matchesFilter = false;
+                if (currentFilter === 'all') {
+                    matchesFilter = true;
+                } else if (currentFilter === 'overdue') {
+                    matchesFilter = isOverdue;
+                } else {
+                    matchesFilter = (status === currentFilter);
+                }
+
+                // -- Kết quyết: Phải thỏa mãn CẢ HAI --
+                if (matchesSearch && matchesFilter) {
+                    item.style.display = ''; // Hiện
+                } else {
+                    item.style.display = 'none'; // Ẩn
+                }
+            });
+        }
     });
+    function openTaskDetails(taskId) {
+        fetch(`/Tasks/GetDetails/${taskId}`)
+            .then(res => {
+                if(!res.ok) throw new Error('Cannot load details');
+                return res.text();
+            })
+            .then(html => {
+                const container = document.getElementById('task-details-modal-container');
+                container.innerHTML = html;
+                const modal = new bootstrap.Modal(container.querySelector('.modal'));
+                modal.show();
+            })
+            .catch(e => console.error(e));
+    }
+
+    // --- [MỚI] Hàm mở Modal Sửa Task ---
+    function editTask(taskId) {
+        fetch(`/Tasks/Edit/${taskId}`)
+            .then(res => {
+                if(!res.ok) throw new Error('Cannot load edit form');
+                return res.text();
+            })
+            .then(html => {
+                const container = document.getElementById('edit-task-modal-container');
+                container.innerHTML = html;
+                const modal = new bootstrap.Modal(container.querySelector('.modal'));
+                modal.show();
+            })
+            .catch(e => console.error(e));
+    }
+
+    // --- Hàm Xóa Task (Nếu chưa có) ---
+    function deleteTask(taskId) {
+        if (!confirm('Are you sure you want to delete this task?')) return;
+        fetch(`/Tasks/Delete/${taskId}`, { method: 'POST' })
+            .then(response => {
+                if (response.ok) location.reload();
+                else alert("Cannot delete task.");
+            });
+    }
     </script>
 }
 

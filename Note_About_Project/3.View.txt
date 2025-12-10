@@ -1,0 +1,5 @@
+ViewComponents:
+- Là 1 Mini-Controller gồm 2 phần
+	Class: là class chứa logic xử lý, lấy DL từ Databasse
+	View: Để hiển thị DL đó ra.
+--> Giúp giải quyết giao diện phức tạp cần xuất hiện ở nhiều nơi, thường là các thành phần nhỏ ở nhiều trang.

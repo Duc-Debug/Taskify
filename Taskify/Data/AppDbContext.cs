@@ -46,7 +46,7 @@ namespace Taskify.Data
                 .HasOne(b => b.Team)
                 .WithMany(t => t.Boards)
                 .HasForeignKey(b => b.TeamId)
-                .IsRequired(false) // [QUAN TRỌNG] Cho phép Null
+                .IsRequired(false) // Cho phép Null
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Board>()

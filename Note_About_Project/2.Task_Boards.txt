@@ -1,7 +1,7 @@
 AJAX: Asynchronous JavaScript and XML): Là kỹ thuật giúp trình duyệt gửi ngầm 1 tín hiệu về Server mà ko cần Load lại trang.
 Trong Taskify:
 	Khi kéo thẻ từ cột A sang cột B.
-	- AJAX: Sẽ âm thầm gửi tin nhắn cho Server: "Ê, thằng 	
+	- AJAX: Sẽ âm thầm gửi tin nhắn cho Server: "Ê, thằng kia,
 	- Task 1 chuyển sang cột B rồi nhé, lưu đi".
 -->Kết quả: Người dùng thấy thẻ di chuyển mượt mà, không bị giật, không bị load lại trang.
 -	-	-	-	-	-	-

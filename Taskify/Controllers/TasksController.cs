@@ -83,7 +83,8 @@ namespace Taskify.Controllers
             ViewBag.OverdueTasks = tasks.Count(t => t.DueDate.HasValue 
                                                     && t.DueDate.Value.Date < DateTime.Now.Date 
                                                     && t.Status != Models.TaskStatus.Completed);
-
+            
+            //Filter Tasks
             switch (filter)
             {
                 case "today":
@@ -95,13 +96,33 @@ namespace Taskify.Controllers
             }
             return View(tasks);
         }
-        //Class DTO(Data Transfer Object) nhan du lieu tu Js
+        [HttpGet]
+        public async Task<IActionResult> Edit(Guid id)
+        {
+            var viewModel = await _taskService.GetTaskForEditAsync(id);
+            if (viewModel == null) return NotFound();
+          
+            return PartialView("_EditModal", viewModel);
+        }
+        [HttpPost]
+        public async Task<IActionResult> Edit(TaskEditViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                await _taskService.UpdateTaskAsync(model, userId);
+                return RedirectToAction("Details", "Boards", new { id = model.BoardId });
+            }
+            var referer = Request.Headers["Referer"].ToString();
+            return Redirect(string.IsNullOrEmpty(referer) ? "/Tasks" : referer);
+        }
+
+    }
+//Class DTO(Data Transfer Object) nhan du lieu tu Js
         public class MoveTaskRequest
         {
             public Guid TaskId { get; set; }
             public Guid TargetListId { get; set; }
             public int NewPosition { get; set; }
         }
-
-    }
 }

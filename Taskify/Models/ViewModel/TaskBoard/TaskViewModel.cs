@@ -77,9 +77,10 @@ namespace Taskify.Models
 
         [Required(ErrorMessage = "Title cannot be blank")]
         public string Title { get; set; }
-        public string Description { get; set; }
+        public string? Description { get; set; }
         public TaskPriority Priority { get; set; }
         public DateTime? DueDate { get; set; }
+        // public TaskStatus Status { get; set; } // Nếu muốn cho phép đổi trạng thái ngay trong form sửa
 
         // Để biết sau khi sửa xong thì redirect về Board nào
         public Guid BoardId { get; set; }
