@@ -1,0 +1,23 @@
+1. Luồng Google Login( Cơ chế OAuth 2.0): "Nhờ" Google xác minh danh tính hộ
+Quy trình chạy: Nhấn gửi yêu cầu: code gọi Challenge...
+--> trình duyệt chuyển hướng sang trang đăng nhập của Google
+--> Người dùng nhập tài khoản Google ở đó( App của mình ko biết gì cả)
+--> Nếu Login đúng, chuyển hướng quay lại web của mình kèm 1 thẻ Token chứa thông tin ng dùng
+--> Code sẽ đọc thẻ đó, lấy Email ra, check trong DB. Nếu:
+-> Có, tạo Cookie đăng nhập, vào Dashboard
+-> Ko, Tự động tạo dữ liệu User trong DB. Code tự sinh pass ngẫu nhiên gửi về gmail.
+
+2. Luồng Register thường +OTP( Cơ chế Verification)
+Như thường: Nhập tài khoản mk, check Otp( OTP gửi về Gmail, đúng thì tạo, ko thì thôi)
+
+---------------------------------
+SMTP and App Password:
+- SMTP: Giao thức để chuyển thư
+- App Password( Vì Google bảo mật nên không cho đăng nhập bằng mật khẩu chính để gửi thư): Mật khẩu phụ chỉ để gửi thư. Nếu lộ thì chỉ gửi đc Gmail, không chiếm đc tk Google. 
+- Cookie : Giống vé vào cổng. 
+--------------------------------------
+ Challenge(properties, GoogleDefaults.AuthenticationScheme):
+Quy trình chạy : Khi nhấn Google Login, Hàm GoogleLogin trả về ChallengeResult. Và ASP.NET Core Authentication bắt được và thấy được Scheme là "Google".
+- Sinh URL đăng nhập: Hệ thống sẽ lấy ClientId và ClientSecret trong appsettings.json để tạo ra một đường link
+===> Tóm lại:
+Câu lệnh đó KHÔNG phải là: "Server ơi, hãy nói chuyện với Google". Mà nó là: "Server ơi, hãy bảo TRÌNH DUYỆT của người dùng chạy sang trang Google đi."

@@ -14,14 +14,25 @@ namespace Taskify
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpContextAccessor();
 
+            // Add session support
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(5); // Set session timeout
+                options.Cookie.HttpOnly = true; // Make the session cookie HTTP only
+                options.Cookie.IsEssential = true; // Make the session cookie essential
+            });
             // Cau hinh Cookie
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
                     options.LoginPath = "/Account/Login";
-                    //options.LogoutPath = "/Account/Logout";
-                    //options.AccessDeniedPath = "/Account/AccessDenied";
                     options.ExpireTimeSpan = TimeSpan.FromDays(7); //7 days expiration
+                })
+                .AddGoogle(options =>
+                {
+                    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+                      options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
                 });
 
             // Cau hinh DbContext
@@ -40,6 +51,7 @@ namespace Taskify
             builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IBoardService, BoardService>();
             builder.Services.AddScoped<IAccountService, AccountService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<ITaskService, TaskService>();
             builder.Services.AddScoped<ITeamService, TeamService>();
@@ -59,6 +71,7 @@ namespace Taskify
 
             app.UseRouting();
 
+            app.UseSession();
             app.UseAuthentication();
             app.UseAuthorization();
 

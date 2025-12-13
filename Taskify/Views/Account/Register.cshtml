@@ -14,7 +14,12 @@
             <h2>Create Account</h2>
             <p>Join Taskify and start organizing your tasks</p>
         </div>
-
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                <div asp-validation-summary="All" class="text-danger mb-0"></div>
+            </div>
+        }
         <form asp-action="Register" asp-controller="Account" method="post" class="auth-form">
             <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 

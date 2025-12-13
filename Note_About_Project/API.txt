@@ -1,0 +1,28 @@
+Partial View. mấy loại, khác j Component
+Tag Helper
+client--> server:Post
+-------
+Internal API, external API
+
+Google API( gửi email tài khoản về gmail):
+--> Sử dụng những API j();
+----------------------------------------------
+1. API bên ngoài đã sử dụng:
+A. Google Identity API(OAuth 2.0): Dùng chức năng Sign in with google
+B.Gmail SMTOAuth(Simple Mail Transfer Protocol):Dùng chức năng Gửi Email(Mật khẩu ngẫu nhiên khi login Google, gửi OTP khi đk)
+--> Kết nối tới máy chủ thư(smtp.gmail.com) thông qua công 587 để gửi email. Bảo mật thì sử dụng "App Password" thay vì Mk gốc
+
+2. API Nội bộ. 
+A. API trả về HTML(Partial View)
+B. API trả về JSON: Phần kéo thả, Di chuyển cột.
+--> Endpoints: /Tasks/MoveTask, /Boards/MoveList. Thả chuột, JS gửi thông tin vị trí mới. Server xử lý lưu vào DB, rồi trả về Ok({ success: true }). 
+
+3. API của hệ thống(Framework APIs) < Có sẵn trong.NET đc gọi để xử lý logic>
+A. ASP.NET Core Identity/ Cookie AUthentication: 	+) HttpContext.SignInAsync, HttpContext.SignOutAsync
+	+) Tự động mã hóa user thành 1 chuỗi Cookie an toàn lưu ở trình duyệt. 
+B. Session API: 
+	+) HttpContext.Session.SetString("OTP", ...)
+	+) Lưu trữ tạm thời mã OTP và thông tin đăng ký trong bộ nhớ Server (RAM). sẽ tự mất đi sau vài phút hoặc khi tắt trình duyệt -> Rất hợp để lưu mã xác thực ngắn hạn.
+C. Entity Framework Core( EF Core)
+	+) Được dùng ở _context.......
+	+) Là "người phiên dịch" giữa code C# và Database SQLite

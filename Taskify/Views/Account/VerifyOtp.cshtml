@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "Verify Email";
+    Layout = "_LayoutPublic";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/landing.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
+}
+<div class="auth-container">
+    <div class="auth-card text-center">
+        <div class="auth-header mb-4">
+            <div class="mb-3">
+                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                </div>
+            </div>
+            <h3>Check your email</h3>
+            <p class="text-muted">We sent a verification code to your email.<br />Please enter it below to verify your account.</p>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger text-start">
+                <div asp-validation-summary="All" class="text-danger mb-0"></div>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+
+        <form asp-action="VerifyOtp" method="post">
+            <div class="form-group mb-4">
+                <label for="otpCode" class="form-label visually-hidden">OTP Code</label>
+                <input type="text"
+                       id="otpCode"
+                       name="otpCode"
+                       class="form-control text-center fw-bold fs-3 text-primary"
+                       placeholder="000000"
+                       maxlength="6"
+                       pattern="\d{6}"
+                       autocomplete="one-time-code"
+                       required
+                       style="letter-spacing: 0.5rem; height: 60px;" />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold mb-3">Verify & Create Account</button>
+        </form>
+
+        <div class="auth-footer mt-3">
+            <p class="text-muted small">
+                Didn't receive the code?
+                <a asp-action="Register" class="text-primary fw-bold text-decoration-none">Resend (Back to Register)</a>
+            </p>
+        </div>
+    </div>
+</div>

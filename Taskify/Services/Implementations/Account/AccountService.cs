@@ -71,5 +71,10 @@ namespace Taskify.Services
             throw new NotImplementedException();
         }
 
+        public async Task<User?> GetUserbyEmailAsync(string email)
+        {
+          return await _context.Users
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
+        }
     }
 }
