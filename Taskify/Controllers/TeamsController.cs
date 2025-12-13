@@ -11,6 +11,7 @@ namespace Taskify.Controllers
     public class TeamsController : Controller
     {
         private readonly ITeamService _teamService;
+      
         public TeamsController(ITeamService teamService)
         {
             _teamService = teamService;
@@ -60,6 +61,7 @@ namespace Taskify.Controllers
             if (result) return Ok(new { success = true });
             return BadRequest(new { success = false, message = "Failed to remove member" });
         }
+        
 
         // DTO để nhận dữ liệu từ fetch JSON
         public class RemoveMemberRequest

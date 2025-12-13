@@ -5,5 +5,7 @@ namespace Taskify.Services
     public interface INotificationService
     {
         Task<List<NotificationViewModel>> GetNotificationsAsync(Guid userId);
+        Task CreateInviteNotificationAsync(Guid fromUserId, Guid toUserId, Guid teamId, string teamName);
+        Task CreateInfoNotificationAsync(Guid userId, string message);
     }
 }
