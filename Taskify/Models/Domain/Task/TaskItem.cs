@@ -10,6 +10,9 @@ namespace Taskify.Models
         public string Title { get; set; }
         public string? Description { get; set; }
         public DateTime? DueDate { get; set; }
+        public Guid CreatorId { get; set; }
+        [ForeignKey("CreatorId")]
+        public User Creator { get; set; }
         public int Order { get; set; } // Để sắp xếp thứ tự trên Board
         public TaskPriority Priority { get; set; } = TaskPriority.Medium;
         public TaskStatus Status { get; set; } = TaskStatus.Pending;

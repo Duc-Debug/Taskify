@@ -83,6 +83,7 @@ namespace Taskify.Services
                 DueDate = model.DueDate,
                 Priority = model.Priority,
                 ListId = model.ListId,
+                CreatorId = userId,//
                 Status = status,
                 Order = 999,
                 Assignments = new List<TaskAssignment>()
@@ -109,23 +110,31 @@ namespace Taskify.Services
                     });
                 }
             }
+
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
             await LogHistoryAsync(task.Id, "Created task");
             return task;
         }
-        public async Task DeleteTaskAsync(Guid taskId)
+        public async Task<(bool Success, string Message)> DeleteTaskAsync(Guid taskId,Guid userId)
         {
             var task = await _context.Tasks
                  .Include(t => t.Assignments)
                  .Include(t => t.Comments)
                  .Include(t => t.TaskHistories)
+                 .Include(t=>t.List)
                  .FirstOrDefaultAsync(t => t.Id == taskId);
-            if (task != null)
+            if (task == null) return (false, "Don't have Task");
+           var boardId = task.List.BoardId;
+            var userRole = await GetUserRoleInBoardAsync(boardId, userId);
+            if(userRole==TeamRole.Member && task.CreatorId != userId)
             {
-                _context.Tasks.Remove(task);
-                await _context.SaveChangesAsync();
+                return (false, "You don't have permission to delete this task");
             }
+            _context.Tasks.Remove(task);
+                await _context.SaveChangesAsync();
+            return (true, "Delete task successfully");
+
         }
         public async Task<TaskItem> GetTaskByIdAsync(Guid taskId)
         {
@@ -226,13 +235,17 @@ namespace Taskify.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateTaskAsync(TaskEditViewModel model, Guid userId)
+        public async Task<(bool Success, string Message)> UpdateTaskAsync(TaskEditViewModel model, Guid userId,TeamRole userRole)
         {
             var task = await _context.Tasks
                 .Include(t => t.Assignments)
                 .FirstOrDefaultAsync(t => t.Id == model.Id);
-            if (task == null) return;
+            if (task == null) return (false,"Don't have Task");
 
+            if(userRole == TeamRole.Member && task.CreatorId != userId)
+            {
+                return (false, "You don't have permission to update this task");
+            }
             task.Title = model.Title;
             task.Description = model.Description;
             task.Priority = model.Priority;
@@ -254,6 +267,7 @@ namespace Taskify.Services
             _context.Tasks.Update(task);
             await LogHistoryAsync(task.Id, "Updated task details");
             await _context.SaveChangesAsync();
+            return (true, "Update task successfully");
         }
 
         public async Task<TaskEditViewModel> GetTaskForEditAsync(Guid taskId)
@@ -282,6 +296,18 @@ namespace Taskify.Services
                 //        Text = bm.User.FullName
                 //    }).ToListAsync()
             };
+        }
+        public async Task<TeamRole> GetUserRoleInBoardAsync(Guid boardId, Guid userId)
+        {
+            // Truy vấn: Từ Board -> tìm Team -> tìm Member -> lấy Role
+            var role = await _context.Boards
+                .Where(b => b.Id == boardId)
+                .SelectMany(b => b.Team.Members)
+                .Where(tm => tm.UserId == userId)
+                .Select(tm => tm.Role)
+                .FirstOrDefaultAsync();
+
+            return role;
         }
     }
 }

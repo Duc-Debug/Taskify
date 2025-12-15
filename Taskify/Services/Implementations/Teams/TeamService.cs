@@ -7,9 +7,11 @@ namespace Taskify.Services
     public class TeamService : ITeamService
     {
         public AppDbContext _context;
-        public TeamService(AppDbContext context)
+        private readonly INotificationService _notificationService;
+        public TeamService(AppDbContext context,INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
         public async Task<List<TeamViewModel>> GetTeamsByUserIdAsync(Guid userId)
         {
@@ -106,12 +108,14 @@ namespace Taskify.Services
                 }).ToList(),
                 Members = team.Members.Select(tm => new TeamMemberViewModel
                 {
-                    Id = tm.Id,
+                    Id = tm.UserId,
                     FullName = tm.User.FullName,
                     Email = tm.User.Email,
                     AvatarUrl = tm.User.AvatarUrl,
                     Initials = tm.User.FullName?.Substring(0, 1) ?? "U",
                     IsOwner = tm.Role == TeamRole.Owner,
+
+                    RoleName = tm.Role.ToString(),
                     JoinedDate = DateTime.UtcNow, // Phai them Field JoinedDate vao bang TeamMember
                     IsOnline = new Random().Next(0, 2) == 1 // Random vui vui
                 }).OrderByDescending(m => m.IsOwner).ToList()
@@ -132,6 +136,100 @@ namespace Taskify.Services
             _context.TeamMembers.Remove(memberToRemove);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<(bool Success, string Message)> InviteMemberAsync(Guid teamId, string email, Guid senderId)
+        {
+            var userToInvite = _context.Users.FirstOrDefault(u => u.Email == email);
+            if (userToInvite == null)
+            {
+                return (false, "User with this email does not exist.");
+            }
+
+           var isAlreadyMember = await _context.TeamMembers
+                .AnyAsync(tm=>tm.TeamId== teamId && tm.UserId== userToInvite.Id);
+            if (isAlreadyMember) return (false, " User is already a member of the team.");
+
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team == null) return (false, "Team not found.");
+            await _notificationService.CreateInviteNotificationAsync(senderId,userToInvite.Id,teamId,team.Name);
+            return (true, "Invitation sent successfully.");
+        }
+
+        public async Task<(bool Success, string Message)> RespondInvitationAsync(Guid notificationId, Guid userId, bool isAccepted)
+        {
+           var notification = await _context.Notifications.FindAsync(notificationId);
+            if (notification == null || notification.UserId != userId)
+            {
+                return (false, "Notification not found or access denied.");
+            }
+            var teamId = notification.ReferenceId.Value;
+            var senderId= notification.SenderId.Value;
+            if (isAccepted)
+            {
+                var exists = await _context.TeamMembers
+                    .AnyAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
+                if (!exists)
+                {
+                    var newMember = new TeamMember
+                    {
+                        Id = Guid.NewGuid(),
+                        TeamId = teamId,
+                        UserId = userId,
+                        Role = TeamRole.Member,
+                        JoinedDate = DateTime.Now
+                    };
+                    _context.TeamMembers.Add(newMember);
+
+                    var userAccepting = await _context.Users.FindAsync(userId);
+                    await _notificationService.CreateInfoNotificationAsync(senderId, $"User {userAccepting.FullName} has accepted the invitation to join the team.");
+                }
+            }
+            else
+            {
+                var userDeclining = await _context.Users.FindAsync(userId);
+                await _notificationService.CreateInfoNotificationAsync(senderId, $"User {userDeclining.FullName} has declined the invitation to join the team.");
+
+            }
+            _context.Notifications.Remove(notification);
+            await _context.SaveChangesAsync();
+            return (true, isAccepted ? "Invitation accepted." : "Invitation declined.");
+        }
+
+        public async Task<(bool Success, string Message)> ChangeMemberRoleAsync(Guid teamId, Guid memberId, TeamRole newRole, Guid currentUserId)
+        {
+           var currentUserMember = await _context.TeamMembers
+                .FirstOrDefaultAsync(tm=>tm.TeamId ==teamId &&tm.UserId==currentUserId);
+            if(currentUserMember == null || currentUserMember.Role != TeamRole.Owner)
+            {
+                return (false, "Only team owners can change member roles.");
+            }
+            var targetMember = await _context.TeamMembers
+                .Include(tm=>tm.User)
+                .Include(tm=>tm.Team)
+                .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == memberId);
+            if (targetMember == null) return (false, "Member not found in the team.");
+            if(targetMember.UserId == currentUserId)
+            {
+                return (false, "Owners cannot change their own role.");
+            }
+            if (newRole == TeamRole.Owner)
+            {
+                currentUserMember.Role = TeamRole.Admin;
+                targetMember.Role = TeamRole.Owner;
+
+                var team = await _context.Teams.FindAsync(teamId);
+                if (team != null) team.OwnerId = targetMember.UserId;
+
+                await _context.SaveChangesAsync();
+                await _notificationService.CreateInfoNotificationAsync(memberId, $"You have been promoted to Owner of the team '{targetMember.Team.Name}'.");
+                await _notificationService.CreateInfoNotificationAsync(currentUserId, $"You have transferred ownership of the team '{targetMember.Team.Name}' to {targetMember.User.FullName}.");
+                return (true, "Member promoted to Owner successfully.");
+            }
+                targetMember.Role = newRole;
+            await _context.SaveChangesAsync();
+            await _notificationService.CreateInfoNotificationAsync(memberId, $"Your role in team '{targetMember.Team.Name}' has been changed to {newRole}.");
+            return (true, "Member role updated successfully.");
         }
     }
 }

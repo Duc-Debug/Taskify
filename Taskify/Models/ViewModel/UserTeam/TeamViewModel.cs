@@ -38,6 +38,7 @@ namespace Taskify.Models
         public string Role { get; set; } // Owner, Member
         public bool IsOnline { get; set; }
         public bool IsOwner { get; set; }
+        public string RoleName { get; set; }
         public DateTime JoinedDate { get; set; }
     }
     public class TeamActivityViewModel

@@ -37,7 +37,6 @@ namespace Taskify.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // [QUAN TRỌNG] Nếu lỗi dữ liệu, cũng phải quay về Index (vì không có trang Create riêng)
             // Để giữ trải nghiệm tốt hơn, sau này ta sẽ dùng AJAX, còn hiện tại dùng Redirect là an toàn nhất.
             return RedirectToAction(nameof(Index));
         }
@@ -61,13 +60,59 @@ namespace Taskify.Controllers
             if (result) return Ok(new { success = true });
             return BadRequest(new { success = false, message = "Failed to remove member" });
         }
-        
-
-        // DTO để nhận dữ liệu từ fetch JSON
-        public class RemoveMemberRequest
+        [HttpPost]
+        public async Task<IActionResult> InviteMember(Guid teamId, string email)
         {
-            public Guid TeamId { get; set; }
-            public Guid MemberId { get; set; }
+           var currentUserId = GetCurrentUserId();
+            var result = await _teamService.InviteMemberAsync(teamId, email, currentUserId);
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                TempData["ErrorMessage"]= result.Message;
+            }
+            return RedirectToAction("Details", new { id = teamId });
         }
+        [HttpPost]
+        public async Task<IActionResult> RespondInvite(Guid notificationId,bool isAccepted)
+        {
+            var currentUserId = GetCurrentUserId();
+            var result = await _teamService.RespondInvitationAsync(notificationId, currentUserId, isAccepted);
+
+            if (!result.Success) return BadRequest(result.Message);
+
+            return Ok(new { message = result.Message });
+        }
+        [HttpPost]
+        public async Task<IActionResult> ChangeMemberRole(Guid teamId, Guid memberId, TeamRole newRole)
+        {
+            if (newRole == 0)
+            {
+                TempData["ErrorMessage"] = "Lỗi: Không nhận được Role từ giao diện (Value = 0)";
+                return RedirectToAction("Details", new { id = teamId });
+            }
+            var currentUserId = GetCurrentUserId();
+            var roleEnum = (TeamRole)newRole;
+            var result = await _teamService.ChangeMemberRoleAsync(teamId, memberId, roleEnum, currentUserId);
+            if(result.Success)
+            {
+               TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+               TempData["ErrorMessage"] = result.Message;
+            }
+            return RedirectToAction("Details", new { id = teamId });
+        }
+
+    }
+
+    // DTO để nhận dữ liệu từ fetch JSON
+    public class RemoveMemberRequest
+    {
+        public Guid TeamId { get; set; }
+        public Guid MemberId { get; set; }
     }
 }

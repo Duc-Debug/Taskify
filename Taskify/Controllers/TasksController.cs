@@ -33,8 +33,6 @@ namespace Taskify.Controllers
                 await _taskService.CreateTaskAsync(model, userId);
                 return RedirectToAction("Details", "Boards", new { id = model.BoardId });
             }
-
-            // Nếu lỗi dữ liệu -> Vẫn reload lại trang Board (nhưng nên kèm thông báo lỗi nếu muốn xịn hơn)
             // Tạm thời cứ để redirect để trải nghiệm mượt mà
             return RedirectToAction("Details", "Boards", new { id = model.BoardId });
         }
@@ -44,12 +42,15 @@ namespace Taskify.Controllers
             // Logic tương tự Create, có thể xử lý thêm Category mặc định nếu cần
             return await Create(model);
         }
+        [HttpPost]
         public async Task<IActionResult> Delete(Guid id)
         {
             try
             {
-                await _taskService.DeleteTaskAsync(id);
-                return Ok(new { success = true });
+                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+               var result= await _taskService.DeleteTaskAsync(id,userId);
+                if (result.Success) return Ok(new { success = true, message = result.Message });
+                return BadRequest(result.Message);
             }
             catch (Exception ex)
             {
@@ -110,13 +111,21 @@ namespace Taskify.Controllers
             if (ModelState.IsValid)
             {
                 var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                await _taskService.UpdateTaskAsync(model, userId);
+                var userRole = await _taskService.GetUserRoleInBoardAsync(model.BoardId, userId);
+                var result=  await _taskService.UpdateTaskAsync(model, userId,userRole);
+                if (!result.Success)
+                {
+                    TempData["ErrorMessage"] = result.Message;
+                    return RedirectToAction("Details", "Boards", new { id = model.BoardId });
+                }
+                TempData["SuccessMessage"] = "Task updated successfully."; 
                 return RedirectToAction("Details", "Boards", new { id = model.BoardId });
             }
             var referer = Request.Headers["Referer"].ToString();
             return Redirect(string.IsNullOrEmpty(referer) ? "/Tasks" : referer);
         }
-
+       
+        
     }
 //Class DTO(Data Transfer Object) nhan du lieu tu Js
         public class MoveTaskRequest

@@ -7,11 +7,13 @@ namespace Taskify.Services
         Task MoveTaskAsync(Guid taskId, Guid targetListId, int newPosition);
 
         Task<TaskItem> CreateTaskAsync(TaskCreateViewModel model, Guid userId);
-        Task DeleteTaskAsync(Guid taskId);
+
+        Task<(bool Success,string Message)> DeleteTaskAsync(Guid taskId,Guid userId);
+        Task<(bool Success, string Message)> UpdateTaskAsync(TaskEditViewModel model, Guid userId, TeamRole userRole);
+        Task<TaskEditViewModel> GetTaskForEditAsync(Guid taskId); // Ham lay du lieu de edit
         Task<TaskItem> GetTaskByIdAsync(Guid taskId);
         Task<TaskDetailsViewModel> GetTaskDetailsAsync(Guid taskId);
         Task<List<TaskDetailsViewModel>> GetTasksByUserIdAsync(Guid userId);
-        Task UpdateTaskAsync(TaskEditViewModel model, Guid userId);
-        Task<TaskEditViewModel> GetTaskForEditAsync(Guid taskId); // Ham lay du lieu de edit
+        Task<TeamRole> GetUserRoleInBoardAsync(Guid boardId, Guid userId);
     }
 }

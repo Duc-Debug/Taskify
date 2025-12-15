@@ -1,7 +1,7 @@
-﻿@model List<Taskify.Models.NotificationViewModel>
+﻿@using Taskify.Models
+@model List<Taskify.Models.NotificationViewModel>
 
 <div class="notification-container">
-    <!-- Header -->
     <div class="notification-header">
         <h3>Notifications</h3>
         <button class="btn-mark-read" onclick="markAllAsRead()">
@@ -9,33 +9,29 @@
         </button>
     </div>
 
-    <!-- Notification List -->
     <div class="notification-list">
         @if (Model != null && Model.Any())
         {
             @foreach (var notification in Model)
             {
                 <div class="notification-item @(!notification.IsRead ? "unread" : "")" data-id="@notification.Id">
+
                     <div class="notification-icon">
-                        @if (notification.Message.Contains("assigned"))
+                        @if (notification.Type == NotificationType.TeamInvite)
+                        {
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d6efd" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        }
+                        else if (notification.Message.Contains("assigned"))
                         {
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                                 <circle cx="8.5" cy="7" r="4" />
                                 <polyline points="17 11 19 13 23 9" />
-                            </svg>
-                        }
-                        else if (notification.Message.Contains("comment"))
-                        {
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                            </svg>
-                        }
-                        else if (notification.Message.Contains("due"))
-                        {
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10" />
-                                <polyline points="12 6 12 12 16 14" />
                             </svg>
                         }
                         else
@@ -51,6 +47,20 @@
                     <div class="notification-content">
                         <p class="notification-message">@notification.Message</p>
                         <span class="notification-time">@GetTimeAgo(notification.CreatedAt)</span>
+
+                        @if (notification.Type == NotificationType.TeamInvite)
+                        {
+                            <div class="mt-2 d-flex gap-2">
+                                <button class="btn btn-sm btn-primary py-1 px-3"
+                                        onclick="respondInvite('@notification.Id', true, this)">
+                                    Accept
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary py-1 px-3"
+                                        onclick="respondInvite('@notification.Id', false, this)">
+                                    Decline
+                                </button>
+                            </div>
+                        }
                     </div>
 
                     @if (!notification.IsRead)
@@ -58,11 +68,14 @@
                         <div class="unread-indicator"></div>
                     }
 
-                    <button class="btn-notification-action" onclick="markAsRead(@notification.Id)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                    </button>
+                    @if (notification.Type != NotificationType.TeamInvite)
+                    {
+                        <button class="btn-notification-action" onclick="markAsRead('@notification.Id')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                        </button>
+                    }
                 </div>
             }
         }
@@ -74,12 +87,10 @@
                     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                 </svg>
                 <p>No notifications yet</p>
-                <span>You're all caught up!</span>
             </div>
         }
     </div>
 
-    <!-- Footer -->
     <div class="notification-footer">
         <a asp-controller="Notification" asp-action="Index" class="btn-view-all">
             View All Notifications
@@ -91,29 +102,40 @@
     string GetTimeAgo(DateTime dateTime)
     {
         var timeSpan = DateTime.UtcNow - dateTime;
-
-        if (timeSpan.TotalMinutes < 1)
-            return "Just now";
-        if (timeSpan.TotalMinutes < 60)
-            return $"{(int)timeSpan.TotalMinutes}m ago";
-        if (timeSpan.TotalHours < 24)
-            return $"{(int)timeSpan.TotalHours}h ago";
-        if (timeSpan.TotalDays < 7)
-            return $"{(int)timeSpan.TotalDays}d ago";
-
+        if (timeSpan.TotalMinutes < 1) return "Just now";
+        if (timeSpan.TotalMinutes < 60) return $"{(int)timeSpan.TotalMinutes}m ago";
+        if (timeSpan.TotalHours < 24) return $"{(int)timeSpan.TotalHours}h ago";
         return dateTime.ToString("MMM dd");
     }
 }
 
-
-
 <script>
+    // --- Hàm xử lý Mời vào Team ---
+    function respondInvite(notificationId, isAccepted, btnElement) {
+        // 1. Disable nút để tránh bấm nhiều lần
+        const container = btnElement.closest('.mt-2');
+        const buttons = container.querySelectorAll('button');
+        buttons.forEach(b => b.disabled = true);
+
+        // 2. Gọi xuống Controller: TeamsController > RespondInvite
+        // Lưu ý: Đảm bảo notificationId có dấu nháy đơn '' bao quanh vì nó là GUID string
+        $.post('/Teams/RespondInvite', { notificationId: notificationId, isAccepted: isAccepted })
+            .done(function(response) {
+                // Thành công -> Load lại trang để vào Team mới hoặc ẩn thông báo
+                location.reload();
+            })
+            .fail(function(xhr) {
+                // Thất bại -> Hiện lỗi
+                alert("Lỗi: " + (xhr.responseText || "Không thể xử lý yêu cầu."));
+                buttons.forEach(b => b.disabled = false);
+            });
+    }
+
+    // --- Các hàm cũ giữ nguyên ---
     function markAsRead(notificationId) {
-        fetch(`/Notification/MarkAsRead/${notificationId}`, {
+        fetch(`/Notifications/MarkAsRead/${notificationId}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
+            headers: { 'Content-Type': 'application/json' }
         })
         .then(response => {
             if (response.ok) {
@@ -129,11 +151,9 @@
     }
 
     function markAllAsRead() {
-        fetch('/Notification/MarkAllAsRead', {
+        fetch('/Notifications/MarkAllAsRead', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
+            headers: { 'Content-Type': 'application/json' }
         })
         .then(response => {
             if (response.ok) {
@@ -151,12 +171,8 @@
         const badge = document.querySelector('.notification-btn .badge');
         if (badge) {
             const unreadCount = document.querySelectorAll('.notification-item.unread').length;
-            if (unreadCount === 0) {
-                badge.style.display = 'none';
-            } else {
-                badge.textContent = unreadCount;
-                badge.style.display = 'block';
-            }
+            badge.style.display = unreadCount === 0 ? 'none' : 'block';
+            badge.textContent = unreadCount;
         }
     }
 </script>

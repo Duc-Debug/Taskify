@@ -1532,3 +1532,62 @@
         justify-content: flex-end;
     }
 }
+/* Sửa lỗi Dropdown bị che trong bảng */
+.table-responsive {
+    overflow: visible !important;
+}
+
+/* Đảm bảo dropdown luôn nổi lên trên */
+.dropdown-menu {
+    z-index: 1050 !important;
+}
+.btn-icon-sm {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .btn-icon-sm:hover {
+        background-color: #f1f5f9;
+        color: #0ea5e9;
+        transform: scale(1.1);
+    }
+
+    .btn-icon-sm.danger:hover {
+        background-color: #fee2e2;
+        color: #ef4444;
+    }
+
+/* Fix dropdown menu bị lệch hoặc xấu */
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+}
+
+    .dropdown-item:hover {
+        background-color: #f8fafc;
+        color: #0ea5e9;
+    }
+
+    .dropdown-item.text-warning:hover {
+        background-color: #fefce8;
+        color: #d97706;
+    }

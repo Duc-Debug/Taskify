@@ -176,6 +176,9 @@ namespace Taskify.Migrations
                     b.Property<int?>("CategoryId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
@@ -202,6 +205,8 @@ namespace Taskify.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("CreatorId");
 
                     b.HasIndex("ListId");
 
@@ -402,6 +407,12 @@ namespace Taskify.Migrations
                         .WithMany("Tasks")
                         .HasForeignKey("CategoryId");
 
+                    b.HasOne("Taskify.Models.User", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Taskify.Models.TaskList", "List")
                         .WithMany("Tasks")
                         .HasForeignKey("ListId")
@@ -409,6 +420,8 @@ namespace Taskify.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+
+                    b.Navigation("Creator");
 
                     b.Navigation("List");
                 });

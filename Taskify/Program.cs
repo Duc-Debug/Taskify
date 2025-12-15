@@ -58,6 +58,18 @@ namespace Taskify
 
             var app = builder.Build();
 
+            using(var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                try
+                {
+                    dbContext.Database.OpenConnection();
+                    dbContext.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
+                    //Tawng tg cho neu co deadlock
+                    dbContext.Database.ExecuteSqlRaw("PRAGMA busy_timeout=5000;");
+                }
+                catch { }
+            }
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {

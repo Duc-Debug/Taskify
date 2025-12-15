@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Taskify.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -44,12 +44,14 @@ namespace Taskify.Migrations
                 name: "Notifications",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     UserId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Message = table.Column<string>(type: "TEXT", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    IsRead = table.Column<bool>(type: "INTEGER", nullable: false)
+                    IsRead = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Type = table.Column<int>(type: "INTEGER", nullable: false),
+                    SenderId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    ReferenceId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -165,6 +167,7 @@ namespace Taskify.Migrations
                     Title = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
                     DueDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    CreatorId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Order = table.Column<int>(type: "INTEGER", nullable: false),
                     Priority = table.Column<int>(type: "INTEGER", nullable: false),
                     Status = table.Column<int>(type: "INTEGER", nullable: false),
@@ -183,6 +186,12 @@ namespace Taskify.Migrations
                         name: "FK_Tasks_TaskLists_ListId",
                         column: x => x.ListId,
                         principalTable: "TaskLists",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Tasks_Users_CreatorId",
+                        column: x => x.CreatorId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -309,6 +318,11 @@ namespace Taskify.Migrations
                 name: "IX_Tasks_CategoryId",
                 table: "Tasks",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_CreatorId",
+                table: "Tasks",
+                column: "CreatorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tasks_ListId",

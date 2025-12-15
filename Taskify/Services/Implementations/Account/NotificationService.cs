@@ -58,9 +58,38 @@ namespace Taskify.Services
                     Id = n.Id,
                     Message = n.Message,
                     IsRead = n.IsRead,
-                    CreatedAt = n.CreatedAt
+                    CreatedAt = n.CreatedAt,
+
+                    Type= n.Type,
+                    SenderId = n.SenderId,
+                    ReferenceId = n.ReferenceId
                 })
                 .ToListAsync();
+        }
+
+        public async Task MarkAllASReadAsync(Guid userId)
+        {
+           var notifications = await _context.Notifications
+                .Where(n => n.UserId == userId && !n.IsRead)
+                .ToListAsync();
+            if (notifications.Any())
+            {
+                foreach (var notification in notifications)
+                {
+                    notification.IsRead = true;
+                }
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> MarkAsReadAsync(Guid notificationId)
+        {
+            var notification = await _context.Notifications
+                 .FindAsync(notificationId);
+            if (notification == null) return false;
+            notification.IsRead = true;
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
