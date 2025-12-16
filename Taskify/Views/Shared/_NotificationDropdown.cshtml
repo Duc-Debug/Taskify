@@ -76,6 +76,19 @@
                             </svg>
                         </button>
                     }
+                    @if (notification.Type == Taskify.Models.NotificationType.ApprovalRequest)
+                    {
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-success"
+                                    onclick="respondApproval('@notification.Id', true)">
+                                Duyệt
+                            </button>
+                            <button class="btn btn-sm btn-danger"
+                                    onclick="respondApproval('@notification.Id', false)">
+                                Từ chối
+                            </button>
+                        </div>
+                    }
                 </div>
             }
         }
@@ -174,5 +187,20 @@
             badge.style.display = unreadCount === 0 ? 'none' : 'block';
             badge.textContent = unreadCount;
         }
+    }
+    function respondApproval(notifId, isApproved) {
+        fetch('/Notification/RespondToApproval', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `notificationId=${notifId}&isApproved=${isApproved}`
+        })
+        .then(res => {
+            if (res.ok) {
+                // Xóa thông báo khỏi list sau khi bấm
+                location.reload();
+            } else {
+                alert("Lỗi!");
+            }
+        });
     }
 </script>

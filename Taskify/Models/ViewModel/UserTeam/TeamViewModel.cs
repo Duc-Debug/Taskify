@@ -10,6 +10,7 @@ namespace Taskify.Models
         public string OwnerName { get; set; }
         public string Description { get; set; }
         public bool IsOwner { get; set; } // Để hiện nút Edit/Delete nếu là chủ
+        public bool IsAdmin { get; set; }
         public int MemberCount { get; set; }//
         public int BoardCount { get; set; }
 

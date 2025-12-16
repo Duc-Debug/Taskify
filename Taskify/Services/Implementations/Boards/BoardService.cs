@@ -31,7 +31,8 @@ namespace Taskify.Services
                             AvatarUrl=m.User.FullName.Substring(0,1)
                         }).ToList()
                         :new List<MemberViewModel>(),
-
+                    //CanCreateList chi cho Owner va Admin Team moi duoc phep tao List
+                    CanCreateList = b.OwnerId == userId || (b.Team != null && b.Team.Members.Any(m => m.UserId == userId && m.Role == TeamRole.Admin)),
                     // Đếm số lượng List và Task để hiển thị ra ngoài Dashboard (nếu cần)
                     Lists = b.Lists.Select(l => new TaskListViewModel
                     {
@@ -41,22 +42,31 @@ namespace Taskify.Services
                 .ToListAsync();
         }
 
-        public async Task<BoardViewModel> GetBoardDetailsAsync(Guid boardId)
+        public async Task<BoardViewModel> GetBoardDetailsAsync(Guid boardId,Guid userId)
         {
             var board = await _context.Boards
                 .Include(b => b.Lists)
                     .ThenInclude(l => l.Tasks)
                         .ThenInclude(t => t.Assignments)
                             .ThenInclude(a => a.User)
+                .Include(b=>b.Team)
+                    .ThenInclude(t=>t.Members)
                 .FirstOrDefaultAsync(b => b.Id == boardId);
 
             if (board == null) return null;
 
+            var member = board.Team.Members.FirstOrDefault(m => m.UserId == userId);
+            var canCreate = false;
+            if (member != null)
+            {
+                if (member.Role == TeamRole.Owner || member.Role == TeamRole.Admin) canCreate = true;
+            }
             return new BoardViewModel
             {
                 Id = board.Id,
                 Name = board.Name,
                 TeamId = board.TeamId ?? Guid.Empty,
+                CanCreateList=canCreate,
                 Lists = board.Lists.OrderBy(l => l.Order).Select(l => new TaskListViewModel
                 {
                     Id = l.Id,
@@ -196,6 +206,38 @@ namespace Taskify.Services
             for(int i=0; i< list.Count; i++) list[i].Order = i;
            _context.TaskLists.UpdateRange(list);
             await _context.SaveChangesAsync();
+        }
+        public async Task DeleteListAsync(Guid listId, Guid userId)
+        {
+            var list = await _context.TaskLists
+                .Include(l => l.Board)
+                .Include(l => l.Tasks)
+                    .ThenInclude(t => t.Assignments) // Load Assignments
+                .FirstOrDefaultAsync(l => l.Id == listId);
+           if(list==null) throw new Exception("List not found");
+
+            if (list.Tasks != null && list.Tasks.Any())
+            {
+                foreach (var task in list.Tasks)
+                {
+                    if (task.Assignments != null && task.Assignments.Any())
+                    {
+                        _context.TaskAssignments.RemoveRange(task.Assignments); // Xóa phân công
+                    }
+                    // _context.TaskComments.RemoveRange(task.Comments);
+                }
+
+                _context.Tasks.RemoveRange(list.Tasks);
+            }
+            _context.TaskLists.Remove(list);
+                await _context.SaveChangesAsync();
+            
+        }
+        public async Task<TaskList> GetListByIdAsync(Guid listId)
+        {
+            return await _context.TaskLists
+                .Include(l=>l.Board)
+                .FirstOrDefaultAsync(l => l.Id == listId);
         }
     }
 }

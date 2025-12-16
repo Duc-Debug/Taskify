@@ -69,12 +69,7 @@
             }
 
             <!-- Action Buttons -->
-            @* <button class="btn btn-icon" title="Filter">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                </svg>
-            </button> *@
-
+           
             <button class="btn btn-icon" title="Board Settings">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
@@ -148,28 +143,31 @@
         }
 
         <!-- Add New List -->
-        <div class="kanban-list add-list-container">
-            <button class="btn-add-list" id="btnAddList">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Add New List
-            </button>
+        @if (Model.CanCreateList)
+        {
+            <div class="kanban-list add-list-container">
+                <button class="btn-add-list" id="btnAddList">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Add New List
+                </button>
 
-            <div class="add-list-form" id="addListForm" style="display: none;">
-                <input type="text" class="form-control" id="newListTitle" placeholder="Enter list title..." />
-                <div class="quick-names mb-3 d-flex gap-2">
-        <span class="badge bg-secondary cursor-pointer" onclick="setListName('To Do')">To Do</span>
-        <span class="badge bg-primary cursor-pointer" onclick="setListName('Doing')">Doing</span>
-        <span class="badge bg-success cursor-pointer" onclick="setListName('Done')">Done</span>
-    </div>
-                <div class="form-actions">
-                    <button class="btn btn-primary btn-sm" onclick="saveNewList()">Add List</button>
-                    <button class="btn btn-secondary btn-sm" onclick="cancelAddList()">Cancel</button>
+                <div class="add-list-form" id="addListForm" style="display: none;">
+                    <input type="text" class="form-control" id="newListTitle" placeholder="Enter list title..." />
+                    <div class="quick-names mb-3 d-flex gap-2">
+                        <span class="badge bg-secondary cursor-pointer" onclick="setListName('To Do')">To Do</span>
+                        <span class="badge bg-primary cursor-pointer" onclick="setListName('Doing')">Doing</span>
+                        <span class="badge bg-success cursor-pointer" onclick="setListName('Done')">Done</span>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-primary btn-sm" onclick="saveNewList()">Add List</button>
+                        <button class="btn btn-secondary btn-sm" onclick="cancelAddList()">Cancel</button>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
     </div>
 </div>
 
@@ -384,6 +382,27 @@ function setListName(name) {
     document.getElementById('newListTitle').value = name;
     document.getElementById('newListTitle').focus();
 }
+        function deleteList(listId) {
+            if (!confirm("Are you sure delete this list? All task inside will be delete!")) return;
+
+            fetch(`/Boards/DeleteList?listId=${listId}`, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Xóa thành công -> Reload hoặc remove DOM
+                    document.querySelector(`.kanban-list[data-list-id="${listId}"]`).remove();
+                    // Hoặc location.reload();
+                }
+                else if (response.status === 403) {
+                    alert("You are not permisson to delete list");
+                }
+                else {
+                    alert("Lỗi server. Không thể xóa list.");
+                }
+            })
+            .catch(err => console.error("Error:", err));
+        }
     </script>
 }
 

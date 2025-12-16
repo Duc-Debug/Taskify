@@ -8,7 +8,7 @@ namespace Taskify.Services
         Task<List<BoardViewModel>> GetBoardsByUserIdAsync(Guid userId);
 
         // Lấy chi tiết 1 Board (cho màn hình Kanban kéo thả)
-        Task<BoardViewModel> GetBoardDetailsAsync(Guid boardId);
+        Task<BoardViewModel> GetBoardDetailsAsync(Guid boardId,Guid userId);
 
         // Tạo Board mới
         Task CreateBoardAsync(BoardCreateViewModel model, Guid userId);
@@ -16,5 +16,7 @@ namespace Taskify.Services
         Task DeleteBoardAsync(Guid boardId, Guid userId);
         Task CreateListAsync(Guid boardId, string title, Guid userId);
         Task UpdateListOrderAsync(Guid boardId, Guid listId, int newIndex);
+        Task DeleteListAsync(Guid listId, Guid userId);
+        Task<TaskList> GetListByIdAsync(Guid listId);
     }
 }

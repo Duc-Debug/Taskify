@@ -154,7 +154,8 @@
     }
 
     function editTask(taskId) {
-        window.location.href = `/Tasks/Edit/${taskId}`;
+      //Check user permission before redirecting to edit page
+        window.location.href = `/Task/Edit/${taskId}`;
     }
 
         function deleteTask(taskId) {

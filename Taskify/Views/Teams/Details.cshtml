@@ -117,8 +117,8 @@
         <div class="tab-panel active" id="members-panel">
             <div class="panel-header">
                 <h2>Team Members</h2>
-                @if (Model.IsOwner)
-                {
+                @if (Model.IsOwner || Model.IsAdmin)
+                    {
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#inviteMemberModal">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />

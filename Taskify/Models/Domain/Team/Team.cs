@@ -21,7 +21,7 @@ namespace Taskify.Models
 
         [ForeignKey("OwnerId")]
         public User Owner { get; set; }
-
+        public bool IsInviteApprovalRequired { get; set; } = false;
         // Navigation
         public ICollection<TeamMember> Members { get; set; }
         public ICollection<Board> Boards { get; set; }

@@ -44,12 +44,12 @@ namespace Taskify.Controllers
 
         public async Task<IActionResult> Details(Guid id)
         {
-            var board = await _boardService.GetBoardDetailsAsync(id);
+            var userId = GetCurrentUserId();
+            var board = await _boardService.GetBoardDetailsAsync(id,userId);
             if (board == null) return NotFound();
             return View(board);
         }
 
-        // --- SỬA PHẦN CREATE ĐỂ HIỆN LỖI ---
         [HttpPost]
         public async Task<IActionResult> Create(BoardCreateViewModel model)
         {
@@ -74,7 +74,6 @@ namespace Taskify.Controllers
             return Content($"LỖI DỮ LIỆU (VALIDATION): {errors}");
         }
 
-        // --- SỬA PHẦN DELETE ĐỂ HIỆN LỖI ---
         [HttpPost]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -104,26 +103,52 @@ namespace Taskify.Controllers
                 return BadRequest("Dữ liệu không hợp lệ.");
             }
             var userId = GetCurrentUserId();
+            var board = await _boardService.GetBoardDetailsAsync(request.BoardId,userId);
+            if (board == null) return NotFound("Board don't exsist.");
+            var memberRole = await _teamService.GetUserRoleInTeamAsync(board.TeamId, userId);
+            if (memberRole == TeamRole.Member) return StatusCode(403, "You don't have permission to add list.");
             await _boardService.CreateListAsync(request.BoardId, request.Title, userId);
             return Ok(new { success = true });
         }
         [HttpPost]
         public async Task<IActionResult> MoveList([FromBody] MoveListRequest request)
         {
-            if(request == null) return BadRequest("Dữ liệu không hợp lệ.");
-           await _boardService.UpdateListOrderAsync(request.BoardId, request.ListId, request.NewIndex);
+            if (request == null) return BadRequest("Dữ liệu không hợp lệ.");
+            await _boardService.UpdateListOrderAsync(request.BoardId, request.ListId, request.NewIndex);
             return Ok(new { success = true });
         }
-    }
-    public class CreateListRequest
-    {
-        public Guid BoardId { get; set; }
-        public string Title { get; set; }
-    }
-    public class MoveListRequest
-    {
-        public Guid BoardId { get; set; }
-        public Guid ListId { get; set; }
-        public int NewIndex { get; set; }
+        [HttpPost]
+        public async Task<IActionResult> DeleteList(Guid listId)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var list = await _boardService.GetListByIdAsync(listId);
+                if (list == null) return NotFound("List don't exsist.");
+                var role = await _teamService.GetUserRoleInTeamAsync(list.Board.TeamId, userId);
+                if (role == TeamRole.Member) return StatusCode(403, "You don't have permission to delete list.");
+                await _boardService.DeleteListAsync(listId, userId);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.InnerException != null ?
+                            $"{ex.Message} -> {ex.InnerException.Message}" :
+                            ex.Message;
+
+                return BadRequest(new { success = false, message = errorMessage });
+            }
+        }
+        public class CreateListRequest
+        {
+            public Guid BoardId { get; set; }
+            public string Title { get; set; }
+        }
+        public class MoveListRequest
+        {
+            public Guid BoardId { get; set; }
+            public Guid ListId { get; set; }
+            public int NewIndex { get; set; }
+        }
     }
 }

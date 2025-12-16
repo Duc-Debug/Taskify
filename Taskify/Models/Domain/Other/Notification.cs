@@ -3,7 +3,8 @@
     public enum NotificationType
     {
         Info =0,    //Thuong
-        TeamInvite=1    // Loi moi Team
+        TeamInvite=1,    // Loi moi Team,
+        ApprovalRequest=3
     }
     public class Notification
     {
@@ -13,6 +14,7 @@
         public string Message { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsRead { get; set; } = false;
+        public string? Metadata { get; set; }
         //
         public NotificationType Type { get; set; } = NotificationType.Info;
         public Guid? SenderId { get; set; }

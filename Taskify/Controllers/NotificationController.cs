@@ -7,9 +7,11 @@ namespace Taskify.Controllers
     public class NotificationController : Controller
     {
         private readonly INotificationService _notificationService;
-        public NotificationController(INotificationService notificationService)
+        private readonly ITeamService _teamService;
+        public NotificationController(INotificationService notificationService, ITeamService teamService)
         {
             _notificationService = notificationService;
+            _teamService = teamService;
         }
         private Guid GetCurrentUserId()
         {
@@ -32,6 +34,17 @@ namespace Taskify.Controllers
             var userId = GetCurrentUserId();
             await _notificationService.MarkAllASReadAsync(userId);
             return Ok(new { success = true } );
+        }
+        [HttpPost]
+        public async Task<IActionResult> RespondToApproval(Guid notificationId, bool isApproved)
+        {
+            // Gọi Service xử lý logic duyệt/từ chối ta vừa viết
+            var result = await _teamService.HandleInviteApprovalAsync(notificationId, isApproved);
+
+            if (result)
+                return Ok(new { success = true, message = "Đã xử lý yêu cầu." });
+            else
+                return BadRequest("Có lỗi xảy ra.");
         }
     }
 }

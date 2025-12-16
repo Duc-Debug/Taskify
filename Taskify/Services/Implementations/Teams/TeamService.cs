@@ -87,7 +87,7 @@ namespace Taskify.Services
             if (currentUserMember == null) return null;
 
             var isCurrentUserOwner = currentUserMember.Role == TeamRole.Owner;
-
+            var isCurrentUserAdmin = currentUserMember.Role == TeamRole.Admin;
             return new TeamDetailsViewModel
             {
                 Id = team.Id,
@@ -95,6 +95,7 @@ namespace Taskify.Services
                 Description = "A collaborative space for our projects.",//DB chua co, de explamle th
                 CreatedAt = DateTime.UtcNow,
                 IsOwner = isCurrentUserOwner,
+                IsAdmin = isCurrentUserAdmin,
                 MemberCount = team.Members.Count,
 
                 Boards = team.Boards.Select(b => new BoardViewModel
@@ -141,21 +142,120 @@ namespace Taskify.Services
         public async Task<(bool Success, string Message)> InviteMemberAsync(Guid teamId, string email, Guid senderId)
         {
             var userToInvite = _context.Users.FirstOrDefault(u => u.Email == email);
-            if (userToInvite == null)
-            {
-                return (false, "User with this email does not exist.");
-            }
+            if (userToInvite == null) return (false, "Email user doesn't exsist.");
 
-           var isAlreadyMember = await _context.TeamMembers
-                .AnyAsync(tm=>tm.TeamId== teamId && tm.UserId== userToInvite.Id);
-            if (isAlreadyMember) return (false, " User is already a member of the team.");
+            // Check xem đã là thành viên chưa
+            var isAlreadyMember = await _context.TeamMembers
+                .AnyAsync(tm => tm.TeamId == teamId && tm.UserId == userToInvite.Id);
+            if (isAlreadyMember) return (false, "User is a member Team.");
 
             var team = await _context.Teams.FindAsync(teamId);
             if (team == null) return (false, "Team not found.");
-            await _notificationService.CreateInviteNotificationAsync(senderId,userToInvite.Id,teamId,team.Name);
-            return (true, "Invitation sent successfully.");
-        }
 
+            // Lấy Role người gửi lời mời
+            var senderRole = await GetUserRoleInTeamAsync(teamId, senderId); // Hàm check role viết ở dưới
+
+            // --- LOGIC PHÂN QUYỀN MỜI ---
+
+            // 1. Nếu là Admin mời VÀ Team yêu cầu duyệt
+            if (senderRole == TeamRole.Admin && team.IsInviteApprovalRequired)
+            {
+                // Tạo thông báo gửi cho Owner
+                var notification = new Notification
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = team.OwnerId, // Người nhận là Owner
+                    SenderId = senderId,   // Người gửi là Admin
+                    Type = NotificationType.ApprovalRequest, // Loại: Yêu cầu duyệt
+                    Message = $"Admin want to invite {userToInvite.FullName} ({userToInvite.Email}) join team.",
+                    ReferenceId = teamId,
+                    CreatedAt = DateTime.Now,
+                    IsRead = false,
+                    // QUAN TRỌNG: Lưu ID người được mời vào đây để dùng sau này
+                    Metadata = userToInvite.Id.ToString()
+                };
+                _context.Notifications.Add(notification);
+                await _context.SaveChangesAsync();
+                return (true, "Request send to Owner in approve.");
+            }
+
+            // 2. Nếu là Owner HOẶC (Admin và Team KHÔNG cần duyệt) -> Gửi lời mời trực tiếp
+            if (senderRole == TeamRole.Owner || (senderRole == TeamRole.Admin && !team.IsInviteApprovalRequired))
+            {
+                await _notificationService.CreateInviteNotificationAsync(senderId, userToInvite.Id, teamId, team.Name);
+                return (true, "The invitation send successfully");
+            }
+
+            return (false, "You are not permisson to invite member");
+        }
+        // File: Services/Implementations/Teams/TeamService.cs
+
+        public async Task<bool> HandleInviteApprovalAsync(Guid notificationId, bool isApproved)
+        {
+            // 1. Lấy thông báo yêu cầu duyệt
+            var notification = await _context.Notifications
+                .FirstOrDefaultAsync(n => n.Id == notificationId);
+
+            // Kiểm tra null và đúng loại thông báo
+            if (notification == null || notification.Type != NotificationType.ApprovalRequest)
+                return false;
+
+            // 2. Nếu Owner TỪ CHỐI (Reject)
+            if (!isApproved)
+            {
+                // Gửi thông báo lại cho Admin (SenderId) biết là bị từ chối
+                if (notification.SenderId.HasValue)
+                {
+                    await _notificationService.CreateInfoNotificationAsync(
+                        notification.SenderId.Value, // <--- SỬA: Gửi cho Admin
+                        "Yêu cầu mời thành viên của bạn đã bị từ chối." // Nội dung
+                    );
+                }
+
+                // Xóa đơn xin phép
+                _context.Notifications.Remove(notification);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+
+            // 3. Nếu Owner ĐỒNG Ý (Approve)
+            // Parse ID người được mời từ Metadata
+            if (!string.IsNullOrEmpty(notification.Metadata) && Guid.TryParse(notification.Metadata, out Guid userToInviteId))
+            {
+                if (!notification.ReferenceId.HasValue) return false;
+
+                var teamId = notification.ReferenceId.Value;
+                var team = await _context.Teams.FindAsync(teamId);
+
+                if (team != null)
+                {
+                    // A. Gửi lời mời chính thức cho người được mời (Invite Notification)
+                    // Người gửi (Sender) bây giờ là Owner (notification.UserId)
+                    await _notificationService.CreateInviteNotificationAsync(
+                        notification.UserId, // Owner gửi
+                        userToInviteId,      // Người nhận (khách)
+                        teamId,
+                        team.Name
+                    );
+
+                    // B. Báo tin vui lại cho Admin (người gửi yêu cầu duyệt lúc đầu)
+                    if (notification.SenderId.HasValue)
+                    {
+                        await _notificationService.CreateInfoNotificationAsync(
+                            notification.SenderId.Value, // <--- SỬA: Gửi cho Admin
+                            "Owner đã duyệt yêu cầu mời thành viên của bạn."
+                        );
+                    }
+                }
+
+                // C. Xóa đơn xin phép
+                _context.Notifications.Remove(notification);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+
+            return false;
+        }
         public async Task<(bool Success, string Message)> RespondInvitationAsync(Guid notificationId, Guid userId, bool isAccepted)
         {
            var notification = await _context.Notifications.FindAsync(notificationId);
@@ -230,6 +330,12 @@ namespace Taskify.Services
             await _context.SaveChangesAsync();
             await _notificationService.CreateInfoNotificationAsync(memberId, $"Your role in team '{targetMember.Team.Name}' has been changed to {newRole}.");
             return (true, "Member role updated successfully.");
+        }
+        public async Task<TeamRole> GetUserRoleInTeamAsync(Guid? teamId, Guid userId)
+        {
+            var member = await _context.TeamMembers
+                .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
+            return member.Role;
         }
     }
 }

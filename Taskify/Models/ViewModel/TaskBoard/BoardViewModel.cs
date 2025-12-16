@@ -12,6 +12,7 @@
 
         // Danh sách thành viên của Team (để hiển thị filter hoặc assign)
         public List<MemberViewModel> TeamMembers { get; set; } = new List<MemberViewModel>();
+        public bool CanCreateList { get; set; } 
     }
 
     public class TaskListViewModel
