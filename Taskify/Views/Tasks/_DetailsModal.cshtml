@@ -104,7 +104,7 @@
                                                 <div class="assignee-avatar-lg">@assignee.Initials</div>
                                             }
                                             <span>@assignee.FullName</span>
-                                            <button class="btn-remove-assignee" onclick="removeAssignee('@assignee.Id')">
+                                            <button class="btn-remove-assignee" onclick="removeAssignee('@Model.Id','@assignee.Id')">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <line x1="18" y1="6" x2="6" y2="18" />
                                                     <line x1="6" y1="6" x2="18" y2="18" />
@@ -117,13 +117,48 @@
                                 {
                                     <p class="empty-message">No members assigned</p>
                                 }
-                                <button class="btn-add-member">
+                                <button class="btn-add-member" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <line x1="12" y1="5" x2="12" y2="19" />
                                         <line x1="5" y1="12" x2="19" y2="12" />
                                     </svg>
                                     Add Member
                                 </button>
+                                <ul class="dropdown-menu p-2" style="max-height: 200px; overflow-y: auto; width: 250px;">
+                                  <li><h6 class="dropdown-header">Select Member</h6></li>
+                                    @if(Model.TeamMembers !=null && Model.TeamMembers.Any())
+                                    {
+                                        foreach(var user in Model.TeamMembers)
+                                        {
+                                            if (!Model.Assignees.Any(a => a.Id == user.Id)){
+                                                <li>
+                                                    <!--Script gan day-->
+                                                    <a class="dropdown-item d-flex align-items-center gap-2 rounded py-2"
+                                                       href="javascript:void(0)"
+                                                       onclick="assignMemberToTask('@Model.Id', '@user.Id')">
+                                                        @if (!string.IsNullOrEmpty(user.AvatarUrl))
+                                                        {
+                                                            <img src="@user.AvatarUrl" class="rounded-circle" width="24" height="24" style="object-fit:cover" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                                                 style="width:24px; height:24px; font-size:10px;">
+                                                                @(user.FullName?.Substring(0, 1) ?? "U")
+                                                            </div>
+                                                        }
+                                                        <span>@user.FullName</span>
+                                                    </a>
+                                                </li>
+                                            }
+                                           
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <li><span class="dropdown-item text-muted">No members available</span></li>
+                                    }
+                                </ul>
                             </div>
                         </div>
 
@@ -175,7 +210,7 @@
                     <div class="task-sidebar">
                         <h5>Add to card</h5>
 
-                        <button class="sidebar-btn">
+                        <button class="sidebar-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                                 <circle cx="8.5" cy="7" r="4" />
@@ -184,7 +219,42 @@
                             </svg>
                             Members
                         </button>
+                        <ul class="dropdown-menu p-2" style="max-height: 200px; overflow-y: auto; width: 250px;">
+                            <li><h6 class="dropdown-header">Select Member</h6></li>
+                            @if (Model.TeamMembers != null && Model.TeamMembers.Any())
+                            {
+                                foreach (var user in Model.TeamMembers)
+                                {
+                                    if (!Model.Assignees.Any(a => a.Id == user.Id))
+                                    {
+                                        <li>
+                                            <!--Script gan day-->
+                                            <a class="dropdown-item d-flex align-items-center gap-2 rounded py-2"
+                                               href="javascript:void(0)"
+                                               onclick="assignMemberToTask('@Model.Id', '@user.Id')">
+                                                @if (!string.IsNullOrEmpty(user.AvatarUrl))
+                                                {
+                                                    <img src="@user.AvatarUrl" class="rounded-circle" width="24" height="24" style="object-fit:cover" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                                         style="width:24px; height:24px; font-size:10px;">
+                                                        @(user.FullName?.Substring(0, 1) ?? "U")
+                                                    </div>
+                                                }
+                                                <span>@user.FullName</span>
+                                            </a>
+                                        </li>
+                                    }
 
+                                }
+                            }
+                            else
+                            {
+                                <li><span class="dropdown-item text-muted">No members available</span></li>
+                            }
+                        </ul>
                         <button class="sidebar-btn">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -341,5 +411,33 @@
     function archiveTask() {
         // Archive task logic
         console.log('Archive task');
+    }
+    function assignMemberToTask(taskId,userId){
+        fetch(`/Tasks/AssignMember?taskId=${taskId}&userId=${userId}`, {
+            method: 'POST'
+        })
+        .then(res=>{
+            
+            if(res.ok){openTaskDetails(taskId);}
+            else{
+                if (res.status === 403) res.json().then(data => alert(data.message));
+                else alert("Error while add member");
+            }
+        });
+    }
+    function removeAssignee(userId) {
+        if(!comfirm("Are you sure to delete from task?")) return;
+        var taskId = '@Model.Id';
+       fetch(`/Tasks/RemoveMember?taskId=${taskId}&userId=${userId}`, {
+            method: 'POST'
+        })
+        .then(res=>{
+            if(res.ok){
+                openTaskDetails(taskId);
+            }else{
+                if (res.status === 403) res.json().then(data => alert(data.message));
+                else alert("Error while delete member.");
+            }
+        });
     }
 </script>

@@ -39,6 +39,7 @@ namespace Taskify.Models
 
         // Lịch sử hoạt động
         public List<TaskHistoryViewModel> Activities { get; set; } = new List<TaskHistoryViewModel>();
+        public List<MemberViewModel> TeamMembers { get; set; }
     }
 
     // 3. Dùng cho Form tạo mới Task

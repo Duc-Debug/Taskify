@@ -124,8 +124,57 @@ namespace Taskify.Controllers
             var referer = Request.Headers["Referer"].ToString();
             return Redirect(string.IsNullOrEmpty(referer) ? "/Tasks" : referer);
         }
-       
-        
+
+        [HttpPost]
+        public async Task<IActionResult> AssignMember(Guid taskId,Guid userId)
+        {
+            try
+            {
+                var check = await CheckPermissionToAssignAsync(taskId, GetCurrentUserId());
+                if (!check.Allowed)
+                {
+                    return StatusCode(403, new { success = false, message = check.Message });
+                }
+                await _taskService.AssignMemberASync(taskId, userId);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> RemoveMember(Guid taskId, Guid userId)
+        {
+            try
+            {
+                var check = await CheckPermissionToAssignAsync(taskId, GetCurrentUserId());
+                if (!check.Allowed)
+                {
+                    return StatusCode(403, new { success = false, message = check.Message });
+                }
+                await _taskService.RemoveMemberAsync(taskId, userId);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        // -- PRIVATE HELPER---
+        private Guid GetCurrentUserId() => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        private async Task<(bool Allowed,string Message)> CheckPermissionToAssignAsync(Guid taskId, Guid currentUserId)
+        {
+            //Lay BoardId tu Task
+            var taskInfo = await _taskService.GetTaskForEditAsync(taskId);
+            if (taskInfo == null) { return (false, " Task not exist"); }
+                //Lay role
+                var currentUserRole = await _taskService.GetUserRoleInBoardAsync(taskInfo.BoardId, currentUserId);
+                //Chi ad and ow dc
+                if (currentUserRole == TeamRole.Owner || currentUserRole == TeamRole.Admin) return (true, "Authorized");
+                return (false, "You are not permission to do this.Only Admin and Owner to do that");
+        }
     }
 //Class DTO(Data Transfer Object) nhan du lieu tu Js
         public class MoveTaskRequest

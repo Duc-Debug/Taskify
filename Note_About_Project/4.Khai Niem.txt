@@ -1,0 +1,20 @@
+Hosted Service(Background Service):
+- Bình thường: Controller: Hoạt động theo cơ chế Request-Response. Giống Lễ tân, phục vụ bàn. Chỉ làm việc khi khác gọi đến(Gửi Http Request). Không gọi ko làm
+- Còn Hosted Service: Hoạt động theo cơ chế Background task. Hoạt động độc lập, tự giác theo lịch, bất kể User cần hay không.
+--> : Hosted Service là một class C# chạy "ngầm" song song với ứng dụng Web ngay từ khi Server khởi động cho đến khi tắt.
+------
+Hoạt động ra sao: 
+Tóm tắt dễ hiểu
+Start: Bạn bật Server -> ExecuteAsync chạy.
+
+Scope: Nó tạo ra một "kết nối tạm" tới Database (CreateScope).
+
+Check: Nó soi xem có Task nào sắp hết hạn không.
+
+Action: Nếu có và chưa báo -> Tạo Notification.
+
+Cleanup: Nó đóng kết nối Database lại (giải phóng RAM).
+
+Sleep: Nó đi ngủ 24 tiếng.
+
+Loop: 24 tiếng sau nó dậy và quay lại bước 2.

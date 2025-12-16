@@ -56,6 +56,8 @@ namespace Taskify
             builder.Services.AddScoped<ITaskService, TaskService>();
             builder.Services.AddScoped<ITeamService, TeamService>();
 
+            builder.Services.AddHostedService<Taskify.Services.Background.DeadlineReminderService>();
+
             var app = builder.Build();
 
             using(var scope = app.Services.CreateScope())

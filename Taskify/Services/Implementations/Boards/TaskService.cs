@@ -7,9 +7,11 @@ namespace Taskify.Services
     public class TaskService : ITaskService
     {
         private readonly AppDbContext _context;
-        public TaskService(AppDbContext context)
+        private readonly INotificationService _notificationService;
+        public TaskService(AppDbContext context, INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
         public async Task MoveTaskAsync(Guid taskId, Guid targetListId, int newPosition)
         {
@@ -32,7 +34,7 @@ namespace Taskify.Services
                     // Chuẩn hóa tên về chữ thường để so sánh
                     var listTitle = targetList.Title.Trim().ToLower();
 
-                    if (listTitle == "to do" || listTitle == "todo"||listTitle=="backlog")
+                    if (listTitle == "to do" || listTitle == "todo" || listTitle == "backlog")
                     {
                         task.Status = Models.TaskStatus.Pending;
                     }
@@ -57,16 +59,16 @@ namespace Taskify.Services
 
         public async Task<TaskItem> CreateTaskAsync(TaskCreateViewModel model, Guid userId)
         {
-            var status =Models.TaskStatus.Pending;
+            var status = Models.TaskStatus.Pending;
             var list = await _context.TaskLists.FindAsync(model.ListId);
-            if(list != null)
+            if (list != null)
             {
                 var listTitle = list.Title.Trim().ToLower();
                 if (listTitle == "done" || listTitle == "completed" || listTitle == "complete" || listTitle == "finished")
                 {
                     status = Models.TaskStatus.Completed;
                 }
-                else if (listTitle == "to do" || listTitle == "todo"||listTitle=="backlog")
+                else if (listTitle == "to do" || listTitle == "todo" || listTitle == "backlog")
                 {
                     status = Models.TaskStatus.Pending;
                 }
@@ -116,23 +118,23 @@ namespace Taskify.Services
             await LogHistoryAsync(task.Id, "Created task");
             return task;
         }
-        public async Task<(bool Success, string Message)> DeleteTaskAsync(Guid taskId,Guid userId)
+        public async Task<(bool Success, string Message)> DeleteTaskAsync(Guid taskId, Guid userId)
         {
             var task = await _context.Tasks
                  .Include(t => t.Assignments)
                  .Include(t => t.Comments)
                  .Include(t => t.TaskHistories)
-                 .Include(t=>t.List)
+                 .Include(t => t.List)
                  .FirstOrDefaultAsync(t => t.Id == taskId);
             if (task == null) return (false, "Don't have Task");
-           var boardId = task.List.BoardId;
+            var boardId = task.List.BoardId;
             var userRole = await GetUserRoleInBoardAsync(boardId, userId);
-            if(userRole==TeamRole.Member && task.CreatorId != userId)
+            if (userRole == TeamRole.Member && task.CreatorId != userId)
             {
                 return (false, "You don't have permission to delete this task");
             }
             _context.Tasks.Remove(task);
-                await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             return (true, "Delete task successfully");
 
         }
@@ -147,7 +149,7 @@ namespace Taskify.Services
         {
             var task = await _context.Tasks
                 .Include(t => t.Assignments).ThenInclude(a => a.User)
-                .Include(t => t.List) // Lay ten List
+                .Include(t => t.List).ThenInclude(l=>l.Board) // Lay ten List
                 .FirstOrDefaultAsync(t => t.Id == taskId);
 
             if (task == null) return null;
@@ -157,7 +159,18 @@ namespace Taskify.Services
                 .OrderByDescending(h => h.Timestamp)
                 .Take(10)
                 .ToListAsync();
+            var teamId = task.List.Board.TeamId;
+            var allTeamMembers = await _context.TeamMembers
+                .Include(tm => tm.User)
+                .Where(tm => tm.TeamId == teamId)
+                .Select(tm => new MemberViewModel
+                {
+                    Id = tm.UserId,
+                    FullName = tm.User.FullName,
+                    AvatarUrl = tm.User.AvatarUrl,
+                    Initials = tm.User.FullName.Substring(0, 1) ?? "U"
 
+                }).ToListAsync();
             //Map tu entity sang VM
             return new TaskDetailsViewModel
             {
@@ -178,7 +191,7 @@ namespace Taskify.Services
                     AvatarUrl = a.User.AvatarUrl,
                     Initials = a.User.FullName?.Substring(0, 1) ?? "U"
                 }).ToList(),
-
+                TeamMembers = allTeamMembers,
 
                 Activities = histories.Select(h => new TaskHistoryViewModel
                 {
@@ -235,14 +248,14 @@ namespace Taskify.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<(bool Success, string Message)> UpdateTaskAsync(TaskEditViewModel model, Guid userId,TeamRole userRole)
+        public async Task<(bool Success, string Message)> UpdateTaskAsync(TaskEditViewModel model, Guid userId, TeamRole userRole)
         {
             var task = await _context.Tasks
                 .Include(t => t.Assignments)
                 .FirstOrDefaultAsync(t => t.Id == model.Id);
-            if (task == null) return (false,"Don't have Task");
+            if (task == null) return (false, "Don't have Task");
 
-            if(userRole == TeamRole.Member && task.CreatorId != userId)
+            if (userRole == TeamRole.Member && task.CreatorId != userId)
             {
                 return (false, "You don't have permission to update this task");
             }
@@ -251,9 +264,9 @@ namespace Taskify.Services
             task.Priority = model.Priority;
             task.DueDate = model.DueDate;
             _context.TaskAssignments.RemoveRange(task.Assignments);
-            if(model.SelectedAssigneeIds != null)
+            if (model.SelectedAssigneeIds != null)
             {
-                foreach(var assigneeId in model.SelectedAssigneeIds)
+                foreach (var assigneeId in model.SelectedAssigneeIds)
                 {
                     task.Assignments.Add(new TaskAssignment
                     {
@@ -272,10 +285,10 @@ namespace Taskify.Services
 
         public async Task<TaskEditViewModel> GetTaskForEditAsync(Guid taskId)
         {
-           var task = await _context.Tasks
-                .Include(t => t.Assignments)
-                .Include(t => t.List)
-                .FirstOrDefaultAsync(t => t.Id == taskId);
+            var task = await _context.Tasks
+                 .Include(t => t.Assignments)
+                 .Include(t => t.List)
+                 .FirstOrDefaultAsync(t => t.Id == taskId);
             if (task == null) return null;
             var assignedUserIds = task.Assignments.Select(a => a.UserId).ToList();
             return new TaskEditViewModel
@@ -308,6 +321,37 @@ namespace Taskify.Services
                 .FirstOrDefaultAsync();
 
             return role;
+        }
+        public async Task AssignMemberASync(Guid taskId, Guid userId)
+        {
+            var exists = await _context.TaskAssignments
+                .AnyAsync(ta => ta.Id == taskId && ta.UserId == userId);
+            if (!exists)
+            {
+                var assignment = new TaskAssignment
+                {
+                    Id = Guid.NewGuid(),
+                    TaskId = taskId,
+                    UserId = userId,
+                };
+                var taskName = await _context.Tasks.Where(i=>i.Id== taskId)
+                    .Select(name=>name.Title)
+                    .FirstOrDefaultAsync();
+
+                _context.TaskAssignments.Add(assignment);
+                await _context.SaveChangesAsync();
+                await _notificationService.CreateInfoNotificationAsync(userId, $"You are assign a new task({taskName})");
+            }
+        }
+        public async Task RemoveMemberAsync(Guid taskId, Guid userId)
+        {
+            var assignment = await _context.TaskAssignments
+                .FirstOrDefaultAsync(ta => ta.TaskId == taskId && ta.UserId == userId);
+            if (assignment != null)
+            {
+                _context.TaskAssignments.Remove(assignment);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
