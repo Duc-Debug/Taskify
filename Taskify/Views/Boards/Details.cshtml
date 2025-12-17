@@ -182,7 +182,9 @@
 <div id="task-details-modal-container"></div>
 
 <partial name="~/Views/Tasks/_CreateModal.cshtml"
-         model="new Taskify.Models.TaskCreateViewModel { BoardId = Model.Id }" />
+         model="new Taskify.Models.TaskCreateViewModel { 
+                BoardId = Model.Id,
+                AvailableMembers=Model.TeamMembers }" />
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 

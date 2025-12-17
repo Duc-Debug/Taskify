@@ -61,6 +61,7 @@ namespace Taskify.Models
 
         // Danh sách ID của user được assign (từ dropdown)
         public List<Guid> SelectedAssigneeIds { get; set; } = new List<Guid>();
+        public List<MemberViewModel> AvailableMembers { get; set; } = new List<MemberViewModel>();
     }
 
     // Helper class cho Avatar thành viên

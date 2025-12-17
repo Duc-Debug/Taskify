@@ -8,7 +8,7 @@ namespace Taskify.Services
     {
         public AppDbContext _context;
         private readonly INotificationService _notificationService;
-        public TeamService(AppDbContext context,INotificationService notificationService)
+        public TeamService(AppDbContext context, INotificationService notificationService)
         {
             _context = context;
             _notificationService = notificationService;
@@ -133,7 +133,7 @@ namespace Taskify.Services
             var memberToRemove = await _context.TeamMembers
                 .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == memberId);
             if (memberToRemove == null) return false;
-            if(memberToRemove.UserId== currentUserId) return false;
+            if (memberToRemove.UserId == currentUserId) return false;
             _context.TeamMembers.Remove(memberToRemove);
             await _context.SaveChangesAsync();
             return true;
@@ -258,13 +258,13 @@ namespace Taskify.Services
         }
         public async Task<(bool Success, string Message)> RespondInvitationAsync(Guid notificationId, Guid userId, bool isAccepted)
         {
-           var notification = await _context.Notifications.FindAsync(notificationId);
+            var notification = await _context.Notifications.FindAsync(notificationId);
             if (notification == null || notification.UserId != userId)
             {
                 return (false, "Notification not found or access denied.");
             }
             var teamId = notification.ReferenceId.Value;
-            var senderId= notification.SenderId.Value;
+            var senderId = notification.SenderId.Value;
             if (isAccepted)
             {
                 var exists = await _context.TeamMembers
@@ -298,18 +298,18 @@ namespace Taskify.Services
 
         public async Task<(bool Success, string Message)> ChangeMemberRoleAsync(Guid teamId, Guid memberId, TeamRole newRole, Guid currentUserId)
         {
-           var currentUserMember = await _context.TeamMembers
-                .FirstOrDefaultAsync(tm=>tm.TeamId ==teamId &&tm.UserId==currentUserId);
-            if(currentUserMember == null || currentUserMember.Role != TeamRole.Owner)
+            var currentUserMember = await _context.TeamMembers
+                 .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == currentUserId);
+            if (currentUserMember == null || currentUserMember.Role != TeamRole.Owner)
             {
                 return (false, "Only team owners can change member roles.");
             }
             var targetMember = await _context.TeamMembers
-                .Include(tm=>tm.User)
-                .Include(tm=>tm.Team)
+                .Include(tm => tm.User)
+                .Include(tm => tm.Team)
                 .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == memberId);
             if (targetMember == null) return (false, "Member not found in the team.");
-            if(targetMember.UserId == currentUserId)
+            if (targetMember.UserId == currentUserId)
             {
                 return (false, "Owners cannot change their own role.");
             }
@@ -326,7 +326,7 @@ namespace Taskify.Services
                 await _notificationService.CreateInfoNotificationAsync(currentUserId, $"You have transferred ownership of the team '{targetMember.Team.Name}' to {targetMember.User.FullName}.");
                 return (true, "Member promoted to Owner successfully.");
             }
-                targetMember.Role = newRole;
+            targetMember.Role = newRole;
             await _context.SaveChangesAsync();
             await _notificationService.CreateInfoNotificationAsync(memberId, $"Your role in team '{targetMember.Team.Name}' has been changed to {newRole}.");
             return (true, "Member role updated successfully.");
@@ -336,6 +336,13 @@ namespace Taskify.Services
             var member = await _context.TeamMembers
                 .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
             return member.Role;
+        }
+        public async Task<TeamRole?> GetUserRoleInTeamAsync(Guid teamId, Guid userId)
+        {
+            var member = await _context.TeamMembers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
+            return member?.Role;
         }
     }
 }

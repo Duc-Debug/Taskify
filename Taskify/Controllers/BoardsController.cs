@@ -11,11 +11,13 @@ namespace Taskify.Controllers
     {
         private readonly IBoardService _boardService;
         private readonly ITeamService _teamService;
+        private readonly ITaskService _taskService;
 
-        public BoardsController(IBoardService boardService, ITeamService teamService)
+        public BoardsController(IBoardService boardService, ITeamService teamService, ITaskService taskService)
         {
             _boardService = boardService;
             _teamService = teamService;
+            _taskService = taskService;
         }
 
         [HttpGet]
@@ -45,9 +47,24 @@ namespace Taskify.Controllers
         public async Task<IActionResult> Details(Guid id)
         {
             var userId = GetCurrentUserId();
-            var board = await _boardService.GetBoardDetailsAsync(id,userId);
+            var board = await _boardService.GetBoardDetailsAsync(id, userId);
             if (board == null) return NotFound();
-            return View(board);
+            bool hasAccess= false;
+            if (board.TeamId != Guid.Empty)
+            {
+                var role = await _teamService.GetUserRoleInTeamAsync(board.TeamId, userId);
+                if(role.HasValue) hasAccess = true;
+            }
+            else
+            {
+
+            }
+            if (!hasAccess && board.TeamId != Guid.Empty)
+            {
+                TempData["ErrorMessage"] = "LỖI BẢO MẬT: Bạn không phải thành viên của Board này.";
+                return RedirectToAction(nameof(Index));
+            }
+                return View(board);
         }
 
         [HttpPost]
@@ -58,6 +75,15 @@ namespace Taskify.Controllers
                 try
                 {
                     var userId = GetCurrentUserId();
+                    if(model.TeamId.HasValue &&model.TeamId.Value != Guid.Empty)
+                    {
+                        var role = await _teamService.GetUserRoleInTeamAsync(model.TeamId.Value, userId);
+                        if (role == TeamRole.Member)
+                        {
+                            TempData["ErrorMessage"] = "Member doesn't permission to create board in team";
+                            return RedirectToAction(nameof(Index));
+                        }
+                    }
                     await _boardService.CreateBoardAsync(model, userId);
                     return RedirectToAction(nameof(Index));
                 }
@@ -85,7 +111,8 @@ namespace Taskify.Controllers
             }
             catch (Exception ex)
             {
-                return Content($"KHÔNG XÓA ĐƯỢC BOARD! Lỗi Database: {ex.Message} - {ex.InnerException?.Message}");
+                TempData["ErrorMessage"] = $"KHÔNG XÓA ĐƯỢC BOARD! Lỗi Database: {ex.Message} - {ex.InnerException?.Message}";
+                return RedirectToAction(nameof(Index));
             }
         }
         [HttpPost]
@@ -103,7 +130,7 @@ namespace Taskify.Controllers
                 return BadRequest("Dữ liệu không hợp lệ.");
             }
             var userId = GetCurrentUserId();
-            var board = await _boardService.GetBoardDetailsAsync(request.BoardId,userId);
+            var board = await _boardService.GetBoardDetailsAsync(request.BoardId, userId);
             if (board == null) return NotFound("Board don't exsist.");
             var memberRole = await _teamService.GetUserRoleInTeamAsync(board.TeamId, userId);
             if (memberRole == TeamRole.Member) return StatusCode(403, "You don't have permission to add list.");
@@ -114,6 +141,12 @@ namespace Taskify.Controllers
         public async Task<IActionResult> MoveList([FromBody] MoveListRequest request)
         {
             if (request == null) return BadRequest("Dữ liệu không hợp lệ.");
+            var userId = GetCurrentUserId();
+            var role = await _taskService.GetUserRoleInBoardAsync(request.BoardId, userId);
+            if (role == TeamRole.Member)
+            {
+                return StatusCode(403, new { success = false, message = "Members do not have the right to change the board structure." });
+            }
             await _boardService.UpdateListOrderAsync(request.BoardId, request.ListId, request.NewIndex);
             return Ok(new { success = true });
         }

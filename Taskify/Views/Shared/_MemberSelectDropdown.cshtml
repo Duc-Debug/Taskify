@@ -1,0 +1,51 @@
+﻿@model Taskify.Models.MemberSelectViewModel
+
+<ul class="dropdown-menu p-2 shadow" style="max-height: 200px; overflow-y: auto; width: 250px;">
+    <li><h6 class="dropdown-header">Select Member</h6></li>
+
+    @if (Model.TeamMembers != null && Model.TeamMembers.Any())
+    {
+        bool hasCandidate = false;
+
+        foreach (var user in Model.TeamMembers)
+        {
+            // Logic: Chỉ hiện những người CHƯA có trong danh sách Assignees
+            // Lưu ý: Kiểm tra null cho Assignees để tránh lỗi
+            bool isAssigned = Model.Assignees != null && Model.Assignees.Any(a => a.Id == user.Id);
+
+            if (!isAssigned)
+            {
+                hasCandidate = true;
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 rounded py-2 cursor-pointer"
+                       href="javascript:void(0)"
+                       onclick="assignMemberToTask('@Model.TaskId', '@user.Id')">
+
+                        @if (!string.IsNullOrEmpty(user.AvatarUrl))
+                        {
+                            <img src="@user.AvatarUrl" class="rounded-circle" width="24" height="24" style="object-fit:cover" />
+                        }
+                        else
+                        {
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                 style="width:24px; height:24px; font-size:10px;">
+                                @(user.FullName?.Substring(0, 1) ?? "U")
+                            </div>
+                        }
+
+                        <span class="text-truncate">@user.FullName</span>
+                    </a>
+                </li>
+            }
+        }
+
+        if (!hasCandidate)
+        {
+            <li><span class="dropdown-item text-muted small">All members assigned</span></li>
+        }
+    }
+    else
+    {
+        <li><span class="dropdown-item text-muted small">No members available</span></li>
+    }
+</ul>

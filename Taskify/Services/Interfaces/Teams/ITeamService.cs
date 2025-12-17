@@ -14,5 +14,6 @@ namespace Taskify.Services
         Task<(bool Success, string Message)> ChangeMemberRoleAsync(Guid teamId,  Guid memberId,TeamRole newRole,Guid currentUserId);
         Task<TeamRole> GetUserRoleInTeamAsync(Guid? teamId, Guid userId);
         Task<bool> HandleInviteApprovalAsync(Guid notificationId, bool isApproved);
+        Task<TeamRole?> GetUserRoleInTeamAsync(Guid teamId, Guid userId);
     }
 }

@@ -58,6 +58,13 @@ namespace Taskify.Models
         public string Name { get; set; }
 
         [MaxLength(500)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
     }
+    public class MemberSelectViewModel
+    {
+        public Guid TaskId { get; set; }
+        public List<MemberViewModel> TeamMembers { get; set; } = new List<MemberViewModel>();
+        public List<MemberViewModel> Assignees { get; set; } = new List<MemberViewModel>();
+    }
+
 }

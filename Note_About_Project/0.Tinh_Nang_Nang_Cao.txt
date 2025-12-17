@@ -3,12 +3,18 @@ AI sẽ:
 	Hỗ trợ tạo boards các Task trong đó, có thể gửi 1 file txt hoặc docs checklist,vvv để sinh 
 Option 3: Dashboard thống kê: Vẽ biểu đồ xem ai đang gánh team, ai đang "lười" dựa trên số lượng Task hoàn thành.
 --------------------------------------------
--Membe  chỉ di chuyển Task của mình thôi, Không thể di chuyển được List 
-Member vẫn tạo được Board trong team. Và Owner không xóa được Board nếu đó không phải Owner tạo.
--- Người ngoài vẫn vào được Boards mặc dù ko phải thành viên Team( Xóa task, CRUD). List không động vào đc.
+- Ko edit Board đc
+Xoa Team, Sua team,( Ko cho decriptoon la ko tao dc), 
+Cho TEam Setting nut ma allow Admin invite member. 
+-Them Canedale
+-Doi Theme
+- Ngon ngu
+- Cho profile thật hơn
+- Change/Forgot Password
 ------------------------
 Những vc đã làm: Cho đến p2:
 GoogleLogin
 Update Notification(invite team, deadline)
 Invite Member, Role Member
 Add member to a Task. 
+

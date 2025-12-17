@@ -112,7 +112,7 @@ namespace Taskify.Services
                     });
                 }
             }
-
+            
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
             await LogHistoryAsync(task.Id, "Created task");
@@ -143,6 +143,7 @@ namespace Taskify.Services
             return await _context.Tasks
                 .Include(t => t.Assignments)
                 .ThenInclude(t => t.User)
+                .Include(t=>t.List)
                 .FirstOrDefaultAsync(t => t.Id == taskId);
         }
         public async Task<TaskDetailsViewModel> GetTaskDetailsAsync(Guid taskId)
@@ -248,7 +249,7 @@ namespace Taskify.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<(bool Success, string Message)> UpdateTaskAsync(TaskEditViewModel model, Guid userId, TeamRole userRole)
+        public async Task<(bool Success, string Message)> UpdateTaskAsync(TaskEditViewModel model, Guid userId, TeamRole? userRole)
         {
             var task = await _context.Tasks
                 .Include(t => t.Assignments)
@@ -310,14 +311,14 @@ namespace Taskify.Services
                 //    }).ToListAsync()
             };
         }
-        public async Task<TeamRole> GetUserRoleInBoardAsync(Guid boardId, Guid userId)
+        public async Task<TeamRole?> GetUserRoleInBoardAsync(Guid boardId, Guid userId)
         {
             // Truy vấn: Từ Board -> tìm Team -> tìm Member -> lấy Role
             var role = await _context.Boards
                 .Where(b => b.Id == boardId)
                 .SelectMany(b => b.Team.Members)
                 .Where(tm => tm.UserId == userId)
-                .Select(tm => tm.Role)
+                .Select(tm => (TeamRole?)tm.Role)
                 .FirstOrDefaultAsync();
 
             return role;

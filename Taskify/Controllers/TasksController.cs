@@ -21,12 +21,36 @@ namespace Taskify.Controllers
         public async Task<IActionResult> Move([FromBody] MoveTaskRequest request)
         {
             if (request == null) return BadRequest();
-            await _taskService.MoveTaskAsync(request.TaskId, request.TargetListId, request.NewPosition);
-            return Ok(new { success = true });
+            try
+            {
+                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                var task = await _taskService.GetTaskByIdAsync(request.TaskId);
+                if (task == null) return NotFound("Task not exists");
+                var role = await _taskService.GetUserRoleInBoardAsync(task.List.BoardId, userId);
+                if(role == TeamRole.Member)
+                {
+                    bool isCtreator = task.CreatorId == userId;
+                    bool isAssignee = task.Assignments.Any(a => a.UserId == userId);
+                    if(!isCtreator && !isAssignee)
+                    {
+                        return StatusCode(403, new { success = false, message = "Bạn chỉ được di chuyển Task của chính mình." });
+                    }
+                }
+                await _taskService.MoveTaskAsync(request.TaskId, request.TargetListId, request.NewPosition);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
         }
         [HttpPost]
         public async Task<IActionResult> Create(TaskCreateViewModel model)
         {
+            if (!await CanAccessBoardAsync(model.BoardId))
+            {
+                return StatusCode(403, "Bạn không có quyền tạo Task trong Board này.");
+            }
             if (ModelState.IsValid)
             {
                 var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -45,6 +69,12 @@ namespace Taskify.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(Guid id)
         {
+            var task=await _taskService.GetTaskByIdAsync(id);
+            if (task == null) return NotFound();
+            if (!await CanAccessBoardAsync(task.List.BoardId))
+            {
+                return StatusCode(403, "Bạn không có quyền xóa Task trong Board này.");
+            }
             try
             {
                 var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -60,6 +90,7 @@ namespace Taskify.Controllers
         [HttpGet]
         public async Task<IActionResult> GetDetails(Guid id)
         {
+            
             var viewModel = await _taskService.GetTaskDetailsAsync(id);
             if (viewModel == null) return NotFound();
 
@@ -110,6 +141,12 @@ namespace Taskify.Controllers
         {
             if (ModelState.IsValid)
             {
+                var task = await _taskService.GetTaskByIdAsync(model.Id);
+                if (task == null) return NotFound();
+                if (!await CanAccessBoardAsync(task.List.BoardId))
+                {
+                    return StatusCode(403, "Bạn không có quyền edit Task trong Board này.");
+                }
                 var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
                 var userRole = await _taskService.GetUserRoleInBoardAsync(model.BoardId, userId);
                 var result=  await _taskService.UpdateTaskAsync(model, userId,userRole);
@@ -174,6 +211,12 @@ namespace Taskify.Controllers
                 //Chi ad and ow dc
                 if (currentUserRole == TeamRole.Owner || currentUserRole == TeamRole.Admin) return (true, "Authorized");
                 return (false, "You are not permission to do this.Only Admin and Owner to do that");
+        }
+        private async Task<bool> CanAccessBoardAsync(Guid boardId)
+        {
+            var userId = GetCurrentUserId();
+            var role = await _taskService.GetUserRoleInBoardAsync(boardId, userId);
+            return role==TeamRole.Owner || role==TeamRole.Admin||role==TeamRole.Member;
         }
     }
 //Class DTO(Data Transfer Object) nhan du lieu tu Js
