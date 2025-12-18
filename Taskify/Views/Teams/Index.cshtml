@@ -115,19 +115,44 @@
                 <div class="team-card" data-filter-type="@(team.IsOwner ? "owner" : "member")">
                     <a asp-action="Details" asp-route-id="@team.Id" class="team-link">
                         <!-- Team Header -->
-                        <div class="team-card-header">
+                        <div class="team-card-header d-flex justify-content-between align-items-start" style="height: 60px;">
+
                             <div class="team-avatar">
-                                <span>@team.Name.Substring(0, Math.Min(2, team.Name.Length)).ToUpper()</span>
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                                     style="width: 40px; height: 40px; font-size: 14px;">
+                                    @team.Name.Substring(0, Math.Min(2, team.Name.Length)).ToUpper()
+                                </div>
                             </div>
-                            <div class="team-menu">
-                                <button class="btn-menu" onclick="event.preventDefault(); event.stopPropagation(); showTeamMenu('@team.Id')">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="12" cy="12" r="1" />
-                                        <circle cx="12" cy="5" r="1" />
-                                        <circle cx="12" cy="19" r="1" />
-                                    </svg>
-                                </button>
-                            </div>
+
+                            @if (team.IsOwner)
+                            {
+                                <div class="d-flex gap-1">
+                                    <button type="button"
+                                            class="btn btn-sm btn-light text-primary rounded-circle shadow-sm"
+                                            style="width: 30px; height: 30px; padding: 0;"
+                                            title="Edit Team"
+                                            onclick="event.preventDefault(); event.stopPropagation(); openEditTeamModal('@team.Id');">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg>
+                                    </button>
+                                    <form asp-action="Delete" asp-controller="Teams" asp-route-id="@team.Id" method="post"
+                                          class="d-inline"
+                                          onsubmit="event.stopPropagation(); return confirm('Are you sure to delete this team?');">
+                                        <button type="submit"
+                                                class="btn btn-sm btn-light text-danger rounded-circle shadow-sm"
+                                                style="width: 30px; height: 30px; padding: 0;"
+                                                title="Delete Team"
+                                                onclick="event.stopPropagation()">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            }
                         </div>
 
                         <!-- Team Content -->
@@ -197,7 +222,17 @@
                                 <span>Owner</span>
                             </div>
                         }
-                        else
+                        else if (team.IsAdmin)
+                         {
+                            <div class="team-role-badge member">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                                <span>Admin</span>
+                            </div>
+                        }
+                            else
                         {
                             <div class="team-role-badge member">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -239,7 +274,7 @@
 
 <!-- Create Team Modal -->
 <partial name="_CreateModal" model="new Taskify.Models.TeamCreateViewModel()" />
-
+<div id="edit-team-modal-container"></div>
 @section Scripts {
     <script>
         // Filter tabs functionality
@@ -331,5 +366,15 @@
                 }, index * 100);
             });
         });
+        function openEditTeamModal(teamId) {
+            fetch(`/Teams/Edit/${teamId}`)
+                .then(res => res.text())
+                .then(html => {
+                    const container = document.getElementById('edit-team-modal-container');
+                    container.innerHTML = html;
+                    const modal = new bootstrap.Modal(container.querySelector('.modal'));
+                    modal.show();
+                });
+        }
     </script>
 }

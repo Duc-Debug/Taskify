@@ -1591,3 +1591,28 @@
         background-color: #fefce8;
         color: #d97706;
     }
+.team-menu {
+    position: relative;
+    z-index: 5;
+}
+
+    .team-menu .btn {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+        .team-menu .btn:hover {
+           
+            color: white;
+            border-color: transparent;
+            transform: rotate(90deg);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+        }

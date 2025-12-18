@@ -11,8 +11,8 @@ using Taskify.Data;
 namespace Taskify.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251215145903_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251217145944_IntialData")]
+    partial class IntialData
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,6 +27,9 @@ namespace Taskify.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Desciption")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -77,6 +80,9 @@ namespace Taskify.Migrations
 
                     b.Property<string>("Message")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Metadata")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("ReferenceId")
@@ -251,6 +257,9 @@ namespace Taskify.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsInviteApprovalRequired")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()

@@ -3,15 +3,17 @@ AI sẽ:
 	Hỗ trợ tạo boards các Task trong đó, có thể gửi 1 file txt hoặc docs checklist,vvv để sinh 
 Option 3: Dashboard thống kê: Vẽ biểu đồ xem ai đang gánh team, ai đang "lười" dựa trên số lượng Task hoàn thành.
 --------------------------------------------
-- Ko edit Board đc
-Xoa Team, Sua team,( Ko cho decriptoon la ko tao dc), 
+Xoa Team, Sua team, 
 Cho TEam Setting nut ma allow Admin invite member. 
+Rời Team
 -Them Canedale
 -Doi Theme
 - Ngon ngu
 - Cho profile thật hơn
 - Change/Forgot Password
+-Quick Add Task
 ------------------------
+
 Những vc đã làm: Cho đến p2:
 GoogleLogin
 Update Notification(invite team, deadline)

@@ -56,7 +56,7 @@
             @if (Model.IsOwner)
             {
                 <div class="team-actions">
-                    <button class="btn btn-secondary">
+                    <button class="btn btn-secondary" type="button" onclick="event.preventDefault(); event.stopPropagation(); openEditTeamModal('@Model.Id');">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -72,10 +72,18 @@
                             </svg>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Team Settings</a></li>
+                            <li>
+                                <a class="dropdown-item cursor-pointer" href="#"
+                                   data-bs-toggle="modal" data-bs-target="#settingTeamModal">Team Settings
+                               </a>
+                            </li>
                             <li><a class="dropdown-item" href="#">Export Data</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="#">Delete Team</a></li>
+                            <form asp-action="Delete" asp-controller="Teams" asp-route-id="@Model.Id" method="post"
+                                          class="d-inline"
+                                          onsubmit="event.stopPropagation(); return confirm('Are you sure to delete this team?');">
+                                <button type="submit" class="dropdown-item text-danger w-100 text-start">Delete Team</button>
+                            </form>
                         </ul>
                     </div>
                 </div>
@@ -323,8 +331,13 @@
 
 <!-- Add Member Modal -->
 <partial name="_AddMemberModal" model="Model" />
-
-@section Scripts {
+<div id="edit-team-modal-container"></div>
+<partial name="_SettingTeamModal" 
+         model='new Taskify.Models.TeamSettingViewModel { 
+             TeamId = Model.Id, 
+             TeamName = Model.Name, 
+             IsInviteApprovalRequired = Model.IsInviteApprovalRequired 
+         }' />
     <script>
         // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -353,6 +366,26 @@
                 });
             }
         }
+        function openEditTeamModal(teamId) {
+            fetch(`/Teams/Edit/${teamId}`)
+                .then(res => res.text())
+                .then(html => {
+                    const container = document.getElementById('edit-team-modal-container');
+                    container.innerHTML = html;
+                    const modal = new bootstrap.Modal(container.querySelector('.modal'));
+                    modal.show();
+                });
+        }
+        function openSettingTeamModal(teamId){
+            fetch(`/Teams/Settings/${teamId}`)
+                .then(response=> response.text())
+                .then(html=>{
+                    const containter = document.getElementById('setting-team-modal-container');
+                    containter.innerHTML = html;
+                    const modalEl = containter.querySelector('.modal');
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.Show();
+                });
+        }
     </script>
-}
 

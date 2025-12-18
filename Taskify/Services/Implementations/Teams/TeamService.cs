@@ -25,6 +25,7 @@ namespace Taskify.Services
                 .Where(tm => tm.UserId == userId)
                 .Select(tm => tm.Team)
                 .ToListAsync();
+           
 
             return teams.Select(t => new TeamViewModel
             {
@@ -52,24 +53,23 @@ namespace Taskify.Services
                 Id = Guid.NewGuid(),
                 Name = model.Name,
                 Description = model.Description,
-                OwnerId = userId,           // Gán khóa ngoại Owner
+                OwnerId = userId,           
                 CreatedAt = DateTime.Now
             };
 
             // Thêm Team vào DbSet
             _context.Teams.Add(team);
 
-            // 2. Tự động thêm người tạo thành "Thành viên đầu tiên" (Role = Owner)
             var initialMember = new TeamMember
             {
                 Id = Guid.NewGuid(),
                 TeamId = team.Id,
                 UserId = userId,
-                Role = TeamRole.Owner,      // Quan trọng: Phải là Owner
+                Role = TeamRole.Owner,     
                 JoinedDate = DateTime.Now
             };
 
-            // Thêm Member vào DbSet
+          
             _context.TeamMembers.Add(initialMember);
 
             // 3. Lưu tất cả xuống DB trong 1 transaction
@@ -92,11 +92,12 @@ namespace Taskify.Services
             {
                 Id = team.Id,
                 Name = team.Name,
-                Description = "A collaborative space for our projects.",//DB chua co, de explamle th
+                Description = team.Description,
                 CreatedAt = DateTime.UtcNow,
                 IsOwner = isCurrentUserOwner,
                 IsAdmin = isCurrentUserAdmin,
                 MemberCount = team.Members.Count,
+                IsInviteApprovalRequired=team.IsInviteApprovalRequired,
 
                 Boards = team.Boards.Select(b => new BoardViewModel
                 {
@@ -122,7 +123,26 @@ namespace Taskify.Services
                 }).OrderByDescending(m => m.IsOwner).ToList()
             };
         }
-
+        public async Task UpdateTeamAsync(TeamEditViewModel model, Guid userId)
+        {
+            var team = await _context.Teams.FindAsync(model.Id);
+            if (team == null) throw new Exception("Not exists Team");
+            if (team.OwnerId != userId) throw new Exception("You don't permission edit this Team");
+            team.Name= model.Name;
+            team.Description = model.Description;
+            await _context.SaveChangesAsync();
+        }
+        public async Task DeleteTeamAsync(Guid teamId,Guid userId)
+        {
+            var team = await _context.Teams
+                    .Include(m => m.Members)
+                    .Include(m => m.Boards)
+                    .FirstOrDefaultAsync(t => t.Id == teamId);
+            if (team == null) throw new Exception("Team no Found");
+            if (team.OwnerId != userId) throw new Exception("You are not perrmission delete");
+            _context.Teams.Remove(team);
+            await _context.SaveChangesAsync();
+        }
         public async Task<bool> RemoveMemberAsync(Guid teamId, Guid memberId, Guid currentUserId)
         {
             var currentUserRole = await _context.TeamMembers
@@ -138,7 +158,7 @@ namespace Taskify.Services
             await _context.SaveChangesAsync();
             return true;
         }
-
+        //OTHER
         public async Task<(bool Success, string Message)> InviteMemberAsync(Guid teamId, string email, Guid senderId)
         {
             var userToInvite = _context.Users.FirstOrDefault(u => u.Email == email);
@@ -188,8 +208,7 @@ namespace Taskify.Services
 
             return (false, "You are not permisson to invite member");
         }
-        // File: Services/Implementations/Teams/TeamService.cs
-
+      
         public async Task<bool> HandleInviteApprovalAsync(Guid notificationId, bool isApproved)
         {
             // 1. Lấy thông báo yêu cầu duyệt
@@ -208,7 +227,7 @@ namespace Taskify.Services
                 {
                     await _notificationService.CreateInfoNotificationAsync(
                         notification.SenderId.Value, // <--- SỬA: Gửi cho Admin
-                        "Yêu cầu mời thành viên của bạn đã bị từ chối." // Nội dung
+                        "Your member invitation request has been denied.." 
                     );
                 }
 
@@ -219,7 +238,6 @@ namespace Taskify.Services
             }
 
             // 3. Nếu Owner ĐỒNG Ý (Approve)
-            // Parse ID người được mời từ Metadata
             if (!string.IsNullOrEmpty(notification.Metadata) && Guid.TryParse(notification.Metadata, out Guid userToInviteId))
             {
                 if (!notification.ReferenceId.HasValue) return false;
@@ -238,12 +256,12 @@ namespace Taskify.Services
                         team.Name
                     );
 
-                    // B. Báo tin vui lại cho Admin (người gửi yêu cầu duyệt lúc đầu)
+                    // B. Báo tin lại cho Admin (người gửi yêu cầu duyệt lúc đầu)
                     if (notification.SenderId.HasValue)
                     {
                         await _notificationService.CreateInfoNotificationAsync(
                             notification.SenderId.Value, // <--- SỬA: Gửi cho Admin
-                            "Owner đã duyệt yêu cầu mời thành viên của bạn."
+                            "The owner has approved your member invitation request.."
                         );
                     }
                 }
@@ -295,7 +313,16 @@ namespace Taskify.Services
             await _context.SaveChangesAsync();
             return (true, isAccepted ? "Invitation accepted." : "Invitation declined.");
         }
-
+        //=========SETTING============
+       public async Task UpdateSettingsTeam(TeamSettingViewModel model,Guid userId)
+        {
+            var team = await _context.Teams.FindAsync(model.TeamId);
+            if (team == null) throw new Exception();
+            if(team.OwnerId != userId) throw new Exception("Only the Owner has the right to change this setting..");
+            team.IsInviteApprovalRequired = model.IsInviteApprovalRequired;
+            await _context.SaveChangesAsync();
+        }
+        //==================HELPER===============
         public async Task<(bool Success, string Message)> ChangeMemberRoleAsync(Guid teamId, Guid memberId, TeamRole newRole, Guid currentUserId)
         {
             var currentUserMember = await _context.TeamMembers
@@ -343,6 +370,29 @@ namespace Taskify.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
             return member?.Role;
+        }
+        public async Task<TeamEditViewModel> GetTeamForEditAsync(Guid teamId)
+        {
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team == null) return null;
+            return new TeamEditViewModel
+            {
+                Id = team.Id,
+                Name = team.Name,
+                Description = team.Description
+            };
+        }
+        public async Task<TeamSettingViewModel> GetTeamSettingsASync(Guid teamId)
+        {
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team == null) throw new Exception(" ");
+            return new TeamSettingViewModel
+            {
+                TeamId = team.Id,
+                TeamName = team.Name,
+                IsInviteApprovalRequired = team.IsInviteApprovalRequired
+            };
+
         }
     }
 }

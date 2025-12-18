@@ -1,0 +1,68 @@
+﻿@model Taskify.Models.TeamSettingViewModel
+
+<div class="modal fade" id="settingTeamModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-action="Settings" asp-controller="Teams" method="post">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Team Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body pt-2">
+                    <div class="text-muted small mb-4">Setting Team: <strong>@Model.TeamName</strong></div>
+
+                    <input type="hidden" asp-for="TeamId" />
+
+                    <div class="p-3 bg-light rounded border">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="fw-bold mb-0 d-flex align-items-center gap-2">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                                Invite Approval
+                            </label>
+
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       role="switch"
+                                       style="width: 45px; height: 24px; cursor: pointer;"
+                                       asp-for="IsInviteApprovalRequired"
+                                       id="approvalSwitch">
+                            </div>
+                        </div>
+
+                        <div class="small mt-2" id="settingDescription">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Logic thay đổi text giải thích ngay khi bật tắt
+    var switchEl = document.getElementById('approvalSwitch');
+    var descEl = document.getElementById('settingDescription');
+
+    function updateDesc() {
+        if (switchEl.checked) {
+            // True = Cần duyệt
+            descEl.innerHTML = '<span class="text-primary fw-bold">ON (Bật):</span> Admin invite member need <span class="text-danger"> Owner Approval</span>.';
+        } else {
+            // False = Tự do
+            descEl.innerHTML = '<span class="text-secondary fw-bold">OFF (Tắt):</span> Admin can invite member <span class="text-success">immediately</span>.';
+        }
+    }
+
+    switchEl.addEventListener('change', updateDesc);
+    updateDesc(); // Chạy 1 lần lúc mở lên
+</script>

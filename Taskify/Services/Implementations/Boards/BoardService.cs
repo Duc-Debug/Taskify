@@ -23,6 +23,7 @@ namespace Taskify.Services
                     Name = b.Name,
                     TeamId = b.TeamId ?? Guid.Empty,
                     TeamName = b.Team != null ? b.Team.Name : null,
+                    Desciption=b.Desciption,
                     TeamMembers = b.Team != null
                         ? b.Team.Members.Select(m => new MemberViewModel
                         {
@@ -56,52 +57,63 @@ namespace Taskify.Services
 
             if (board == null) return null;
 
-            var member = board.Team.Members.FirstOrDefault(m => m.UserId == userId);
             var canCreate = false;
-            if (member != null)
+            if (board.Team != null)
             {
-                if (member.Role == TeamRole.Owner || member.Role == TeamRole.Admin) canCreate = true;
-            }
-            return new BoardViewModel
-            {
-                Id = board.Id,
-                Name = board.Name,
-                TeamId = board.TeamId ?? Guid.Empty,
-                TeamMembers = board.Team != null
-                     ? board.Team.Members.Select(m => new MemberViewModel
-                            {
-                                Id = m.UserId,
-                                FullName = m.User.FullName,
-                                AvatarUrl = m.User.AvatarUrl,
-                                Initials = !string.IsNullOrEmpty(m.User.FullName)
-                                           ? m.User.FullName.Substring(0, 1)
-                                           : "U"
-                            }).ToList()
-                     : new List<MemberViewModel>(),
-                CanCreateList = canCreate,
-                Lists = board.Lists.OrderBy(l => l.Order).Select(l => new TaskListViewModel
+                var member = board.Team.Members.FirstOrDefault(m => m.UserId == userId);
+                if (member != null)
                 {
-                    Id = l.Id,
-                    Title = l.Title,
-                    Order = l.Order,
-                    Tasks = l.Tasks.OrderBy(t => t.Order).Select(t => new TaskCardViewModel
+                    if (member.Role == TeamRole.Owner || member.Role == TeamRole.Admin) canCreate = true;
+                }
+            }
+            else
+            {
+                if (board.OwnerId == userId)
+                {
+                    canCreate = true;
+                }
+            }
+                return new BoardViewModel
+                {
+                    Id = board.Id,
+                    Name = board.Name,
+                    TeamId = board.TeamId ?? Guid.Empty,
+                    OwnerId=board.OwnerId,
+                    TeamMembers = board.Team != null
+                         ? board.Team.Members.Select(m => new MemberViewModel
+                         {
+                             Id = m.UserId,
+                             FullName = m.User.FullName,
+                             AvatarUrl = m.User.AvatarUrl,
+                             Initials = !string.IsNullOrEmpty(m.User.FullName)
+                                               ? m.User.FullName.Substring(0, 1)
+                                               : "U"
+                         }).ToList()
+                         : new List<MemberViewModel>(),
+                    CanCreateList = canCreate,
+                    Lists = board.Lists.OrderBy(l => l.Order).Select(l => new TaskListViewModel
                     {
-                        Id = t.Id,
-                        Title = t.Title,
-                        Priority = t.Priority,
-                        DueDate = t.DueDate,
-                        Status = t.Status,
-                        Assignees = t.Assignments.Select(a => new MemberViewModel
+                        Id = l.Id,
+                        Title = l.Title,
+                        Order = l.Order,
+                        Tasks = l.Tasks.OrderBy(t => t.Order).Select(t => new TaskCardViewModel
                         {
-                            Id = a.User.Id,
-                            FullName = a.User.FullName,
-                            AvatarUrl = a.User.AvatarUrl,
-                            Initials = !string.IsNullOrEmpty(a.User.FullName) ?
-                                       string.Join("", a.User.FullName.Split(' ').Select(x => x[0])).ToUpper() : "U"
+                            Id = t.Id,
+                            Title = t.Title,
+                            Priority = t.Priority,
+                            DueDate = t.DueDate,
+                            Status = t.Status,
+                            Assignees = t.Assignments.Select(a => new MemberViewModel
+                            {
+                                Id = a.User.Id,
+                                FullName = a.User.FullName,
+                                AvatarUrl = a.User.AvatarUrl,
+                                Initials = !string.IsNullOrEmpty(a.User.FullName) ?
+                                           string.Join("", a.User.FullName.Split(' ').Select(x => x[0])).ToUpper() : "U"
+                            }).ToList()
                         }).ToList()
                     }).ToList()
-                }).ToList()
-            };
+                };
         }
 
         public async Task CreateBoardAsync(BoardCreateViewModel model, Guid userId)
@@ -109,10 +121,10 @@ namespace Taskify.Services
             var board = new Board
             {
                 Id = Guid.NewGuid(),
-                // [FIX LỖI 1] Dùng model.Name thay vì model.Title để khớp với View
                 Name = model.Name,
                 OwnerId = userId,
                 TeamId = model.BoardType == "personal" ? null : model.TeamId,
+                Desciption = model.Description,
                 CreatedAt = DateTime.Now
             };
 
@@ -147,9 +159,10 @@ namespace Taskify.Services
         public async Task UpdateBoardAsync(BoardEditViewModel model, Guid userId)
         {
             var board = await _context.Boards.FirstOrDefaultAsync(b => b.Id == model.Id);
-            if (board != null && board.OwnerId == userId)
+            if (board != null && (board.OwnerId == userId))
             {
                 board.Name = model.Name;
+                board.Desciption = model.Description;
                 await _context.SaveChangesAsync();
             }
         }
@@ -181,7 +194,21 @@ namespace Taskify.Services
             else throw new Exception("You are not permission delete this Board. Only Creator or Team Owner can delete");
 
         }
+        public async Task<BoardEditViewModel> GetBoardForEditAsync(Guid id)
+        {
+            var board = await _context.Boards.FindAsync(id);
+            if (board == null) return null;
 
+            return new BoardEditViewModel
+            {
+                Id = board.Id,
+                Name = board.Name,
+                Description = board.Desciption
+            };
+        }
+        //============================
+        //          LIST
+        //=================================
         public async Task CreateListAsync(Guid boardId, string title, Guid userId)
         {
             var board = await _context.Boards

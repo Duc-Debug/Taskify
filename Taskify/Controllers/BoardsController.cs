@@ -115,11 +115,19 @@ namespace Taskify.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+        [HttpGet]
+        public async Task<IActionResult> Edit(Guid id)
+        {
+            var model = await _boardService.GetBoardForEditAsync(id);
+            if (model == null) return NotFound();
+            return PartialView("_EditBoardModal", model);
+        }
         [HttpPost]
         public async Task<IActionResult> Edit(BoardEditViewModel model)
         {
             var userId = GetCurrentUserId();
             await _boardService.UpdateBoardAsync(model, userId);
+            TempData["SuccessMessage"] = "Update Board Successfully!";
             return RedirectToAction(nameof(Details), new { id = model.Id });
         }
         [HttpPost]

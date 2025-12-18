@@ -6,6 +6,8 @@
         public string Name { get; set; }
         public Guid TeamId { get; set; }
         public string TeamName { get; set; }
+        public Guid OwnerId { get; set; }
+        public string? Desciption { get; set; }
 
         // Danh sách các cột (Lists) trong Board
         public List<TaskListViewModel> Lists { get; set; } = new List<TaskListViewModel>();

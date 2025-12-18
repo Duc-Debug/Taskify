@@ -7,6 +7,7 @@ namespace Taskify.Models
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
+        public string? Desciption { get; set; }
 
         // [QUAN TRỌNG] Thêm người sở hữu (Owner)
         // Đây là người tạo ra bảng này (dù là bảng cá nhân hay team)

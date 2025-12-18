@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Taskify.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class IntialData : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -49,6 +49,7 @@ namespace Taskify.Migrations
                     Message = table.Column<string>(type: "TEXT", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     IsRead = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Metadata = table.Column<string>(type: "TEXT", nullable: true),
                     Type = table.Column<int>(type: "INTEGER", nullable: false),
                     SenderId = table.Column<Guid>(type: "TEXT", nullable: true),
                     ReferenceId = table.Column<Guid>(type: "TEXT", nullable: true)
@@ -72,7 +73,8 @@ namespace Taskify.Migrations
                     Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    OwnerId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    OwnerId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    IsInviteApprovalRequired = table.Column<bool>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -91,6 +93,7 @@ namespace Taskify.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Desciption = table.Column<string>(type: "TEXT", nullable: true),
                     OwnerId = table.Column<Guid>(type: "TEXT", nullable: false),
                     TeamId = table.Column<Guid>(type: "TEXT", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)

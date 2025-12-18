@@ -25,6 +25,7 @@ namespace Taskify.Controllers
         public async Task<IActionResult> Index()
         {
             var teams = await _teamService.GetTeamsByUserIdAsync(GetCurrentUserId());
+            
             return View(teams);
         }
         [HttpPost]
@@ -33,10 +34,8 @@ namespace Taskify.Controllers
             if (ModelState.IsValid)
             {
                 await _teamService.CreateTeamAsync(model, GetCurrentUserId());
-                // Tạo xong -> Quay về trang danh sách
                 return RedirectToAction(nameof(Index));
             }
-
             // Để giữ trải nghiệm tốt hơn, sau này ta sẽ dùng AJAX, còn hiện tại dùng Redirect là an toàn nhất.
             return RedirectToAction(nameof(Index));
         }
@@ -46,11 +45,58 @@ namespace Taskify.Controllers
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var team = await _teamService.GetTeamDetailsAsync(id, userId);
 
-            if (team == null) return NotFound(); // Hoặc trang "Access Denied"
+            if (team == null) return NotFound();
 
             return View(team);
         }
+        [HttpGet]
+        public async Task<IActionResult> Edit(Guid id)
+        {
+            var model = await _teamService.GetTeamForEditAsync(id);
+            if (model == null) return NotFound();
+            return PartialView("_EditModal", model);
+        }
 
+        [HttpPost]
+        public async Task<IActionResult> Edit(TeamEditViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var userId = GetCurrentUserId();
+                    await _teamService.UpdateTeamAsync(model, userId);
+
+                    TempData["SuccessMessage"] = "Team update successful!";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = ex.Message;
+                }
+            }
+            // Nếu lỗi thì quay về Index
+            return RedirectToAction(nameof(Index));
+        }
+
+        // --- DELETE TEAM ---
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                await _teamService.DeleteTeamAsync(id, userId);
+
+                TempData["SuccessMessage"] = "Team has been successfully deleted..";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            return RedirectToAction(nameof(Index));
+        }
         [HttpPost]
         public async Task<IActionResult> RemoveMember([FromBody] RemoveMemberRequest request)
         {
@@ -90,7 +136,7 @@ namespace Taskify.Controllers
         {
             if (newRole == 0)
             {
-                TempData["ErrorMessage"] = "Lỗi: Không nhận được Role từ giao diện (Value = 0)";
+                TempData["ErrorMessage"] = "Lỗi: No Role received from the interface. (Value = 0)";
                 return RedirectToAction("Details", new { id = teamId });
             }
             var currentUserId = GetCurrentUserId();
@@ -106,7 +152,21 @@ namespace Taskify.Controllers
             }
             return RedirectToAction("Details", new { id = teamId });
         }
-
+        [HttpPost]
+        public async Task<IActionResult> Settings(TeamSettingViewModel model)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                await _teamService.UpdateSettingsTeam(model, userId);
+                TempData["SuccessMessage"] = "Update Setting Team sucessffully";
+            }
+            catch(Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            return RedirectToAction(nameof(Details), new { id = model.TeamId });
+        }
     }
 
     // DTO để nhận dữ liệu từ fetch JSON

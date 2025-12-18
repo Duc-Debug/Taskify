@@ -136,44 +136,6 @@
                             </div>
                         </div>
 
-                        <!-- Board Members -->
-                        @* @if (board.TeamMembers != null && board.TeamMembers.Any())
-                        {
-                            <div class="board-members">
-                                @foreach (var member in board.TeamMembers.Take(4))
-                                {
-                                    @if (!string.IsNullOrEmpty(member.AvatarUrl))
-                                    {
-                                        <img src="@member.AvatarUrl" alt="@member.FullName" class="member-avatar" title="@member.FullName" />
-                                    }
-                                    else
-                                    {
-                                        <div class="member-avatar" title="@member.FullName">
-                                            @(string.IsNullOrEmpty(member.AvatarUrl) ? member.Initials : "")
-                                            @if (!string.IsNullOrEmpty(member.AvatarUrl))
-                                            {
-                                                <img src="@member.AvatarUrl" alt="@member.FullName" />
-                                            }
-                                        </div>
-                                    }
-
-                                }
-                                @if (board.TeamMembers.Count > 4)
-                                {
-                                    <div class="member-avatar more">+@(board.TeamMembers.Count - 4)</div>
-                                }
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="board-type-badge">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                    <circle cx="12" cy="7" r="4" />
-                                </svg>
-                                Personal Board
-                            </div>
-                        } *@
                         @if (board.TeamId != Guid.Empty)
                         {
                             <div class="board-type-badge" style="background: #e0f2fe; color: #0369a1;">
@@ -197,9 +159,10 @@
                             </div>
                         }
                         <!-- Board Footer -->
-                        <div class="board-footer">
-                            <span class="last-updated">Updated recently</span>
-                        </div>
+                        <p class="card-text text-muted small mt-2"
+                           style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            @(string.IsNullOrEmpty(board.Desciption) ? "No description" : board.Desciption)
+                        </p>
                     </a>
                 </div>
             }
@@ -228,6 +191,7 @@
     }
 </div>
 
+<div id="edit-board-modal-container"></div>
 <!-- Create Board Modal -->
 <partial name="_CreateBoardModal" model="new Taskify.Models.BoardCreateViewModel() "/>
 <partial name="_EditBoardModal" model="new Taskify.Models.BoardEditViewModel()" />
@@ -274,10 +238,16 @@
             // Implement board menu options
             console.log('Show menu for board:', boardId);
         }
-        // function openEditBoardModal(id, name) {
-        //     // alert("Open Edit Modal for: " + name);
-        //     // Logic mở modal Edit ở đây
-        // }
+        function openEditBoardModal(boardId) {
+             fetch(`/Boards/Edit/${boardId}`)
+                 .then(response => response.text())
+                 .then(html => {
+                     const container = document.getElementById('edit-board-modal-container');
+                     container.innerHTML = html;
+                     const modal = new bootstrap.Modal(container.querySelector('.modal'));
+                     modal.show();
+                 });
+         }
     </script>
 }
 

@@ -28,6 +28,7 @@ namespace Taskify.Models
         public List<TeamMemberViewModel> AllMembers { get; set; } = new List<TeamMemberViewModel>();
 
         public List<TeamActivityViewModel> Activities { get; set; }
+        public bool IsInviteApprovalRequired { get; set; } = false;
     }
 
     public class TeamMemberViewModel : MemberViewModel
@@ -66,5 +67,19 @@ namespace Taskify.Models
         public List<MemberViewModel> TeamMembers { get; set; } = new List<MemberViewModel>();
         public List<MemberViewModel> Assignees { get; set; } = new List<MemberViewModel>();
     }
+    public class TeamEditViewModel
+    {
+        public Guid Id { get; set; }
 
+        [Required(ErrorMessage = "Team name cannot be left blank.")]
+        [StringLength(100, ErrorMessage = "The name is too long.")]
+        public string Name { get; set; }
+        public string Description { get; set; }
+    }
+    public class TeamSettingViewModel
+    {
+        public Guid TeamId { get; set; }
+        public string TeamName { get; set; } 
+        public bool IsInviteApprovalRequired { get; set; }
+    }
 }
