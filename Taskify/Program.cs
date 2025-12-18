@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using Taskify.Data;
 using Taskify.Services;
+using Taskify.Services.Background;
+using Taskify.Services.Implementations;
 
 namespace Taskify
 {
@@ -55,9 +57,10 @@ namespace Taskify
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<ITaskService, TaskService>();
             builder.Services.AddScoped<ITeamService, TeamService>();
+            builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 
             builder.Services.AddHostedService<Taskify.Services.Background.DeadlineReminderService>();
-
+            builder.Services.AddHostedService<LogCleanupWorker>();
             var app = builder.Build();
 
             using(var scope = app.Services.CreateScope())

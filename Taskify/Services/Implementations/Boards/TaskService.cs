@@ -1,6 +1,8 @@
-﻿using Taskify.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Collections;
+using System.Collections.Generic;
+using Taskify.Data;
 using Taskify.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Taskify.Services
 {
@@ -8,12 +10,14 @@ namespace Taskify.Services
     {
         private readonly AppDbContext _context;
         private readonly INotificationService _notificationService;
-        public TaskService(AppDbContext context, INotificationService notificationService)
+        private readonly IActivityLogService _activityLogService;
+        public TaskService(AppDbContext context, INotificationService notificationService, IActivityLogService activityLogService)
         {
             _context = context;
             _notificationService = notificationService;
+            _activityLogService = activityLogService;
         }
-        public async Task MoveTaskAsync(Guid taskId, Guid targetListId, int newPosition)
+        public async Task MoveTaskAsync(Guid taskId, Guid targetListId, int newPosition,Guid userId)
         {
             var task = await _context.Tasks.Include(t => t.List).FirstOrDefaultAsync(t => t.Id == taskId);
             if (task == null) return;
@@ -49,7 +53,11 @@ namespace Taskify.Services
                     }
 
                     // Ghi log
-                    await LogHistoryAsync(taskId, $"Moved from <strong>{oldListName}</strong> to <strong>{targetList.Title}</strong>");
+                    await LogHistoryAsync(taskId, $"Moved from {oldListName}  to {targetList.Title}");
+                    var board = await _context.Boards.FindAsync(task.List.BoardId);
+                  //  var userName = await _context.Users.FindAsync(userId);
+                    await _activityLogService.LogAsync(userId, ActivityType.TaskMoved,
+                        $"Move task from {oldListName} to List {targetList.Title}", teamId: board?.TeamId, boardId: board.Id);
                 }
             }
 
@@ -112,10 +120,13 @@ namespace Taskify.Services
                     });
                 }
             }
-            
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
             await LogHistoryAsync(task.Id, "Created task");
+
+            var board = await _context.Boards.FindAsync(model.BoardId);
+            await _activityLogService.LogAsync(userId, ActivityType.TaskCreated,
+                $"Create task: {task.Title} in List {list.Title}", teamId: board?.TeamId, boardId: board.Id);
             return task;
         }
         public async Task<(bool Success, string Message)> DeleteTaskAsync(Guid taskId, Guid userId)
@@ -134,6 +145,9 @@ namespace Taskify.Services
                 return (false, "You don't have permission to delete this task");
             }
             _context.Tasks.Remove(task);
+            var board = await _context.Boards.FindAsync(boardId);
+            await _activityLogService.LogAsync(userId, ActivityType.TaskDeleted,
+                $"Delete task: {task.Title}", teamId: board?.TeamId, boardId: boardId);
             await _context.SaveChangesAsync();
             return (true, "Delete task successfully");
 
@@ -253,6 +267,7 @@ namespace Taskify.Services
         {
             var task = await _context.Tasks
                 .Include(t => t.Assignments)
+                .Include(t=>t.List)
                 .FirstOrDefaultAsync(t => t.Id == model.Id);
             if (task == null) return (false, "Don't have Task");
 
@@ -280,6 +295,9 @@ namespace Taskify.Services
 
             _context.Tasks.Update(task);
             await LogHistoryAsync(task.Id, "Updated task details");
+            var board = await _context.Boards.FindAsync(task.List.BoardId);
+            await _activityLogService.LogAsync(userId, ActivityType.TaskUpdated,
+                $"Update task: {task.Title}", teamId: board?.TeamId, boardId: task.List.BoardId);
             await _context.SaveChangesAsync();
             return (true, "Update task successfully");
         }

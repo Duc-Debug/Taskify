@@ -36,7 +36,7 @@ namespace Taskify.Controllers
                         return StatusCode(403, new { success = false, message = "Bạn chỉ được di chuyển Task của chính mình." });
                     }
                 }
-                await _taskService.MoveTaskAsync(request.TaskId, request.TargetListId, request.NewPosition);
+                await _taskService.MoveTaskAsync(request.TaskId, request.TargetListId, request.NewPosition,userId);
                 return Ok(new { success = true });
             }
             catch (Exception ex)

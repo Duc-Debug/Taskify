@@ -12,12 +12,14 @@ namespace Taskify.Controllers
         private readonly IBoardService _boardService;
         private readonly ITeamService _teamService;
         private readonly ITaskService _taskService;
+        private readonly IActivityLogService _activitiesLogService;
 
-        public BoardsController(IBoardService boardService, ITeamService teamService, ITaskService taskService)
+        public BoardsController(IBoardService boardService, ITeamService teamService, ITaskService taskService,IActivityLogService activityLogService)
         {
             _boardService = boardService;
             _teamService = teamService;
             _taskService = taskService;
+            _activitiesLogService = activityLogService;
         }
 
         [HttpGet]
@@ -180,6 +182,7 @@ namespace Taskify.Controllers
                 return BadRequest(new { success = false, message = errorMessage });
             }
         }
+       
         public class CreateListRequest
         {
             public Guid BoardId { get; set; }

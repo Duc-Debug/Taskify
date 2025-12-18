@@ -27,7 +27,7 @@ namespace Taskify.Models
         // Danh sách đầy đủ thành viên kèm role (nếu có)
         public List<TeamMemberViewModel> AllMembers { get; set; } = new List<TeamMemberViewModel>();
 
-        public List<TeamActivityViewModel> Activities { get; set; }
+        public List<ActivityLog> Activities { get; set; }
         public bool IsInviteApprovalRequired { get; set; } = false;
     }
 

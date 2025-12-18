@@ -5,7 +5,7 @@ namespace Taskify.Services
     public interface ITaskService
     {
         //Move
-        Task MoveTaskAsync(Guid taskId, Guid targetListId, int newPosition);
+        Task MoveTaskAsync(Guid taskId, Guid targetListId, int newPosition,Guid userId);
         //CRUD Task
         Task<TaskItem> CreateTaskAsync(TaskCreateViewModel model, Guid userId);
         Task<(bool Success,string Message)> DeleteTaskAsync(Guid taskId,Guid userId);

@@ -8,10 +8,12 @@ namespace Taskify.Services
     {
         public AppDbContext _context;
         private readonly INotificationService _notificationService;
-        public TeamService(AppDbContext context, INotificationService notificationService)
+        private readonly IActivityLogService _activityLogService;
+        public TeamService(AppDbContext context, INotificationService notificationService, IActivityLogService activityLogService)
         {
             _context = context;
             _notificationService = notificationService;
+            _activityLogService = activityLogService;
         }
         public async Task<List<TeamViewModel>> GetTeamsByUserIdAsync(Guid userId)
         {
@@ -25,7 +27,7 @@ namespace Taskify.Services
                 .Where(tm => tm.UserId == userId)
                 .Select(tm => tm.Team)
                 .ToListAsync();
-           
+
 
             return teams.Select(t => new TeamViewModel
             {
@@ -53,7 +55,7 @@ namespace Taskify.Services
                 Id = Guid.NewGuid(),
                 Name = model.Name,
                 Description = model.Description,
-                OwnerId = userId,           
+                OwnerId = userId,
                 CreatedAt = DateTime.Now
             };
 
@@ -65,13 +67,13 @@ namespace Taskify.Services
                 Id = Guid.NewGuid(),
                 TeamId = team.Id,
                 UserId = userId,
-                Role = TeamRole.Owner,     
+                Role = TeamRole.Owner,
                 JoinedDate = DateTime.Now
             };
 
-          
-            _context.TeamMembers.Add(initialMember);
 
+            _context.TeamMembers.Add(initialMember);
+            await _activityLogService.LogAsync(userId, ActivityType.TeamCreated, $"Created Team", teamId: team.Id, boardId: null);
             // 3. Lưu tất cả xuống DB trong 1 transaction
             await _context.SaveChangesAsync();
         }
@@ -88,6 +90,8 @@ namespace Taskify.Services
 
             var isCurrentUserOwner = currentUserMember.Role == TeamRole.Owner;
             var isCurrentUserAdmin = currentUserMember.Role == TeamRole.Admin;
+
+            var activities = await _activityLogService.GetTeamActivitesAsync(teamId);
             return new TeamDetailsViewModel
             {
                 Id = team.Id,
@@ -97,7 +101,8 @@ namespace Taskify.Services
                 IsOwner = isCurrentUserOwner,
                 IsAdmin = isCurrentUserAdmin,
                 MemberCount = team.Members.Count,
-                IsInviteApprovalRequired=team.IsInviteApprovalRequired,
+                Activities = activities ?? new List<ActivityLog>(),
+                IsInviteApprovalRequired = team.IsInviteApprovalRequired,
 
                 Boards = team.Boards.Select(b => new BoardViewModel
                 {
@@ -128,11 +133,11 @@ namespace Taskify.Services
             var team = await _context.Teams.FindAsync(model.Id);
             if (team == null) throw new Exception("Not exists Team");
             if (team.OwnerId != userId) throw new Exception("You don't permission edit this Team");
-            team.Name= model.Name;
+            team.Name = model.Name;
             team.Description = model.Description;
             await _context.SaveChangesAsync();
         }
-        public async Task DeleteTeamAsync(Guid teamId,Guid userId)
+        public async Task DeleteTeamAsync(Guid teamId, Guid userId)
         {
             var team = await _context.Teams
                     .Include(m => m.Members)
@@ -141,6 +146,7 @@ namespace Taskify.Services
             if (team == null) throw new Exception("Team no Found");
             if (team.OwnerId != userId) throw new Exception("You are not perrmission delete");
             _context.Teams.Remove(team);
+            await _activityLogService.LogAsync(userId, ActivityType.TeamDeleted, $"Delete Team", teamId: null, boardId: null);
             await _context.SaveChangesAsync();
         }
         public async Task<bool> RemoveMemberAsync(Guid teamId, Guid memberId, Guid currentUserId)
@@ -151,10 +157,15 @@ namespace Taskify.Services
                  .FirstOrDefaultAsync();
             if (currentUserRole != TeamRole.Owner) return false;
             var memberToRemove = await _context.TeamMembers
+               .Include(m=>m.User)
                 .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == memberId);
+
             if (memberToRemove == null) return false;
             if (memberToRemove.UserId == currentUserId) return false;
             _context.TeamMembers.Remove(memberToRemove);
+
+            await _activityLogService.LogAsync(currentUserId, ActivityType.MemberRemoved,
+                $"Remove Member {memberToRemove.User.FullName}({memberToRemove.User.Email}) from Team", teamId: teamId, boardId: null);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -208,7 +219,7 @@ namespace Taskify.Services
 
             return (false, "You are not permisson to invite member");
         }
-      
+
         public async Task<bool> HandleInviteApprovalAsync(Guid notificationId, bool isApproved)
         {
             // 1. Lấy thông báo yêu cầu duyệt
@@ -227,7 +238,7 @@ namespace Taskify.Services
                 {
                     await _notificationService.CreateInfoNotificationAsync(
                         notification.SenderId.Value, // <--- SỬA: Gửi cho Admin
-                        "Your member invitation request has been denied.." 
+                        "Your member invitation request has been denied.."
                     );
                 }
 
@@ -301,6 +312,7 @@ namespace Taskify.Services
 
                     var userAccepting = await _context.Users.FindAsync(userId);
                     await _notificationService.CreateInfoNotificationAsync(senderId, $"User {userAccepting.FullName} has accepted the invitation to join the team.");
+                    await _activityLogService.LogAsync(senderId, ActivityType.MemberJoined, $"Welcome {newMember.User.FullName} come in Team", teamId: teamId, boardId: null);
                 }
             }
             else
@@ -314,11 +326,11 @@ namespace Taskify.Services
             return (true, isAccepted ? "Invitation accepted." : "Invitation declined.");
         }
         //=========SETTING============
-       public async Task UpdateSettingsTeam(TeamSettingViewModel model,Guid userId)
+        public async Task UpdateSettingsTeam(TeamSettingViewModel model, Guid userId)
         {
             var team = await _context.Teams.FindAsync(model.TeamId);
             if (team == null) throw new Exception();
-            if(team.OwnerId != userId) throw new Exception("Only the Owner has the right to change this setting..");
+            if (team.OwnerId != userId) throw new Exception("Only the Owner has the right to change this setting..");
             team.IsInviteApprovalRequired = model.IsInviteApprovalRequired;
             await _context.SaveChangesAsync();
         }
@@ -351,11 +363,13 @@ namespace Taskify.Services
                 await _context.SaveChangesAsync();
                 await _notificationService.CreateInfoNotificationAsync(memberId, $"You have been promoted to Owner of the team '{targetMember.Team.Name}'.");
                 await _notificationService.CreateInfoNotificationAsync(currentUserId, $"You have transferred ownership of the team '{targetMember.Team.Name}' to {targetMember.User.FullName}.");
+                await _activityLogService.LogAsync(currentUserId, ActivityType.RoleUpdated, $"Change Owner Role to {targetMember.User.FullName}", teamId: teamId, boardId: null);
                 return (true, "Member promoted to Owner successfully.");
             }
             targetMember.Role = newRole;
             await _context.SaveChangesAsync();
             await _notificationService.CreateInfoNotificationAsync(memberId, $"Your role in team '{targetMember.Team.Name}' has been changed to {newRole}.");
+            await _activityLogService.LogAsync(currentUserId, ActivityType.RoleUpdated, $"Change {newRole} Role to {targetMember.User.FullName}", teamId: teamId, boardId: null);
             return (true, "Member role updated successfully.");
         }
         public async Task<TeamRole> GetUserRoleInTeamAsync(Guid? teamId, Guid userId)

@@ -18,6 +18,7 @@ namespace Taskify.Data
         public DbSet<TaskComment> TaskComments { get; set; } 
         public DbSet<Category> Categories { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<ActivityLog> ActivityLogs { get; set; }
 
         // 2. Cấu hình quan hệ (Fluent API)
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -73,6 +74,19 @@ namespace Taskify.Data
                 .HasOne(t => t.List)
                 .WithMany(l => l.Tasks)
                 .HasForeignKey(t => t.ListId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // 1. Khi Xóa Team -> Xóa sạch Log của Team đó
+            modelBuilder.Entity<ActivityLog>()
+                .HasOne(a => a.Team)
+                .WithMany()
+                .HasForeignKey(a => a.TeamId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 2. Khi Xóa Board -> Xóa sạch Log liên quan Board đó (Bất kể Team hay Personal)
+            modelBuilder.Entity<ActivityLog>()
+                .HasOne(a => a.Board)
+                .WithMany()
+                .HasForeignKey(a => a.BoardId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

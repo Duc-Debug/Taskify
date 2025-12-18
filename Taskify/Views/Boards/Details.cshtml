@@ -95,7 +95,16 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="#">Export Board</a></li>
-                    <li><a class="dropdown-item" href="#">Archive Board</a></li>
+                    <li>
+                       <button class="btn btn-light btn-sm ms-2 d-flex align-items-center gap-2" 
+                                type="button" 
+                                data-bs-toggle="offcanvas" 
+                                data-bs-target="#boardActivityOffcanvas"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                            </svg>
+                            <span class="d-none d-md-inline">Activity</span>
+                        </button>
+                        </li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="#">Delete Board</a></li>
                 </ul>
@@ -185,6 +194,7 @@
          model="new Taskify.Models.TaskCreateViewModel { 
                 BoardId = Model.Id,
                 AvailableMembers=Model.TeamMembers }" />
+<partial name="_BoardActivities" model="Model.Activities" />
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 

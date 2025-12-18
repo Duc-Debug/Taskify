@@ -299,32 +299,54 @@
 
         <!-- Activity Tab -->
         <div class="tab-panel" id="activity-panel">
-            <div class="panel-header">
-                <h2>Recent Activity</h2>
+            <div class="activity-feed mt-4">
+        @if (Model.Activities != null && Model.Activities.Any())
+        {
+            <div class="list-group list-group-flush">
+                @foreach (var act in Model.Activities)
+                {
+                    <div class="list-group-item px-0 py-3 border-bottom-0 d-flex align-items-start gap-3">
+                        @if (!string.IsNullOrEmpty(act.User?.AvatarUrl))
+                        {
+                            <img src="@act.User.AvatarUrl" class="rounded-circle border" width="36" height="36" style="object-fit:cover">
+                        }
+                        else
+                        {
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" 
+                                 style="width:36px; height:36px; font-size:14px">
+                                @(act.User?.FullName?.Substring(0, 1) ?? "U")
+                            </div>
+                        }
+
+                        <div class="flex-grow-1">
+                            <div class="small text-dark">
+                                <span class="fw-bold">@act.User?.FullName</span> 
+                                @act.Content
+                            </div>
+                            <div class="text-muted" style="font-size: 0.75rem;">
+                                @act.CreatedAt.ToString("dd 'thg' MM 'lúc' HH:mm")
+                            </div>
+                        </div>
+                        
+                        <div class="text-muted">
+                           @if(act.Type == Taskify.Models.ActivityType.BoardCreated) {
+                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+                           } else if (act.Type == Taskify.Models.ActivityType.MemberJoined) {
+                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                           }
+                        </div>
+                    </div>
+                }
             </div>
-            <div class="activity-timeline">
-                <div class="activity-item">
-                    <div class="activity-avatar">JD</div>
-                    <div class="activity-content">
-                        <p><strong>John Doe</strong> created a new board <strong>"Project Alpha"</strong></p>
-                        <span class="activity-time">2 hours ago</span>
-                    </div>
-                </div>
-                <div class="activity-item">
-                    <div class="activity-avatar">SM</div>
-                    <div class="activity-content">
-                        <p><strong>Sarah Miller</strong> joined the team</p>
-                        <span class="activity-time">5 hours ago</span>
-                    </div>
-                </div>
-                <div class="activity-item">
-                    <div class="activity-avatar">MC</div>
-                    <div class="activity-content">
-                        <p><strong>Mike Chen</strong> completed 5 tasks in <strong>"Marketing Board"</strong></p>
-                        <span class="activity-time">1 day ago</span>
-                    </div>
-                </div>
+        }
+        else
+        {
+            <div class="text-center text-muted py-5">
+                <svg class="mb-2" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#dee2e6" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                <div>Chưa có hoạt động nào được ghi nhận.</div>
             </div>
+        }
+    </div>
         </div>
     </div>
 </div>

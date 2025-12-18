@@ -7,10 +7,12 @@ namespace Taskify.Services
     public class BoardService : IBoardService
     {
         private readonly AppDbContext _context;
+        private readonly IActivityLogService _activityLogService;
 
-        public BoardService(AppDbContext context)
+        public BoardService(AppDbContext context, IActivityLogService activityLogService)
         {
             _context = context;
+            _activityLogService = activityLogService;
         }
 
         public async Task<List<BoardViewModel>> GetBoardsByUserIdAsync(Guid userId)
@@ -23,7 +25,7 @@ namespace Taskify.Services
                     Name = b.Name,
                     TeamId = b.TeamId ?? Guid.Empty,
                     TeamName = b.Team != null ? b.Team.Name : null,
-                    Desciption=b.Desciption,
+                    Desciption = b.Desciption,
                     TeamMembers = b.Team != null
                         ? b.Team.Members.Select(m => new MemberViewModel
                         {
@@ -73,47 +75,49 @@ namespace Taskify.Services
                     canCreate = true;
                 }
             }
-                return new BoardViewModel
+            var activities = await _activityLogService.GetBoardActivitiesAsync(boardId, 50);
+            return new BoardViewModel
+            {
+                Id = board.Id,
+                Name = board.Name,
+                TeamId = board.TeamId ?? Guid.Empty,
+                OwnerId = board.OwnerId,
+                TeamMembers = board.Team != null
+                     ? board.Team.Members.Select(m => new MemberViewModel
+                     {
+                         Id = m.UserId,
+                         FullName = m.User.FullName,
+                         AvatarUrl = m.User.AvatarUrl,
+                         Initials = !string.IsNullOrEmpty(m.User.FullName)
+                                           ? m.User.FullName.Substring(0, 1)
+                                           : "U"
+                     }).ToList()
+                     : new List<MemberViewModel>(),
+                CanCreateList = canCreate,
+                Activities=activities,
+                Lists = board.Lists.OrderBy(l => l.Order).Select(l => new TaskListViewModel
                 {
-                    Id = board.Id,
-                    Name = board.Name,
-                    TeamId = board.TeamId ?? Guid.Empty,
-                    OwnerId=board.OwnerId,
-                    TeamMembers = board.Team != null
-                         ? board.Team.Members.Select(m => new MemberViewModel
-                         {
-                             Id = m.UserId,
-                             FullName = m.User.FullName,
-                             AvatarUrl = m.User.AvatarUrl,
-                             Initials = !string.IsNullOrEmpty(m.User.FullName)
-                                               ? m.User.FullName.Substring(0, 1)
-                                               : "U"
-                         }).ToList()
-                         : new List<MemberViewModel>(),
-                    CanCreateList = canCreate,
-                    Lists = board.Lists.OrderBy(l => l.Order).Select(l => new TaskListViewModel
+                    Id = l.Id,
+                    Title = l.Title,
+                    Order = l.Order,
+                    Tasks = l.Tasks.OrderBy(t => t.Order).Select(t => new TaskCardViewModel
                     {
-                        Id = l.Id,
-                        Title = l.Title,
-                        Order = l.Order,
-                        Tasks = l.Tasks.OrderBy(t => t.Order).Select(t => new TaskCardViewModel
+                        Id = t.Id,
+                        Title = t.Title,
+                        Priority = t.Priority,
+                        DueDate = t.DueDate,
+                        Status = t.Status,
+                        Assignees = t.Assignments.Select(a => new MemberViewModel
                         {
-                            Id = t.Id,
-                            Title = t.Title,
-                            Priority = t.Priority,
-                            DueDate = t.DueDate,
-                            Status = t.Status,
-                            Assignees = t.Assignments.Select(a => new MemberViewModel
-                            {
-                                Id = a.User.Id,
-                                FullName = a.User.FullName,
-                                AvatarUrl = a.User.AvatarUrl,
-                                Initials = !string.IsNullOrEmpty(a.User.FullName) ?
-                                           string.Join("", a.User.FullName.Split(' ').Select(x => x[0])).ToUpper() : "U"
-                            }).ToList()
+                            Id = a.User.Id,
+                            FullName = a.User.FullName,
+                            AvatarUrl = a.User.AvatarUrl,
+                            Initials = !string.IsNullOrEmpty(a.User.FullName) ?
+                                       string.Join("", a.User.FullName.Split(' ').Select(x => x[0])).ToUpper() : "U"
                         }).ToList()
                     }).ToList()
-                };
+                }).ToList()
+            };
         }
 
         public async Task CreateBoardAsync(BoardCreateViewModel model, Guid userId)
@@ -153,6 +157,16 @@ namespace Taskify.Services
             }
 
             _context.Boards.Add(board);
+            if (model.TeamId.HasValue)
+            {
+                await _activityLogService.LogAsync(userId, ActivityType.BoardCreated,
+                    $"Created new board: {model.Name}", teamId: model.TeamId.Value, boardId: board.Id);
+            }
+            else
+            {
+                await _activityLogService.LogAsync(userId, ActivityType.BoardCreated,
+                    $"Created personal new board: {model.Name}", teamId: null, boardId: board.Id);
+            }
             await _context.SaveChangesAsync();
         }
 
@@ -188,6 +202,16 @@ namespace Taskify.Services
             }
             if (isCreator || isTeamOwner)
             {
+                if (board.TeamId.HasValue)
+                {
+                    await _activityLogService.LogAsync(userId, ActivityType.BoardDeleted,
+                        $"Delete board: {board.Name}", teamId: board.TeamId.Value, boardId: null);
+                }
+                else
+                {
+                    await _activityLogService.LogAsync(userId, ActivityType.BoardDeleted,
+                        $"Delete personal new board: {board.Name}", teamId: null, boardId: null);
+                }
                 _context.Boards.Remove(board);
                 await _context.SaveChangesAsync();
             }
@@ -283,5 +307,6 @@ namespace Taskify.Services
                 .Include(l => l.Board)
                 .FirstOrDefaultAsync(l => l.Id == listId);
         }
+       
     }
 }

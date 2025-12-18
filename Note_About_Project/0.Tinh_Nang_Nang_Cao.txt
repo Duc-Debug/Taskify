@@ -3,10 +3,11 @@ AI sẽ:
 	Hỗ trợ tạo boards các Task trong đó, có thể gửi 1 file txt hoặc docs checklist,vvv để sinh 
 Option 3: Dashboard thống kê: Vẽ biểu đồ xem ai đang gánh team, ai đang "lười" dựa trên số lượng Task hoàn thành.
 --------------------------------------------
-Xoa Team, Sua team, 
-Cho TEam Setting nut ma allow Admin invite member. 
+-Hối người được Task
+-Dọn Notification
 Rời Team
 -Them Canedale
+-Commemnt in Task
 -Doi Theme
 - Ngon ngu
 - Cho profile thật hơn
@@ -16,7 +17,8 @@ Rời Team
 
 Những vc đã làm: Cho đến p2:
 GoogleLogin
-Update Notification(invite team, deadline)
-Invite Member, Role Member
+Update Notification(invite team, deadline) Nhắc deadline.
+Invite Member, Role Member.
 Add member to a Task. 
+Activity.
 
