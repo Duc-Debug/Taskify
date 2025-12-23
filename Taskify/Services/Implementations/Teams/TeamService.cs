@@ -145,8 +145,10 @@ namespace Taskify.Services
                     .FirstOrDefaultAsync(t => t.Id == teamId);
             if (team == null) throw new Exception("Team no Found");
             if (team.OwnerId != userId) throw new Exception("You are not perrmission delete");
+            var pendingInvites = _context.Notifications.Where(n => n.ReferenceId == teamId &&( n.Type == NotificationType.TeamInvite || n.Type == NotificationType.ApprovalRequest));
+            _context.Notifications.RemoveRange(pendingInvites);
+            await _activityLogService.LogAsync(userId, ActivityType.TeamDeleted, $"Delete Team: {team.Name}", teamId: null, boardId: null);
             _context.Teams.Remove(team);
-            await _activityLogService.LogAsync(userId, ActivityType.TeamDeleted, $"Delete Team", teamId: null, boardId: null);
             await _context.SaveChangesAsync();
         }
         public async Task<bool> RemoveMemberAsync(Guid teamId, Guid memberId, Guid currentUserId)
@@ -157,7 +159,7 @@ namespace Taskify.Services
                  .FirstOrDefaultAsync();
             if (currentUserRole != TeamRole.Owner) return false;
             var memberToRemove = await _context.TeamMembers
-               .Include(m=>m.User)
+               .Include(m => m.User)
                 .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == memberId);
 
             if (memberToRemove == null) return false;
@@ -168,6 +170,27 @@ namespace Taskify.Services
                 $"Remove Member {memberToRemove.User.FullName}({memberToRemove.User.Email}) from Team", teamId: teamId, boardId: null);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task LeaveTeamAsync(Guid teamId, Guid userId)
+        {
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team == null) return;
+            var member = await _context.TeamMembers
+                .Include(m => m.User)
+                .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
+            if (member == null) return;
+            if (team.OwnerId == userId)
+            {
+                throw new Exception("You are Owner, you cannot leave Team. Please Delete Team or transer you Role");
+            }
+            _context.TeamMembers.Remove(member);
+            await _activityLogService.LogAsync(
+                userId,
+                ActivityType.MemberLeft,
+                $"Left the Team",
+                teamId: teamId, boardId: null);
+            await _context.SaveChangesAsync();
         }
         //OTHER
         public async Task<(bool Success, string Message)> InviteMemberAsync(Guid teamId, string email, Guid senderId)

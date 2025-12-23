@@ -18,3 +18,26 @@ Cleanup: Nó đóng kết nối Database lại (giải phóng RAM).
 Sleep: Nó đi ngủ 24 tiếng.
 
 Loop: 24 tiếng sau nó dậy và quay lại bước 2.
+=========================================
+Cascade: Trong cơ sở dữ liệu (Database), nó là quy tắc "Cha chết thì con chết theo".
+VD: có 1 Team (Cha), và Team đó có 100 dòng ActivityLog (Con).
+==> Bạn chỉ cần ra lệnh xóa Team. Database tự hiểu: "Ok, ông chủ muốn xóa Team này, vậy tôi sẽ tự động xóa sạch 100 cái log liên quan luôn".
+============================================
+KHÁC BIỆT GIỮA fetch và Tag Helper<partial>
+A. AJAX (fetch) - "Mang bát ra trước, đồ ăn bưng ra sau"
+-->Trang load nhanh lúc đầu, nhưng khi bấm nút phải chờ xoay xoay một tí mới thấy dữ liệu.( Dữ liệu gửi sau).
+B. Tag Helper (<partial>) - "Dọn mâm cỗ đầy đủ rồi mới bưng ra"(Dữ liệu Load trước khi trang web hiện ra).
+==================================
+Từ khóa virtual trong Entity Framework
+virtual ở đây là một tín hiệu gửi cho Entity Framework (EF Core), nôm na là "Cơ chế Theo dõi & Nạp lười".
+
+Chức năng chính (Navigation Property): Nó báo cho EF biết đây không phải là một cột dữ liệu bình thường (như Tên, Tuổi), mà là một đường link sang bảng khác (Teams).
+
+Cơ chế Lazy Loading (Nạp lười - Ít dùng hiện nay nhưng là nguồn gốc):
+
+Nếu bạn khai báo virtual, khi bạn chấm .Team, EF có thể tự động chạy ngầm một câu lệnh SQL để lấy dữ liệu Team về (nếu bạn chưa lấy).
+
+Tuy nhiên: Trong dự án Taskify này, chúng ta dùng .Include() (Eager Loading - Nạp ngay lập tức) để tối ưu hiệu năng, nên tác dụng "Nạp lười" của virtual ít được dùng, nhưng nó vẫn cần thiết để EF tạo ra các lớp vỏ bọc (Proxy) để theo dõi sự thay đổi của object.
+
+Tóm lại: Cứ thấy liên kết sang bảng khác thì thêm virtual vào cho đúng chuẩn EF Core.
+======================================

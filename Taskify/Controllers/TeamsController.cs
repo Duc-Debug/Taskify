@@ -107,6 +107,22 @@ namespace Taskify.Controllers
             return BadRequest(new { success = false, message = "Failed to remove member" });
         }
         [HttpPost]
+        public async Task<IActionResult> Leave(Guid id)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                await _teamService.LeaveTeamAsync(id, userId);
+                TempData["SuccessMessage"] = " You are leave Team successfully";
+                return RedirectToAction("Index", "Dashboard");
+            }
+            catch(Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction(nameof(Details), new { id = id });
+            }
+        }
+        [HttpPost]
         public async Task<IActionResult> InviteMember(Guid teamId, string email)
         {
            var currentUserId = GetCurrentUserId();

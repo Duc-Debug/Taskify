@@ -3,3 +3,16 @@ ViewComponents:
 	Class: là class chứa logic xử lý, lấy DL từ Databasse
 	View: Để hiển thị DL đó ra.
 --> Giúp giải quyết giao diện phức tạp cần xuất hiện ở nhiều nơi, thường là các thành phần nhỏ ở nhiều trang.
+-----------------------
+Parital View:
+- là 1 .cshtml giống View thường, nhưng là giao diện nhỏ được nhúng vào các View lớn. Thường đặt tên có _Modsa.cshtml để dễ phân biệt.
+
+Chỉ có 1 loại partial View nhưng có 2 cách dùng: Tĩnh(Satic) và Động(Model-Bound)<Cần Dl truyền để hiện thị>.
+----------------------------------
+Tag Helper:
+	Nó cho phép code Server (C#) tham gia vào việc tạo ra thẻ HTML. Nhìn nó giống thuộc tính HTML (attribute) nhưng có tiền tố đặc biệt (thường là asp-).
+
+Có 2 loại chính:
+	- Built-in Tag Helper: Viết sẵn dùng
+	-Custom Tag Helper: tự tạo cảu riêng.
+	

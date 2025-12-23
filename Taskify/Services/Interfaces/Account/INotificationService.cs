@@ -9,6 +9,8 @@ namespace Taskify.Services
         Task CreateInfoNotificationAsync(Guid userId, string message);
         Task<bool> MarkAsReadAsync(Guid notificationId);
         Task MarkAllASReadAsync(Guid userId);
-       
+        Task DeleteAllReadAsync(Guid userId);
+        Task DeleteNotifications(Guid notificationId, Guid userId);
+
     }
 }

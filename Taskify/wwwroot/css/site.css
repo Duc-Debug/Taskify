@@ -1140,6 +1140,14 @@ body {
     margin-top: 6px;
     flex-shrink: 0;
 }
+.remove {
+    width: 8px;
+    height: 8px;
+    border-radius: 100%;
+    margin-top: 6px;
+
+}
+
 
 /* Action Button (Ẩn hiện khi hover) */
 .btn-notification-action {

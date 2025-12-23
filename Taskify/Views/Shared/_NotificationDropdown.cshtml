@@ -89,7 +89,17 @@
                             </button>
                         </div>
                     }
+                   
+                    <form asp-controller="Notification" asp-action="Delete" asp-route-id="@notification.Id" method="post" class="position-absolute top-0 end-0 mt-2 me-2">
+                        <button type="submit" onclick="event.stopPropagation();" class="btn btn-link" title="Delete">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
+                    </form>
                 </div>
+               
             }
         }
         else
@@ -105,9 +115,12 @@
     </div>
 
     <div class="notification-footer">
-        <a asp-controller="Notification" asp-action="Index" class="btn-view-all">
-            View All Notifications
-        </a>
+        @if(Model != null && Model.Any(n => n.IsRead))
+        {
+            <form asp-action="ClearRead" asp-controller="Notification" asp-route-id="@Model" method="post" onsubmit="return confirm('Are you sure to remove all notification?');" class="btn-view-all">
+                <button type="submit" class="btn btn-view-all text-decoration-none small fw-bold py-1 hover-danger w-100">Remove Read Notification</button>
+            </form>
+        }
     </div>
 </div>
 

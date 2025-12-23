@@ -11,6 +11,7 @@ namespace Taskify.Services
         Task UpdateTeamAsync(TeamEditViewModel model, Guid userId);
         Task DeleteTeamAsync(Guid teamId, Guid userId);
         Task<bool> RemoveMemberAsync(Guid teamId, Guid memberId, Guid currentUserId);
+        Task LeaveTeamAsync(Guid teamId, Guid userId);
         //OTHER
         Task<(bool Success, string Message)> InviteMemberAsync(Guid teamId, string email, Guid senderId);
         Task<(bool Success, string Message)> RespondInvitationAsync(Guid notificationId, Guid userId, bool isAccepted);

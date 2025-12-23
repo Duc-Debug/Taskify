@@ -2,6 +2,7 @@
 AI sẽ: 
 	Hỗ trợ tạo boards các Task trong đó, có thể gửi 1 file txt hoặc docs checklist,vvv để sinh 
 Option 3: Dashboard thống kê: Vẽ biểu đồ xem ai đang gánh team, ai đang "lười" dựa trên số lượng Task hoàn thành.
+- Thêm Cho Profile thật hơn để giúp AI Giao quyền chuẩn. Giao cv, AI sẽ đánh giá điểm mức độ có thể hoàn thành công việc đó.
 --------------------------------------------
 -Hối người được Task
 -Dọn Notification
@@ -14,7 +15,9 @@ Rời Team
 - Change/Forgot Password
 -Quick Add Task
 ------------------------
-
+Làm Readme:
+Cách cài, ...
+------------------------
 Những vc đã làm: Cho đến p2:
 GoogleLogin
 Update Notification(invite team, deadline) Nhắc deadline.

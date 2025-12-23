@@ -48,6 +48,22 @@ namespace Taskify.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task DeleteAllReadAsync(Guid userId)
+        {
+            var readNotifications = _context.Notifications
+                            .Where(n => n.UserId == userId && n.IsRead == true);
+            _context.Notifications.RemoveRange(readNotifications);
+            await _context.SaveChangesAsync();
+        }
+        public async Task DeleteNotifications(Guid notificationId, Guid userId)
+        {
+            var notification = await _context.Notifications.FindAsync(notificationId);
+            if (notification == null) return;
+            if (notification.UserId != userId) throw new Exception("You are not permission to delete this notification");
+            _context.Notifications.Remove(notification);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<List<NotificationViewModel>> GetNotificationsAsync(Guid userId)
         {
             return await _context.Notifications
@@ -92,5 +108,6 @@ namespace Taskify.Services
             await _context.SaveChangesAsync();
             return true;
         }
+        
     }
 }

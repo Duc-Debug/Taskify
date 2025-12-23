@@ -46,5 +46,38 @@ namespace Taskify.Controllers
             else
                 return BadRequest("Có lỗi xảy ra.");
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken] // Bảo mật chống giả mạo request
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                await _notificationService.DeleteNotifications(id, userId);
+
+                // Xóa xong -> Quay lại trang cũ
+                return Redirect(Request.Headers["Referer"].ToString());
+            }
+            catch
+            {
+                // Nếu lỗi thì cũng quay lại trang cũ (hoặc trang Error)
+                return Redirect(Request.Headers["Referer"].ToString());
+            }
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ClearRead()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                await _notificationService.DeleteAllReadAsync(userId);
+                return Redirect(Request.Headers["Referer"].ToString());
+            }
+            catch(Exception ex)
+            {
+                return Redirect(Request.Headers["Referer"].ToString());
+            }
+        }
     }
 }
