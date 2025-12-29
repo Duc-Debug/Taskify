@@ -13,6 +13,9 @@ namespace Taskify.Models
         // Salt Password
         [MaxLength(128)]
         public string Salt { get; set; }
+        //ResetPassword
+        public string? PasswordResetToken { get; set; }
+        public DateTime ResetTokenExperies { get; set; }
 
         // Navigation
         public ICollection<TeamMember> TeamMembers { get; set; }

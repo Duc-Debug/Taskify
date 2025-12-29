@@ -12,6 +12,7 @@ using Taskify.Utilities;
 
 namespace Taskify.Controllers
 {
+    [Authorize]
     public class AccountController : Controller
     {
         private readonly IAccountService _accountService;
@@ -24,6 +25,7 @@ namespace Taskify.Controllers
 
         // -------- REGISTER------------
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Register()
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -33,6 +35,7 @@ namespace Taskify.Controllers
             return View();
         }
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
@@ -68,6 +71,7 @@ namespace Taskify.Controllers
             }
             return View(model);
         }
+
         //-======
         //  XAC THUC OTP
         //========
@@ -150,6 +154,7 @@ namespace Taskify.Controllers
             return View(model);
         }
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult GoogleLogin()
         {
             var redirectUrl = Url.Action("GoogleResponse", "Account");
@@ -157,6 +162,7 @@ namespace Taskify.Controllers
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GoogleResponse()
         {
             var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
@@ -275,12 +281,84 @@ namespace Taskify.Controllers
             }
         }
 
-        // -------- CHANGE PASSWORD VIEW (GET) ------------
-        [Authorize]
+        // -------- CHANGE PASSWORD(FORGOT) VIEW (GET) ------------
+       
         [HttpGet]
+        [Authorize]
         public IActionResult ChangePassword()
         {
             return View();
+        }
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if(!ModelState.IsValid) return View(model);
+            try
+            {
+                var userId = GetCurrentUserId();
+                await _accountService.ChangePasswordASync(userId, model.CurrentPassword, model.NewPassword);
+                TempData["SuccessMessage"] = "ChangePassword successffuly";
+                return RedirectToAction("Profile");
+            }
+            catch(Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(model);
+            }
+        }
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            await _accountService.SendForgotPasswordOtpAsync(model.Email);
+            return RedirectToAction("ResetPassword", new { email = model.Email });
+        }
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPassword(string email)
+        {
+            // Tạo model có sẵn Email để hiện lên View
+            var model = new ResetPasswordViewModel { Email = email };
+            return View(model);
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+            try
+            {
+                await _accountService.ResetPasswordWithOtpAsync(model.Email, model.OtpCode, model.NewPassword);
+
+                // Thành công -> Về trang Login
+                TempData["SuccessMessage"] = "Change password successfully, Please enter again.";
+                return RedirectToAction("Login");
+            }
+            catch(Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(model);
+            }
+        }
+        //-----------OTHER------------------
+        private   Guid GetCurrentUserId()
+        {
+            var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return Guid.Parse(id);
         }
         private string GenerateRandomPassword(int length)
         {

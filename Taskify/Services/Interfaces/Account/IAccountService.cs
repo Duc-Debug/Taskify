@@ -4,6 +4,9 @@ namespace Taskify.Services
 {
     public interface IAccountService
     {
+        Task ChangePasswordASync(Guid userId, string currentPassword, string newPassword);
+        Task SendForgotPasswordOtpAsync(string email);
+        Task ResetPasswordWithOtpAsync(string email, string otp, string newPassword);
         Task<User> RegisterAsync(string fullName, string email, string password);
         Task<User> ValidateUserAsync(string email, string password);
         Task<ProfileViewModel> GetUserProfileAsync(Guid userId);
