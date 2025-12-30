@@ -9,7 +9,7 @@ namespace Taskify.Services
         Task ResetPasswordWithOtpAsync(string email, string otp, string newPassword);
         Task<User> RegisterAsync(string fullName, string email, string password);
         Task<User> ValidateUserAsync(string email, string password);
-        Task<ProfileViewModel> GetUserProfileAsync(Guid userId);
+        Task<ProfileViewModel?> GetUserProfileAsync(Guid userId);
         Task<bool> UpdateProfileAsync(Guid userId, ProfileViewModel model);
         Task<User?> GetUserbyEmailAsync(string email);
     }

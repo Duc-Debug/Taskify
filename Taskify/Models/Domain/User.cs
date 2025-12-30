@@ -17,9 +17,20 @@ namespace Taskify.Models
         public string? PasswordResetToken { get; set; }
         public DateTime ResetTokenExperies { get; set; }
 
+        [MaxLength(100)]
+        public string? JobTitle { get; set; } 
+
+        [MaxLength(500)]
+        public string? Bio { get; set; } // Mô tả ngắn: "Chuyên về .NET và Microservices..."
+
+        [MaxLength(50)]
+        public string? SeniorityLevel { get; set; }
+
         // Navigation
         public ICollection<TeamMember> TeamMembers { get; set; }
         public ICollection<TaskAssignment> TaskAssignments { get; set; }
         public ICollection<TaskComment> Comments { get; set; }
+
+        public ICollection<UserSkill> Skills { get; set; } = new List<UserSkill>();
     }
 }

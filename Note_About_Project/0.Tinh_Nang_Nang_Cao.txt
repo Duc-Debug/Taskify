@@ -12,8 +12,8 @@ Option 3: Dashboard thống kê: Vẽ biểu đồ xem ai đang gánh team, ai �
 -Doi Theme------------
 - Ngon ngu------------------
 - Cho profile thật hơn
-- Change/Forgot Password
 -Quick Add Task.
+- Upload ảnh cho Avatar
 ------------------------
 Làm Readme:
 Cách cài, ...
@@ -26,4 +26,4 @@ Add member to a Task.
 Activity.
 ---------------------------
 Phan 3: 
-
+- Change/Forgot Password

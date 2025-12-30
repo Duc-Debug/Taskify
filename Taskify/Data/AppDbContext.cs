@@ -8,6 +8,7 @@ namespace Taskify.Data
 
         // 1. Khai báo các bảng
         public DbSet<User> Users { get; set; }
+        public DbSet<UserSkill> UserSkills { get; set; }
         public DbSet<Team> Teams { get; set; }
         public DbSet<TeamMember> TeamMembers { get; set; }
         public DbSet<Board> Boards { get; set; }

@@ -98,25 +98,73 @@ namespace Taskify.Services
             user.PasswordResetToken = null;
             await _context.SaveChangesAsync();
         }
-        public async Task<ProfileViewModel> GetUserProfileAsync(Guid userId)
+        public async Task<ProfileViewModel?> GetUserProfileAsync(Guid userId)
         {
-            var user = await _context.Users.FindAsync(userId);
+            var user = await _context.Users.Include(u=>u.Skills).FirstOrDefaultAsync(u=>u.Id== userId);
+
             if (user == null) return null;
             var profile = new ProfileViewModel
             {
                 FullName = user.FullName,
                 Email = user.Email,
+                Bio = user.Bio,
+                JobTitle = user.JobTitle,
+                SeniorityLevel = user.SeniorityLevel,
                 DateOfBirth = DateTime.Now,
                 Address = "",
-                Bio = "",
-                AvatarUrl = "https://ui-avatars.com/api/?name=" + Uri.EscapeDataString(user.FullName)
+                AvatarUrl = "https://ui-avatars.com/api/?name=" + Uri.EscapeDataString(user.FullName),
+                Skills = user.Skills.Select(s=> new UserSkillViewModel
+                {
+                    SkillName = s.SkillName,
+                    ProficiencyLevel =s.ProficiencyLevel
+                }).ToList(),
+                TotalTasks = user.TaskAssignments?.Count ??0,
+                MemberSince  = DateTime.MinValue
+
             };
             return profile;
 
         }
-        public Task<bool> UpdateProfileAsync(Guid userId, ProfileViewModel model)
+        public async Task<bool> UpdateProfileAsync(Guid userId, ProfileViewModel model)
         {
-            throw new NotImplementedException();
+            var user = await _context.Users
+                .Include(u => u.Skills)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+            if(user == null) return false;
+            try
+            {
+                user.FullName = model.FullName;
+                user.Bio = model.Bio;
+                user.JobTitle = model.JobTitle;
+                user.SeniorityLevel = model.SeniorityLevel;
+                //user.AvatarUrl=
+
+                if (user.Skills != null && user.Skills.Any())
+                {
+                    _context.UserSkills.RemoveRange(user.Skills);
+                }
+                if(model.Skills != null && model.Skills.Any())
+                {
+                    foreach(var skillVm in model.Skills)
+                    {
+                        if (!string.IsNullOrWhiteSpace(skillVm.SkillName))
+                        {
+                            user.Skills.Add(new UserSkill
+                            {
+                                UserId = user.Id,
+                                SkillName = skillVm.SkillName,
+                                ProficiencyLevel = skillVm.ProficiencyLevel
+                            });
+                        }
+                    }
+                }
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch(Exception ex)
+            {
+                return false;
+            }
         }
 
         public async Task<User?> GetUserbyEmailAsync(string email)

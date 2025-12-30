@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using System.Text.Json;// serialize object vào Session
+using System.Text.Json;
 using Taskify.Models;
 using Taskify.Services;
 using Taskify.Utilities;
@@ -230,15 +230,13 @@ namespace Taskify.Controllers
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
-            // 1. Lấy ID của user đang đăng nhập từ Cookie/Claims
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
             {
                 return RedirectToAction("Login");
             }
 
-            // 2. Gọi Service để lấy thông tin chi tiết (Bạn cần implement hàm này)
-            // Lưu ý: Tôi giả định bạn sẽ thêm hàm GetUserProfileAsync vào IAccountService
+          
             var userProfile = await _accountService.GetUserProfileAsync(userId);
 
             if (userProfile == null)
@@ -249,10 +247,11 @@ namespace Taskify.Controllers
             return View(userProfile);
         }
 
-        // -------- UPDATE PROFILE (POST) ------------
+        // -------- UPDATE PROFILE ------------
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> UpdateProfile(ProfileViewModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Profile(ProfileViewModel model)
         {
             if (!ModelState.IsValid)
             {
