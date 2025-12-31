@@ -6,12 +6,11 @@ Option 3: Dashboard thống kê: Vẽ biểu đồ xem ai đang gánh team, ai �
 
 - Thêm Cho Profile thật hơn để giúp AI Giao quyền chuẩn. Giao cv, AI sẽ đánh giá điểm mức độ có thể hoàn thành công việc đó.
 --------------------------------------------
--Hối người được Task
+
 -Them Canedale
 -Commemnt in Task
 -Doi Theme------------
 - Ngon ngu------------------
-- Cho profile thật hơn
 -Quick Add Task.
 - Upload ảnh cho Avatar
 ------------------------
@@ -24,6 +23,11 @@ Update Notification(invite team, deadline) Nhắc deadline.
 Invite Member, Role Member.
 Add member to a Task. 
 Activity.
+- Chinhr notif
+
 ---------------------------
 Phan 3: 
 - Change/Forgot Password
+- Update Profile
+- Analytics Trong Team
+-Hối người được Task

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Taskify.Models;
@@ -11,7 +13,7 @@ namespace Taskify.Controllers
     public class TeamsController : Controller
     {
         private readonly ITeamService _teamService;
-      
+
         public TeamsController(ITeamService teamService)
         {
             _teamService = teamService;
@@ -182,6 +184,48 @@ namespace Taskify.Controllers
                 TempData["ErrorMessage"] = ex.Message;
             }
             return RedirectToAction(nameof(Details), new { id = model.TeamId });
+        }
+        [HttpGet]
+        public async Task<IActionResult> Analytics(Guid id)
+        {
+            var userId = GetCurrentUserId();
+            var analytics = await _teamService.GetTeamAnalyticsAsync(id,userId);
+            if (analytics == null) return NotFound();
+
+            return View(analytics);
+        }
+        [HttpPost]
+        public async Task<IActionResult> SendReminder(Guid targetUserId, Guid referenceId, string referenceName, string type)
+        {
+            // 1. Lấy ID người đang đăng nhập (Sender)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            var currentUserId = Guid.Parse(userIdClaim.Value);
+
+            // 2. Xác định loại Reminder
+            bool isTask = type == "Task";
+
+            // 3. Gọi Service (Logic check quyền & check spam nằm hết ở đây)
+            // Lưu ý: referenceId ở đây truyền vào là Guid chuẩn, không cần parse
+            var result = await _teamService.SendRemindAsync(currentUserId, targetUserId, referenceId, referenceName, isTask);
+
+            // 4. Phản hồi về Client
+            if (result == "Success")
+            {
+                return Json(new { success = true, message = "Đã gửi nhắc nhở thành công!" });
+            }
+            else if (result == "Unauthorized")
+            {
+                return Json(new { success = false, message = "❌ Bạn không có quyền hối thúc (Chỉ Owner/Admin Team)!" });
+            }
+            else if (result == "SpamLimitReached")
+            {
+                return Json(new { success = false, message = "⚠️ Spam warning: Bạn chỉ được nhắc người này 2 lần/ngày!" });
+            }
+            else
+            {
+                return Json(new { success = false, message = "Lỗi không xác định khi gửi thông báo." });
+            }
         }
     }
 

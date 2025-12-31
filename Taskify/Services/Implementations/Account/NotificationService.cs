@@ -47,6 +47,27 @@ namespace Taskify.Services
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync();
         }
+        public async Task CreateRemindNotificationAsync(Guid fromUserId, Guid toUserId, Guid teamId,string name, string? message)
+        {
+          var sender = await _context.Users.FindAsync(fromUserId);
+            var senderName = sender != null ? sender.FullName : "Someone";
+            string content = string.IsNullOrWhiteSpace(message)
+            ? $"🔔 {senderName} remind you about Job in you {name}."
+            : $"🔔 {senderName} ({name}): {message}";
+            var notification = new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = toUserId,
+                Message = $"{content}.",
+                Type = NotificationType.Alert,
+                SenderId = fromUserId,
+                ReferenceId = teamId,
+                CreatedAt = DateTime.UtcNow,
+                IsRead = false
+            };
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+        }
 
         public async Task DeleteAllReadAsync(Guid userId)
         {

@@ -17,6 +17,8 @@ namespace Taskify.Services
         Task<(bool Success, string Message)> RespondInvitationAsync(Guid notificationId, Guid userId, bool isAccepted);
         Task<(bool Success, string Message)> ChangeMemberRoleAsync(Guid teamId,  Guid memberId,TeamRole newRole,Guid currentUserId);
         Task UpdateSettingsTeam(TeamSettingViewModel model, Guid userId);
+        Task<TeamAnalyticsViewModel> GetTeamAnalyticsAsync(Guid teamId,Guid userId);
+        Task<string> SendRemindAsync(Guid senderId, Guid targetUserId, Guid referenceId, string referenceName, bool isTaskReminder);
         //HELPER
         Task<TeamRole> GetUserRoleInTeamAsync(Guid? teamId, Guid userId);
         Task<bool> HandleInviteApprovalAsync(Guid notificationId, bool isApproved);

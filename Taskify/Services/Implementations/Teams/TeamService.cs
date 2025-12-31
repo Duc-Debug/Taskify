@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Net.NetworkInformation;
 using Taskify.Data;
 using Taskify.Models;
 
@@ -430,6 +431,155 @@ namespace Taskify.Services
                 IsInviteApprovalRequired = team.IsInviteApprovalRequired
             };
 
+        }
+
+        public async Task<TeamAnalyticsViewModel> GetTeamAnalyticsAsync(Guid teamId,Guid userId)
+        {
+            var team = await _context.Teams
+                 .Include(t => t.Members)
+                     .ThenInclude(t => t.User)
+                 .FirstOrDefaultAsync(t => t.Id == teamId);
+            if (team == null) return null;
+            var result = new TeamAnalyticsViewModel
+            {
+                TeamId=team.Id,
+                TeamName=team.Name,
+                Decription = team.Description
+            };
+            result.CurrentUserRole = (TeamRole)await GetUserRoleInTeamAsync(teamId, userId);
+            var memberIds = team.Members.Select(m => m.UserId).ToList();
+            var assignments = await _context.TaskAssignments
+                .Include(a => a.Task)
+                .Where(a => memberIds.Contains(a.UserId))
+                .ToListAsync();
+
+                var uniqueTasks = assignments
+                     .Select(a => a.Task)
+                     .DistinctBy(t => t.Id)
+                     .ToList();
+
+            // --- TÍNH TOÁN KPI TOÀN TEAM ---
+            result.TotalTasks = uniqueTasks.Count;
+            result.CompletedTasks = uniqueTasks.Count(t => t.Status == Models.TaskStatus.Completed);
+            result.OverdueTasks = uniqueTasks.Count(t =>
+                t.Status != Models.TaskStatus.Completed &&
+                t.DueDate.HasValue &&
+                t.DueDate.Value < DateTime.UtcNow);
+            result.PendingTask = result.TotalTasks - result.CompletedTasks;
+
+            //Tinh KPI 
+            foreach (var member in team.Members)
+            {
+                var userAssignments = assignments.Where(a => a.UserId == member.UserId).ToList();
+
+                var stat = new MemberPerformanceViewModel
+                {
+                    UserId = member.UserId,
+                    FullName = member.User.FullName,
+                    AvatarUrl = member.User.AvatarUrl,
+                    JobTitle = member.User.JobTitle ?? "Member", // Lấy JobTitle từ Profile thật
+
+                    AssignedCount = userAssignments.Count,
+                    CompletedCount = userAssignments.Count(a => a.Task.Status == Models.TaskStatus.Completed),
+                    OverdueCount = userAssignments.Count(a => a.Task.Status != Models.TaskStatus.Completed && a.Task.DueDate < DateTime.Now)
+                };
+                result.MemberStats.Add(stat);
+            }
+            result.MemberStats = result.MemberStats.OrderByDescending(x=>x.OverdueCount).ToList();
+
+            var attentionTasks = await _context.Tasks
+                .Include(t => t.Assignments).ThenInclude(a => a.User)
+                // .Include(t => t.List).ThenInclude(l => l.Board) // (Optional) Nếu muốn truy xuất thông tin Board sau này
+                .Where(t => t.List.Board.TeamId == teamId 
+                            && t.Status != Models.TaskStatus.Completed 
+                            && (t.DueDate < DateTime.UtcNow || t.DueDate < DateTime.UtcNow.AddDays(1)))
+                .OrderBy(t => t.DueDate)
+                .Take(10)
+                .ToListAsync();
+            foreach (var task in attentionTasks)
+            {
+                result.AttentionTasks.Add(new TaskAlertViewModel
+                {
+                    TaskId = task.Id,
+                    TaskName = task.Title,
+                    DueDate = task.DueDate ?? DateTime.MaxValue,
+                    Status = task.Status,
+                    Assignees = task.Assignments.Select(a => new MemberPerformanceViewModel
+                    {
+                        UserId = a.UserId,
+                        FullName = a.User.FullName,
+                        AvatarUrl = a.User.AvatarUrl
+                    }).ToList()
+                });
+            }
+            return result;
+        }
+        public async Task<string> SendRemindAsync(Guid senderId, Guid targetUserId, Guid referenceId, string referenceName, bool isTaskReminder)
+        {
+            // --- BƯỚC 0: TÌM TEAM ID ĐỂ CHECK QUYỀN ---
+            // Vì ID là Guid, ta dùng Guid? để lưu trữ (có thể null nếu không tìm thấy)
+            Guid? teamIdToCheck = null;
+
+            if (isTaskReminder)
+            {
+                // ReferenceId chính là TaskId (Guid)
+                // Đường dẫn: TaskItem -> TaskList -> Board -> Team
+                var task = await _context.Tasks
+                    .Include(t => t.List)
+                        .ThenInclude(l => l.Board)
+                    .FirstOrDefaultAsync(t => t.Id == referenceId);
+
+                // Lấy TeamId từ Board (nếu Board đó thuộc về Team)
+                if (task?.List?.Board?.TeamId != null)
+                {
+                    teamIdToCheck = task.List.Board.TeamId.Value;
+                }
+            }
+            else
+            {
+                // ReferenceId chính là TeamId (Guid)
+                teamIdToCheck = referenceId;
+            }
+
+            // --- BƯỚC 1: CHECK QUYỀN (SECURITY CHECK) ---
+            // Chỉ check nếu xác định được Team (TeamId có giá trị)
+            if (teamIdToCheck.HasValue)
+            {
+                var currentMember = await _context.TeamMembers
+                    .FirstOrDefaultAsync(m => m.TeamId == teamIdToCheck.Value && m.UserId == senderId);
+
+                // Logic: Chỉ Owner hoặc Admin mới được phép hối thúc
+                // (Lưu ý: Đảm bảo enum/string Role khớp với DB của bạn)
+                if (currentMember == null ||
+                   (currentMember.Role.ToString() != "Owner" && currentMember.Role.ToString() != "Admin"))
+                {
+                    return "Unauthorized"; // Trả về lỗi không có quyền
+                }
+            }
+
+            // --- BƯỚC 2: CHECK SPAM (ANTI-SPAM) ---
+            // Đếm số lượng noti đã gửi trong ngày cho cặp (Sender, Target, Reference) này
+            var todayCount = await _context.Notifications.CountAsync(n =>
+                n.SenderId == senderId &&
+                n.UserId == targetUserId &&
+                n.ReferenceId == referenceId &&
+                n.CreatedAt.Date == DateTime.UtcNow.Date);
+
+            if (todayCount >= 2)
+            {
+                return "SpamLimitReached"; // Đã vượt quá giới hạn 2 lần/ngày
+            }
+
+            // --- BƯỚC 3: TẠO MESSAGE & GỬI ---
+            // Format thông báo
+            string messageContent = isTaskReminder
+                ? $"remind you about task '{referenceName}' not Complete"
+                : $"remind you about Job in team '{referenceName}'";
+
+            // Gọi Notification Service (ReferenceId giờ đã là Guid chuẩn)
+            await _notificationService.CreateRemindNotificationAsync(senderId, targetUserId, referenceId, referenceName, messageContent);
+
+            return "Success";
         }
     }
 }

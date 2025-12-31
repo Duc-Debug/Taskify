@@ -4,7 +4,8 @@
     {
         Info =0,    //Thuong
         TeamInvite=1,    // Loi moi Team,
-        ApprovalRequest=3
+        ApprovalRequest=3,
+        Alert=4
     }
     public class Notification
     {
