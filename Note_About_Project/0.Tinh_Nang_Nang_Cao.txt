@@ -13,6 +13,7 @@ Option 3: Dashboard thống kê: Vẽ biểu đồ xem ai đang gánh team, ai �
 - Ngon ngu------------------
 -Quick Add Task.
 - Upload ảnh cho Avatar
+- Chinhr notif
 ------------------------
 Làm Readme:
 Cách cài, ...
@@ -23,7 +24,6 @@ Update Notification(invite team, deadline) Nhắc deadline.
 Invite Member, Role Member.
 Add member to a Task. 
 Activity.
-- Chinhr notif
 
 ---------------------------
 Phan 3: 

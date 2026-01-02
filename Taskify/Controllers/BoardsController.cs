@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Taskify.Services;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
 using Taskify.Models;
+using Taskify.Services;
 
 namespace Taskify.Controllers
 {
@@ -13,13 +14,15 @@ namespace Taskify.Controllers
         private readonly ITeamService _teamService;
         private readonly ITaskService _taskService;
         private readonly IActivityLogService _activitiesLogService;
+        private readonly IGeminiService _geminiService;
 
-        public BoardsController(IBoardService boardService, ITeamService teamService, ITaskService taskService,IActivityLogService activityLogService)
+        public BoardsController(IBoardService boardService, ITeamService teamService, ITaskService taskService, IActivityLogService activityLogService, IGeminiService geminiService)
         {
             _boardService = boardService;
             _teamService = teamService;
             _taskService = taskService;
             _activitiesLogService = activityLogService;
+            _geminiService = geminiService;
         }
 
         [HttpGet]
@@ -51,22 +54,19 @@ namespace Taskify.Controllers
             var userId = GetCurrentUserId();
             var board = await _boardService.GetBoardDetailsAsync(id, userId);
             if (board == null) return NotFound();
-            bool hasAccess= false;
+            bool hasAccess = false;
             if (board.TeamId != Guid.Empty)
             {
                 var role = await _teamService.GetUserRoleInTeamAsync(board.TeamId, userId);
-                if(role.HasValue) hasAccess = true;
+                if (role.HasValue) hasAccess = true;
             }
-            else
-            {
-
-            }
+           
             if (!hasAccess && board.TeamId != Guid.Empty)
             {
-                TempData["ErrorMessage"] = "LỖI BẢO MẬT: Bạn không phải thành viên của Board này.";
+                TempData["ErrorMessage"] = "ERROR SECURITY: You are not member in this Team.";
                 return RedirectToAction(nameof(Index));
             }
-                return View(board);
+            return View(board);
         }
 
         [HttpPost]
@@ -77,7 +77,7 @@ namespace Taskify.Controllers
                 try
                 {
                     var userId = GetCurrentUserId();
-                    if(model.TeamId.HasValue &&model.TeamId.Value != Guid.Empty)
+                    if (model.TeamId.HasValue && model.TeamId.Value != Guid.Empty)
                     {
                         var role = await _teamService.GetUserRoleInTeamAsync(model.TeamId.Value, userId);
                         if (role == TeamRole.Member)
@@ -95,7 +95,6 @@ namespace Taskify.Controllers
                 }
             }
 
-            // Nếu dữ liệu sai, in ra lỗi cụ thể
             var errors = string.Join(" | ", ModelState.Values
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage));
@@ -132,6 +131,77 @@ namespace Taskify.Controllers
             TempData["SuccessMessage"] = "Update Board Successfully!";
             return RedirectToAction(nameof(Details), new { id = model.Id });
         }
+
+        [HttpGet]
+        public async Task<IActionResult> CreateWithAi()
+        {
+            var userId = GetCurrentUserId();
+
+            // Gọi Service lấy danh sách team (đúng chuẩn Layered Architecture)
+            var authorizedTeams = await _teamService.GetManagedTeamsAsync(userId);
+
+            var viewModel = new CreateBoardAiViewModel
+            {
+                IsTeamBoard = false,
+                Teams = new SelectList(authorizedTeams, "Id", "Name")
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateWithAi(CreateBoardAiViewModel model)
+        {
+            var userId = GetCurrentUserId();
+
+            // 1. Validate Logic UI
+            if (model.IsTeamBoard && model.TeamId == null)
+            {
+                ModelState.AddModelError("TeamId", "Vui lòng chọn Team.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var teams = await _teamService.GetManagedTeamsAsync(userId);
+                model.Teams = new SelectList(teams, "Id", "Name", model.TeamId);
+                return View(model);
+            }
+
+            // 2. Validate Quyền hạn (Security Check)
+            if (model.IsTeamBoard && model.TeamId.HasValue)
+            {
+                var role = await _teamService.GetUserRoleInTeamAsync(model.TeamId.Value, userId);
+                if (role != TeamRole.Owner && role != TeamRole.Admin)
+                {
+                    TempData["ErrorMessage"] = "Bạn không có quyền tạo bảng cho Team này.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            // 3. Lấy dữ liệu cho AI (Gọi Service, không query tại đây)
+            // Hàm này sẽ tự xử lý logic: nếu TeamId null -> lấy 1 user, nếu có TeamId -> lấy list member
+            var participants = await _teamService.GetUsersForAiAsync(model.IsTeamBoard ? model.TeamId : null, userId);
+
+            // 4. Gọi Gemini AI
+            var aiPlan = await _geminiService.GenerateBoardPlanAsync(model.Prompt, participants);
+
+            if (aiPlan == null)
+            {
+                ModelState.AddModelError("", "AI không phản hồi. Vui lòng thử lại chi tiết hơn.");
+                var teams = await _teamService.GetManagedTeamsAsync(userId);
+                model.Teams = new SelectList(teams, "Id", "Name", model.TeamId);
+                return View(model);
+            }
+
+            // 5. Lưu vào DB (Gọi BoardService)
+            Guid? finalTeamId = model.IsTeamBoard ? model.TeamId : null;
+            // Lưu ý: Cần thêm hàm CreateBoardFromAiAsync vào IBoardService như đã bàn ở bước trước
+            var newBoardId = await _boardService.CreateBoardFromAiAsync(aiPlan, userId, finalTeamId);
+
+            return RedirectToAction(nameof(Details), new { id = newBoardId });
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> CreateList([FromBody] CreateListRequest request)
         {
@@ -168,7 +238,7 @@ namespace Taskify.Controllers
                 var userId = GetCurrentUserId();
                 var list = await _boardService.GetListByIdAsync(listId);
                 if (list == null) return NotFound("List don't exsist.");
-                var role = await _teamService.GetUserRoleInTeamAsync(list.Board.TeamId, userId);
+                var role = await _teamService.GetUserRoleInTeamAsync((Guid)list.Board.TeamId, userId);
                 if (role == TeamRole.Member) return StatusCode(403, "You don't have permission to delete list.");
                 await _boardService.DeleteListAsync(listId, userId);
                 return Ok(new { success = true });
@@ -182,7 +252,7 @@ namespace Taskify.Controllers
                 return BadRequest(new { success = false, message = errorMessage });
             }
         }
-       
+
         public class CreateListRequest
         {
             public Guid BoardId { get; set; }

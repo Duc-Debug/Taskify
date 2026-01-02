@@ -1,0 +1,111 @@
+﻿@model Taskify.Models.CreateBoardAiViewModel
+
+@{
+    ViewData["Title"] = "Create Board with AI Assistant";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header bg-gradient-primary text-white p-4">
+                    <h3 class="mb-0"><i class="fas fa-robot me-2"></i>AI Project Architect</h3>
+                    <p class="mb-0 opacity-75">Provide a project description, and Taskify AI will design the workflow and assign personnel for you.</p>
+                </div>
+                <div class="card-body p-5">
+                    <form asp-action="CreateWithAi" method="post" id="aiForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-uppercase text-secondary small">Type Project</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="IsTeamBoard" id="typePersonal" value="false" checked onchange="toggleTeamSelect(false)">
+                                <label class="btn btn-outline-primary py-3" for="typePersonal">
+                                    <i class="fas fa-user mb-1 d-block fs-4"></i> Personal
+                                </label>
+
+                                <input type="radio" class="btn-check" name="IsTeamBoard" id="typeTeam" value="true" onchange="toggleTeamSelect(true)">
+                                <label class="btn btn-outline-primary py-3" for="typeTeam">
+                                    <i class="fas fa-users mb-1 d-block fs-4"></i> Team 
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4" id="teamSelectGroup" style="display: none;">
+                            <label asp-for="TeamId" class="form-label fw-bold">Choose Team manage</label>
+                            @if (Model.Teams != null && Model.Teams.Any())
+                            {
+                                <select asp-for="TeamId" asp-items="Model.Teams" class="form-select form-select-lg">
+                                    <option value="" disabled selected>-- Chọn Team --</option>
+                                </select>
+                                <div class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i> Only show the Teams where you are an Admin or Owner.
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning d-flex align-items-center">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <div>
+                                        You don't manage any teams yet.. <a asp-controller="Teams" asp-action="Create" class="alert-link">Create new team</a>
+                                    </div>
+                                </div>
+                            }
+                            <span asp-validation-for="TeamId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Prompt" class="form-label fw-bold">Prompt project description</label>
+                            <textarea asp-for="Prompt" class="form-control bg-light" rows="6"
+                                      placeholder="For example: I want to develop a real-time chat feature. I need a SignalR backend, a React frontend, and an SQL database. The team has Nam who is good at C#, Lan who is good at React, etc."></textarea>
+                            <span asp-validation-for="Prompt" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill" id="btnGenerate">
+                                <i class="fas fa-magic me-2"></i>Generate Project Plan
+                            </button>
+                            <a asp-action="Index" class="btn btn-light btn-lg rounded-pill text-muted">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Hàm ẩn hiện Dropdown
+        function toggleTeamSelect(isTeam) {
+            if (isTeam) {
+                $('#teamSelectGroup').slideDown();
+            } else {
+                $('#teamSelectGroup').slideUp();
+                $('#teamSelectGroup select').val(''); // Reset giá trị để tránh submit nhầm
+            }
+        }
+
+        // Logic giữ trạng thái khi Reload (nếu Form lỗi)
+        $(document).ready(function () {
+            // Kiểm tra xem Radio nào đang checked (do ASP.NET tự bind lại khi reload)
+            var isTeam = $('input[name="IsTeamBoard"]:checked').val() === 'true';
+            if(isTeam) {
+                $('#teamSelectGroup').show();
+            } else {
+                $('#teamSelectGroup').hide();
+            }
+
+            // Hiệu ứng Loading khi bấm nút
+            $('#aiForm').on('submit', function() {
+                if($(this).valid()) {
+                    $('#btnGenerate').html('<i class="fas fa-spinner fa-spin me-2"></i>AI is thinking...').prop('disabled', true);
+                }
+            });
+        });
+    </script>
+}

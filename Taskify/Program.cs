@@ -5,6 +5,7 @@ using Taskify.Data;
 using Taskify.Services;
 using Taskify.Services.Background;
 using Taskify.Services.Implementations;
+using Taskify.Services.Implementations.AI;
 
 namespace Taskify
 {
@@ -58,6 +59,7 @@ namespace Taskify
             builder.Services.AddScoped<ITaskService, TaskService>();
             builder.Services.AddScoped<ITeamService, TeamService>();
             builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
+            builder.Services.AddScoped<IGeminiService, GeminiService>();
 
             builder.Services.AddHostedService<Taskify.Services.Background.DeadlineReminderService>();
             builder.Services.AddHostedService<LogCleanupWorker>();

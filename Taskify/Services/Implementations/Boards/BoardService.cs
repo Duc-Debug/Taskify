@@ -183,12 +183,10 @@ namespace Taskify.Services
 
         public async Task DeleteBoardAsync(Guid boardId, Guid userId)
         {
-            // Load Board kèm theo TẤT CẢ các bảng con cháu chắt
-            // Để EF Core biết đường mà xóa (In-memory Cascade Delete)
             var board = await _context.Boards
                 .Include(b => b.Team).ThenInclude(t => t.Members)
-                .Include(b => b.Lists).ThenInclude(l => l.Tasks).ThenInclude(t => t.Assignments) // Load Assignments
-                .Include(b => b.Lists).ThenInclude(l => l.Tasks).ThenInclude(t => t.Comments)    // Load Comments
+                .Include(b => b.Lists).ThenInclude(l => l.Tasks).ThenInclude(t => t.Assignments) 
+                .Include(b => b.Lists).ThenInclude(l => l.Tasks).ThenInclude(t => t.Comments)   
                 .Include(b => b.Lists).ThenInclude(l => l.Tasks).ThenInclude(t => t.TaskHistories)
                 .FirstOrDefaultAsync(b => b.Id == boardId);
 
@@ -229,6 +227,116 @@ namespace Taskify.Services
                 Name = board.Name,
                 Description = board.Desciption
             };
+        }
+        public async Task<Guid> CreateBoardFromAiAsync(AiBoardPlan plan, Guid userId, Guid? teamId)
+        {
+            // 1. [MỚI] Lấy danh sách ID thành viên hợp lệ để kiểm tra AI
+            // Nếu AI trả về ID không nằm trong list này -> Bỏ qua assignment đó
+            HashSet<Guid> validUserIds;
+
+            if (teamId.HasValue)
+            {
+                // Nếu là Team: Lấy tất cả ID thành viên trong team
+                var teamMemberIds = await _context.TeamMembers
+                    .Where(tm => tm.TeamId == teamId.Value)
+                    .Select(tm => tm.UserId)
+                    .ToListAsync();
+                validUserIds = new HashSet<Guid>(teamMemberIds);
+            }
+            else
+            {
+                // Nếu là Personal: Chỉ có ID của chính mình là hợp lệ
+                validUserIds = new HashSet<Guid> { userId };
+            }
+
+            // 2. Tạo đối tượng Board
+            var newBoard = new Board
+            {
+                Id = Guid.NewGuid(),
+                Name = plan.BoardName,
+                Desciption = plan.Description,
+                OwnerId = userId,
+                TeamId = teamId,
+                CreatedAt = DateTime.Now,
+                Lists = new List<TaskList>()
+            };
+
+            if (plan.Lists != null)
+            {
+                int listOrder = 0;
+                foreach (var aiList in plan.Lists)
+                {
+                    var newList = new TaskList
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = aiList.Title,
+                        BoardId = newBoard.Id,
+                        Order = listOrder++,
+                        Tasks = new List<TaskItem>()
+                    };
+
+                    if (aiList.Tasks != null)
+                    {
+                        int taskOrder = 0;
+                        foreach (var aiTask in aiList.Tasks)
+                        {
+                            Enum.TryParse(aiTask.Priority, true, out TaskPriority priority);
+
+                            var newTask = new TaskItem
+                            {
+                                Id = Guid.NewGuid(),
+                                Title = aiTask.Title,
+                                Description = $"{aiTask.Description}\n\n>  **AI Suggestion:** {aiTask.ReasonForAssignment}",
+                                Priority = priority,
+                                Status = Models.TaskStatus.Pending,
+                                CreatorId = userId,
+                                Order = taskOrder++,
+                                Assignments = new List<TaskAssignment>()
+                            };
+
+                            // 3. [MỚI] Validate Assignment
+                            if (aiTask.AssignedUserId.HasValue)
+                            {
+                                // CHỈ GÁN NẾU ID TỒN TẠI TRONG LIST HỢP LỆ
+                                if (validUserIds.Contains(aiTask.AssignedUserId.Value))
+                                {
+                                    newTask.Assignments.Add(new TaskAssignment
+                                    {
+                                        TaskId = newTask.Id,
+                                        UserId = aiTask.AssignedUserId.Value,
+                                        //AssignedAt = DateTime.Now
+                                    });
+                                }
+                                else
+                                {
+                                    // Nếu AI bịa ra ID sai, ta ghi chú vào description để biết
+                                    newTask.Description += $"\n\n*(Cảnh báo: AI đã cố gán cho User ID không tồn tại: {aiTask.AssignedUserId})*";
+                                }
+                            }
+
+                            newList.Tasks.Add(newTask);
+                        }
+                    }
+                    newBoard.Lists.Add(newList);
+                }
+            }
+
+            // 4. Lưu Board (Lúc này assignments đã sạch, không còn ID rác)
+            _context.Boards.Add(newBoard);
+            await _context.SaveChangesAsync();
+
+            // 5. Ghi Log (An toàn vì Board đã lưu)
+            try
+            {
+                string logMsg = teamId.HasValue ? $"AI created team board: {plan.BoardName}" : $"AI created personal board: {plan.BoardName}";
+                await _activityLogService.LogAsync(userId, ActivityType.BoardCreated, logMsg, teamId: teamId, boardId: newBoard.Id);
+            }
+            catch
+            {
+                // Ignore log error
+            }
+
+            return newBoard.Id;
         }
         //============================
         //          LIST

@@ -19,8 +19,9 @@ namespace Taskify.Services
         Task UpdateSettingsTeam(TeamSettingViewModel model, Guid userId);
         Task<TeamAnalyticsViewModel> GetTeamAnalyticsAsync(Guid teamId,Guid userId);
         Task<string> SendRemindAsync(Guid senderId, Guid targetUserId, Guid referenceId, string referenceName, bool isTaskReminder);
+        Task<List<TeamViewModel>> GetManagedTeamsAsync(Guid userId);
+        Task<List<User>> GetUsersForAiAsync(Guid? teamId, Guid currentUserId);
         //HELPER
-        Task<TeamRole> GetUserRoleInTeamAsync(Guid? teamId, Guid userId);
         Task<bool> HandleInviteApprovalAsync(Guid notificationId, bool isApproved);
         Task<TeamRole?> GetUserRoleInTeamAsync(Guid teamId, Guid userId);
         Task<TeamEditViewModel> GetTeamForEditAsync(Guid teamId);

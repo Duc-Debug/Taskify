@@ -18,7 +18,7 @@ namespace Taskify.Services
         }
         public async Task<List<TeamViewModel>> GetTeamsByUserIdAsync(Guid userId)
         {
-            // Lấy tất cả Team mà User này là thành viên
+            // Lấy tất cả Team mà User là thành viên
             var teams = await _context.TeamMembers
                 .Include(tm => tm.Team)
                 .ThenInclude(t => t.Owner)
@@ -50,7 +50,6 @@ namespace Taskify.Services
         }
         public async Task CreateTeamAsync(TeamCreateViewModel model, Guid userId)
         {
-            // 1. Khởi tạo Team mới
             var team = new Team
             {
                 Id = Guid.NewGuid(),
@@ -60,7 +59,6 @@ namespace Taskify.Services
                 CreatedAt = DateTime.Now
             };
 
-            // Thêm Team vào DbSet
             _context.Teams.Add(team);
 
             var initialMember = new TeamMember
@@ -71,11 +69,8 @@ namespace Taskify.Services
                 Role = TeamRole.Owner,
                 JoinedDate = DateTime.Now
             };
-
-
             _context.TeamMembers.Add(initialMember);
             await _activityLogService.LogAsync(userId, ActivityType.TeamCreated, $"Created Team", teamId: team.Id, boardId: null);
-            // 3. Lưu tất cả xuống DB trong 1 transaction
             await _context.SaveChangesAsync();
         }
         public async Task<TeamDetailsViewModel> GetTeamDetailsAsync(Guid teamId, Guid currentUserId)
@@ -124,8 +119,8 @@ namespace Taskify.Services
                     IsOwner = tm.Role == TeamRole.Owner,
 
                     RoleName = tm.Role.ToString(),
-                    JoinedDate = DateTime.UtcNow, // Phai them Field JoinedDate vao bang TeamMember
-                    IsOnline = new Random().Next(0, 2) == 1 // Random vui vui
+                    JoinedDate = DateTime.UtcNow, // Phai them Field JoinedDate vao bang TeamMember, ko co nen de tamm
+                    IsOnline = new Random().Next(0, 2) == 1 // Random vui vui, chả có tác dụng 
                 }).OrderByDescending(m => m.IsOwner).ToList()
             };
         }
@@ -199,7 +194,6 @@ namespace Taskify.Services
             var userToInvite = _context.Users.FirstOrDefault(u => u.Email == email);
             if (userToInvite == null) return (false, "Email user doesn't exsist.");
 
-            // Check xem đã là thành viên chưa
             var isAlreadyMember = await _context.TeamMembers
                 .AnyAsync(tm => tm.TeamId == teamId && tm.UserId == userToInvite.Id);
             if (isAlreadyMember) return (false, "User is a member Team.");
@@ -207,26 +201,24 @@ namespace Taskify.Services
             var team = await _context.Teams.FindAsync(teamId);
             if (team == null) return (false, "Team not found.");
 
-            // Lấy Role người gửi lời mời
-            var senderRole = await GetUserRoleInTeamAsync(teamId, senderId); // Hàm check role viết ở dưới
+            var senderRole = await GetUserRoleInTeamAsync(teamId, senderId); 
 
             // --- LOGIC PHÂN QUYỀN MỜI ---
 
             // 1. Nếu là Admin mời VÀ Team yêu cầu duyệt
             if (senderRole == TeamRole.Admin && team.IsInviteApprovalRequired)
             {
-                // Tạo thông báo gửi cho Owner
                 var notification = new Notification
                 {
                     Id = Guid.NewGuid(),
                     UserId = team.OwnerId, // Người nhận là Owner
                     SenderId = senderId,   // Người gửi là Admin
-                    Type = NotificationType.ApprovalRequest, // Loại: Yêu cầu duyệt
+                    Type = NotificationType.ApprovalRequest, 
                     Message = $"Admin want to invite {userToInvite.FullName} ({userToInvite.Email}) join team.",
                     ReferenceId = teamId,
                     CreatedAt = DateTime.Now,
                     IsRead = false,
-                    // QUAN TRỌNG: Lưu ID người được mời vào đây để dùng sau này
+                    // Lưu ID người được mời vào đây để dùng sau này
                     Metadata = userToInvite.Id.ToString()
                 };
                 _context.Notifications.Add(notification);
@@ -246,27 +238,22 @@ namespace Taskify.Services
 
         public async Task<bool> HandleInviteApprovalAsync(Guid notificationId, bool isApproved)
         {
-            // 1. Lấy thông báo yêu cầu duyệt
             var notification = await _context.Notifications
                 .FirstOrDefaultAsync(n => n.Id == notificationId);
 
-            // Kiểm tra null và đúng loại thông báo
             if (notification == null || notification.Type != NotificationType.ApprovalRequest)
                 return false;
 
-            // 2. Nếu Owner TỪ CHỐI (Reject)
             if (!isApproved)
             {
-                // Gửi thông báo lại cho Admin (SenderId) biết là bị từ chối
                 if (notification.SenderId.HasValue)
                 {
                     await _notificationService.CreateInfoNotificationAsync(
-                        notification.SenderId.Value, // <--- SỬA: Gửi cho Admin
+                        notification.SenderId.Value, 
                         "Your member invitation request has been denied.."
                     );
                 }
 
-                // Xóa đơn xin phép
                 _context.Notifications.Remove(notification);
                 await _context.SaveChangesAsync();
                 return true;
@@ -282,26 +269,22 @@ namespace Taskify.Services
 
                 if (team != null)
                 {
-                    // A. Gửi lời mời chính thức cho người được mời (Invite Notification)
-                    // Người gửi (Sender) bây giờ là Owner (notification.UserId)
                     await _notificationService.CreateInviteNotificationAsync(
-                        notification.UserId, // Owner gửi
-                        userToInviteId,      // Người nhận (khách)
+                        notification.UserId, 
+                        userToInviteId,      
                         teamId,
                         team.Name
                     );
 
-                    // B. Báo tin lại cho Admin (người gửi yêu cầu duyệt lúc đầu)
                     if (notification.SenderId.HasValue)
                     {
                         await _notificationService.CreateInfoNotificationAsync(
-                            notification.SenderId.Value, // <--- SỬA: Gửi cho Admin
+                            notification.SenderId.Value,
                             "The owner has approved your member invitation request.."
                         );
                     }
                 }
 
-                // C. Xóa đơn xin phép
                 _context.Notifications.Remove(notification);
                 await _context.SaveChangesAsync();
                 return true;
@@ -349,6 +332,38 @@ namespace Taskify.Services
             await _context.SaveChangesAsync();
             return (true, isAccepted ? "Invitation accepted." : "Invitation declined.");
         }
+        public async Task<List<TeamViewModel>> GetManagedTeamsAsync(Guid userId)
+        {
+            return await _context.TeamMembers
+                .Include(tm => tm.Team)
+                .Where(tm => tm.UserId == userId && (tm.Role == TeamRole.Owner || tm.Role == TeamRole.Admin))
+                .Select(tm => new TeamViewModel
+                {
+                    Id = tm.Team.Id,
+                    Name = tm.Team.Name
+                })
+                .ToListAsync();
+        }
+        public async Task<List<User>> GetUsersForAiAsync(Guid? teamId, Guid currentUserId)
+        {
+            if (teamId.HasValue)
+            {
+                return await _context.TeamMembers
+                    .Where(tm => tm.TeamId == teamId.Value)
+                    .Include(tm => tm.User)
+                    .ThenInclude(u => u.Skills) 
+                    .Select(tm => tm.User)
+                    .ToListAsync();
+            }
+            else
+            {
+                return await _context.Users
+                    .Where(u => u.Id == currentUserId)
+                    .Include(u => u.Skills)
+                    .ToListAsync(); 
+            }
+        }
+
         //=========SETTING============
         public async Task UpdateSettingsTeam(TeamSettingViewModel model, Guid userId)
         {
@@ -396,12 +411,7 @@ namespace Taskify.Services
             await _activityLogService.LogAsync(currentUserId, ActivityType.RoleUpdated, $"Change {newRole} Role to {targetMember.User.FullName}", teamId: teamId, boardId: null);
             return (true, "Member role updated successfully.");
         }
-        public async Task<TeamRole> GetUserRoleInTeamAsync(Guid? teamId, Guid userId)
-        {
-            var member = await _context.TeamMembers
-                .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
-            return member.Role;
-        }
+
         public async Task<TeamRole?> GetUserRoleInTeamAsync(Guid teamId, Guid userId)
         {
             var member = await _context.TeamMembers
@@ -516,14 +526,11 @@ namespace Taskify.Services
         }
         public async Task<string> SendRemindAsync(Guid senderId, Guid targetUserId, Guid referenceId, string referenceName, bool isTaskReminder)
         {
-            // --- BƯỚC 0: TÌM TEAM ID ĐỂ CHECK QUYỀN ---
-            // Vì ID là Guid, ta dùng Guid? để lưu trữ (có thể null nếu không tìm thấy)
             Guid? teamIdToCheck = null;
 
             if (isTaskReminder)
             {
                 // ReferenceId chính là TaskId (Guid)
-                // Đường dẫn: TaskItem -> TaskList -> Board -> Team
                 var task = await _context.Tasks
                     .Include(t => t.List)
                         .ThenInclude(l => l.Board)
@@ -541,24 +548,18 @@ namespace Taskify.Services
                 teamIdToCheck = referenceId;
             }
 
-            // --- BƯỚC 1: CHECK QUYỀN (SECURITY CHECK) ---
-            // Chỉ check nếu xác định được Team (TeamId có giá trị)
             if (teamIdToCheck.HasValue)
             {
                 var currentMember = await _context.TeamMembers
                     .FirstOrDefaultAsync(m => m.TeamId == teamIdToCheck.Value && m.UserId == senderId);
 
-                // Logic: Chỉ Owner hoặc Admin mới được phép hối thúc
-                // (Lưu ý: Đảm bảo enum/string Role khớp với DB của bạn)
                 if (currentMember == null ||
                    (currentMember.Role.ToString() != "Owner" && currentMember.Role.ToString() != "Admin"))
                 {
-                    return "Unauthorized"; // Trả về lỗi không có quyền
+                    return "Unauthorized"; 
                 }
             }
 
-            // --- BƯỚC 2: CHECK SPAM (ANTI-SPAM) ---
-            // Đếm số lượng noti đã gửi trong ngày cho cặp (Sender, Target, Reference) này
             var todayCount = await _context.Notifications.CountAsync(n =>
                 n.SenderId == senderId &&
                 n.UserId == targetUserId &&
@@ -567,16 +568,13 @@ namespace Taskify.Services
 
             if (todayCount >= 2)
             {
-                return "SpamLimitReached"; // Đã vượt quá giới hạn 2 lần/ngày
+                return "SpamLimitReached"; 
             }
 
-            // --- BƯỚC 3: TẠO MESSAGE & GỬI ---
-            // Format thông báo
             string messageContent = isTaskReminder
                 ? $"remind you about task '{referenceName}' not Complete"
                 : $"remind you about Job in team '{referenceName}'";
 
-            // Gọi Notification Service (ReferenceId giờ đã là Guid chuẩn)
             await _notificationService.CreateRemindNotificationAsync(senderId, targetUserId, referenceId, referenceName, messageContent);
 
             return "Success";
