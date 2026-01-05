@@ -55,7 +55,13 @@ namespace Taskify.Services.Implementations.AI
                 4. For each task, assign the `AssignedUserId` strictly from the provided members list.
                 5. Provide a `ReasonForAssignment` explaining why that member fits (e.g., 'Matches C# skill level 9').
                 6. Set Priority: Low, Medium, or High.
-
+                7. Estimate 'DueInDays': Integer representing how many days from now the task should be due (e.g., 2 for 2 days). Based on user request timeline.
+                8. Calculate 'SuccessConfidence' (0-100): 
+                       - Analyze the match between User's Skills/Level and the Task's requirements.
+                       - 90-100: Perfect match (Expert level).
+                       - 70-89: Good match.
+                       - < 50: Poor match (Missing critical skills).
+                       - If AssignedUserId is null, set 0.
                 **OUTPUT FORMAT:**
                 You must return ONLY a valid JSON string matching the following C# class structure, no markdown formatting, no code blocks:
 
@@ -71,7 +77,9 @@ namespace Taskify.Services.Implementations.AI
                                     ""Description"": ""string"",
                                     ""Priority"": ""string"",
                                     ""AssignedUserId"": ""Guid (must match one of the input IDs) or null"",
-                                    ""ReasonForAssignment"": ""string""
+                                    ""ReasonForAssignment"": ""string"",
+                                    ""DueInDays"": 5,
+                                    ""SuccessConfidence"": 70
                                 }}
                             ]
                         }}
@@ -80,7 +88,7 @@ namespace Taskify.Services.Implementations.AI
             ";
 
             var response = await _client.Models.GenerateContentAsync(
-                model: "gemini-2.5-flash",
+                model: "gemini-2.5-flash-lite",
                 contents: prompt
             );
 

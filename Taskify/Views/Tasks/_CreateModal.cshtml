@@ -1,10 +1,8 @@
 ﻿@model Taskify.Models.TaskCreateViewModel
 
-<!-- Create Task Modal -->
 <div class="modal fade" id="createTaskModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content create-task-modal">
-            <!-- Modal Header -->
             <div class="modal-header">
                 <div class="modal-title-wrapper">
                     <div class="modal-icon">
@@ -18,80 +16,66 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
-            <!-- Modal Body -->
             <div class="modal-body">
                 <form id="createTaskForm" asp-action="Create" asp-controller="Tasks" method="post">
                     <input type="hidden" asp-for="ListId" />
                     <input type="hidden" asp-for="BoardId" />
+                    
+                    <input type="hidden" id="hiddenTeamId" value="@ViewBag.TeamId" /> 
 
-                    <!-- Task Title -->
                     <div class="form-group">
                         <label asp-for="Title" class="form-label">
                             Task Title <span class="required">*</span>
                         </label>
                         <input asp-for="Title"
+                               id="taskTitleInput"
                                class="form-control form-control-lg"
-                               placeholder="e.g., Update homepage design"
+                               placeholder="VD: Thiết kế giao diện trang chủ (Nhập xong click ra ngoài để AI tính điểm)"
                                autofocus
-                               required />
+                               required
+                               onblur="updateMemberScores()" />
                         <span asp-validation-for="Title" class="text-danger"></span>
                     </div>
 
-                    <!-- Description -->
                     <div class="form-group">
                         <label asp-for="Description" class="form-label">Description</label>
                         <textarea asp-for="Description"
+                                  id="taskDescInput"
                                   class="form-control"
                                   rows="4"
-                                  placeholder="Add a detailed description..."></textarea>
-                        <span class="form-text">Add more context to help your team understand the task</span>
+                                  placeholder="Mô tả chi tiết công việc..."
+                                  onblur="updateMemberScores()"></textarea>
                     </div>
 
-                    <!-- Priority and Due Date Row -->
                     <div class="form-row">
-                        <!-- Priority -->
                         <div class="form-group">
                             <label asp-for="Priority" class="form-label">Priority</label>
                             <div class="priority-options">
                                 <input type="radio" asp-for="Priority" value="Low" id="priorityLow" checked />
-                                <label for="priorityLow" class="priority-card low">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="10" />
-                                    </svg>
-                                    Low
-                                </label>
+                                <label for="priorityLow" class="priority-card low">Low</label>
 
                                 <input type="radio" asp-for="Priority" value="Medium" id="priorityMedium" />
-                                <label for="priorityMedium" class="priority-card medium">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="10" />
-                                    </svg>
-                                    Medium
-                                </label>
+                                <label for="priorityMedium" class="priority-card medium">Medium</label>
 
                                 <input type="radio" asp-for="Priority" value="High" id="priorityHigh" />
-                                <label for="priorityHigh" class="priority-card high">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="10" />
-                                    </svg>
-                                    High
-                                </label>
+                                <label for="priorityHigh" class="priority-card high">High</label>
                             </div>
                         </div>
 
-                        <!-- Due Date -->
                         <div class="form-group">
                             <label asp-for="DueDate" class="form-label">Due Date</label>
-                            <input asp-for="DueDate"
-                                   type="date"
-                                   class="form-control"
-                                   min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            <input asp-for="DueDate" type="date" class="form-control" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                         </div>
                     </div>
 
-                    <!-- Assign Members -->
                     <div class="form-group">
-                        <label class="form-label">Assign Members</label>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label mb-0">Assign Members</label>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="updateMemberScores()">
+                                <i class="fas fa-magic me-1"></i> Tính điểm phù hợp
+                            </button>
+                        </div>
+                        
                         <div class="members-select">
                             <div class="selected-members" id="selectedMembers">
                                 <button type="button" class="btn-select-member" data-bs-toggle="dropdown" aria-expanded="false" id="dropdownMenuButton">
@@ -99,75 +83,141 @@
                                         <line x1="12" y1="5" x2="12" y2="19" />
                                         <line x1="5" y1="12" x2="19" y2="12" />
                                     </svg>
-                                    Add Members
+                                    <span id="btnSelectLabel">Select Members</span>
                                 </button>
-                                <ul class="dropdown-menu w-100 p-2 shadow" aria-labelledby="dropdownMenuButton" style="max-height: 250px; overflow-y: auto;">
+                                
+                                <ul class="dropdown-menu w-100 p-2 shadow" id="assigneeList" aria-labelledby="dropdownMenuButton" style="max-height: 250px; overflow-y: auto;">
                                     @if (Model.AvailableMembers != null && Model.AvailableMembers.Any())
                                     {
                                         foreach (var member in Model.AvailableMembers)
                                         {
                                             <li>
                                                 <label class="dropdown-item d-flex align-items-center gap-2 p-2 rounded cursor-pointer">
-                                                    <input class="form-check-input mt-0"
-                                                           type="checkbox"
-                                                           name="SelectedAssigneeIds"
-                                                           value="@member.Id"
-                                                           style="width: 18px; height: 18px;">
-
+                                                    <input class="form-check-input mt-0" type="checkbox" name="SelectedAssigneeIds" value="@member.Id" style="width: 18px; height: 18px;">
+                                                    
                                                     @if (!string.IsNullOrEmpty(member.AvatarUrl))
                                                     {
                                                         <img src="@member.AvatarUrl" class="rounded-circle" width="24" height="24" style="object-fit: cover;">
                                                     }
                                                     else
                                                     {
-                                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-                                                             style="width: 24px; height: 24px; font-size: 10px;">
+                                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 10px;">
                                                             @(member.Initials ?? "U")
                                                         </div>
                                                     }
-
-                                                    <span class="text-truncate">@member.FullName</span>
+                                                    
+                                                    <div class="d-flex flex-column">
+                                                        <span class="text-truncate">@member.FullName</span>
+                                                        <small class="text-muted small" style="font-size: 0.7rem; display: none;" id="score-@member.Id"></small>
+                                                    </div>
                                                 </label>
                                             </li>
                                         }
-                                    }
-                                    else
-                                    {
-                                        <li class="p-2 text-muted text-center small">No members found in this team.</li>
                                     }
                                 </ul>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Quick Tips -->
-                    <div class="quick-tips">
-                        <div class="tip-icon">💡</div>
-                        <div class="tip-content">
-                            <strong>Quick Tip:</strong> You can add more details like attachments, checklists, and comments after creating the task.
-                        </div>
-                    </div>
                 </form>
             </div>
-
-            <!-- Modal Footer -->
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="createTaskForm" class="btn btn-primary">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    Create Task
-                </button>
+                <button type="submit" form="createTaskForm" class="btn btn-primary">Create Task</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    
+    function updateMemberScores() {
+        // 1. Lấy dữ liệu từ ô nhập
+        var teamId = $('#hiddenTeamId').val(); // Cần đảm bảo TaskViewModel có TeamId
+        var title = $('#taskTitleInput').val();
+        var desc = $('#taskDescInput').val();
 
-    // Reset form when modal closes
+        // 2. Validate: Nếu chưa nhập tiêu đề -> Không làm gì cả (hoặc báo lỗi nhẹ)
+        if (!title || title.trim() === "") {
+            console.log("Chưa nhập tiêu đề, bỏ qua tính điểm.");
+            // Có thể reset lại list về trạng thái không điểm nếu muốn
+            return;
+        }
+
+        // Nếu teamId null (có thể do ViewBag chưa truyền), thử lấy từ input khác nếu có
+        if (!teamId) {
+            console.error("Thiếu TeamId, không thể gọi API.");
+            return;
+        }
+
+        var $list = $('#assigneeList');
+        var $btnLabel = $('#btnSelectLabel');
+        
+        // Lưu lại các ID đang tick chọn để không bị mất khi re-render
+        var checkedIds = [];
+        $list.find('input[type="checkbox"]:checked').each(function() {
+            checkedIds.push($(this).val());
+        });
+
+        // Hiện hiệu ứng Loading
+        $btnLabel.html('<i class="fas fa-spinner fa-spin"></i> AI đang tính điểm...');
+
+        // 3. Gọi API (Lưu ý: title và desc là chuỗi text vừa nhập)
+        $.ajax({
+            url: '/api/TaskHelper/suggestions',
+            type: 'GET',
+            data: { teamId: teamId, title: title, desc: desc },
+            success: function (data) {
+                $list.empty(); // Xóa list cũ
+
+                if (data.length === 0) {
+                    $list.append('<li class="p-2 text-muted text-center small">Không tìm thấy thành viên nào.</li>');
+                } else {
+                    $.each(data, function (i, item) {
+                        // Logic tick lại những người đã chọn
+                        var isChecked = checkedIds.includes(item.id) ? 'checked' : '';
+                        
+                        // Logic màu sắc điểm số
+                        var badgeClass = item.score >= 80 ? 'text-success fw-bold' : 
+                                         (item.score >= 50 ? 'text-warning fw-bold' : 'text-danger');
+                        
+                        var scoreText = item.score + '% fit';
+
+                        // Xử lý Avatar (Fallback nếu null)
+                        var avatarHtml = '';
+                        if (item.avatar && item.avatar.length > 5) { // Check sơ bộ url
+                             avatarHtml = `<img src="${item.avatar}" class="rounded-circle" width="24" height="24" style="object-fit: cover;">`;
+                        } else {
+                             var initial = item.name ? item.name.charAt(0).toUpperCase() : "U";
+                             avatarHtml = `<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 24px; height: 24px; font-size: 10px;">${initial}</div>`;
+                        }
+
+                        // Vẽ lại HTML Item
+                        var html = `
+                            <li>
+                                <label class="dropdown-item d-flex align-items-center gap-2 p-2 rounded cursor-pointer">
+                                    <input class="form-check-input mt-0" type="checkbox" name="SelectedAssigneeIds" value="${item.id}" ${isChecked} style="width: 18px; height: 18px;">
+                                    ${avatarHtml}
+                                    <div class="d-flex flex-column" style="line-height: 1.2;">
+                                        <span class="text-truncate fw-bold" style="font-size: 0.9rem;">${item.name}</span>
+                                        <small class="${badgeClass}" style="font-size: 0.75rem;">
+                                            <i class="fas fa-chart-bar me-1"></i>${scoreText}
+                                        </small>
+                                    </div>
+                                </label>
+                            </li>
+                        `;
+                        $list.append(html);
+                    });
+                }
+                $btnLabel.html('Select Members');
+            },
+            error: function(err) {
+                console.error("Lỗi API Scoring:", err);
+                $btnLabel.html('Select Members');
+            }
+        });
+    }
+
+    // Reset form khi đóng modal
     document.getElementById('createTaskModal')?.addEventListener('hidden.bs.modal', function() {
         document.getElementById('createTaskForm').reset();
     });

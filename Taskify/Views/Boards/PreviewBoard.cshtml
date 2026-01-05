@@ -1,0 +1,99 @@
+﻿@model Taskify.Models.AiPreviewViewModel
+
+<div class="container mt-4">
+    <div class="card shadow border-0">
+        <div class="card-header bg-white p-4">
+            <h3 class="text-primary"><i class="fas fa-clipboard-check me-2"></i>Duyệt Kế Hoạch Dự Án AI</h3>
+            <p class="text-muted">Xem lại các task, deadline và tỷ lệ thành công của nhân sự trước khi tạo bảng.</p>
+        </div>
+        <div class="card-body p-4">
+            <div class="mb-4">
+                <h5>@Model.BoardName</h5>
+                <p>@Model.Description</p>
+            </div>
+
+            @foreach (var list in Model.Lists)
+            {
+                <div class="card mb-3 bg-light border-0">
+                    <div class="card-header bg-transparent fw-bold">@list.Title</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30%">Task</th>
+                                        <th style="width: 20%">Người thực hiện</th>
+                                        <th style="width: 25%">Khả năng thành công</th>
+                                        <th style="width: 15%">Deadline</th>
+                                        <th>Priority</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var task in list.Tasks)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@task.Title</strong>
+                                                <br />
+                                                <small class="text-muted" title="@task.AiReason"><i class="fas fa-info-circle"></i> Lý do AI chọn</small>
+                                            </td>
+                                            <td>
+                                                @if (task.AssignedUserId.HasValue)
+                                                {
+                                                    <span class="badge bg-primary">@task.AssignedUserName</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Chưa gán</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (task.AssignedUserId.HasValue)
+                                                {
+                                                    // Logic màu sắc thanh Progress
+                                                    string colorClass = task.SuccessProbability >= 80 ? "success" :
+                                                    task.SuccessProbability >= 50 ? "warning" : "danger";
+
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="progress flex-grow-1 me-2" style="height: 10px;">
+                                                            <div class="progress-bar bg-@colorClass" role="progressbar"
+                                                                 style="width: @task.SuccessProbability%"
+                                                                 aria-valuenow="@task.SuccessProbability" aria-valuemin="0" aria-valuemax="100">
+                                                            </div>
+                                                        </div>
+                                                        <span class="fw-bold text-@colorClass">@task.SuccessProbability%</span>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="text-danger"><i class="far fa-clock"></i> +@task.DueInDays ngày</span>
+                                            </td>
+                                            <td><span class="badge bg-info text-dark">@task.Priority</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <form asp-action="ConfirmAiCreate" method="post">
+                <input type="hidden" asp-for="RawPlanJson" />
+                <input type="hidden" asp-for="TeamId" />
+                <input type="hidden" asp-for="IsTeamBoard" />
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a asp-action="CreateWithAi" class="btn btn-outline-secondary">Hủy / Làm lại</a>
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-check-circle me-2"></i>Xác nhận & Tạo Bảng
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

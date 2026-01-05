@@ -15,7 +15,6 @@ namespace Taskify.Controllers
         {
             _taskService = taskService;
         }
-        // Cho kieu Kanban Board
         //API nhan lenh di chuyen (Goi bang AJAX)
         [HttpPost]
         public async Task<IActionResult> Move([FromBody] MoveTaskRequest request)
@@ -43,6 +42,21 @@ namespace Taskify.Controllers
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
+        }
+        [HttpGet]
+        public async Task<IActionResult> Create(Guid listId, Guid boardId)
+        {
+            var teamId = await _taskService.GetTeamIdByAsync(boardId);
+
+            ViewBag.TeamId = teamId;
+
+            var model = new TaskCreateViewModel
+            {
+                ListId = listId,
+                BoardId = boardId
+            };
+
+            return PartialView("_CreateModal", model);
         }
         [HttpPost]
         public async Task<IActionResult> Create(TaskCreateViewModel model)

@@ -31,7 +31,7 @@ namespace Taskify.Models
         public TaskStatus Status { get; set; }
         public Guid ListId { get; set; }
         public string ListName { get; set; }
-
+        public Guid? TeamId { get; set; }
         public string CreatorName { get; set; }
 
         // Danh sách người được giao

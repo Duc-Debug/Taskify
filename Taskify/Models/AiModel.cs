@@ -22,10 +22,10 @@ namespace Taskify.Models
         public string Title { get; set; }
         public string Description { get; set; }
         public string Priority { get; set; } // Low, Medium, High
-
-        // AI sẽ trả về UserID của nhân viên mà nó chọn
         public Guid? AssignedUserId { get; set; }
-        public string ReasonForAssignment { get; set; } // Lý do chọn (để debug hoặc hiển thị)
+        public string ReasonForAssignment { get; set; }
+        public int DueInDays { get; set; }
+        public int SuccessConfidence { get; set; }
     }
     public class CreateBoardAiViewModel
     {
@@ -40,5 +40,39 @@ namespace Taskify.Models
         public Guid? TeamId { get; set; }
 
         public SelectList? Teams { get; set; }
+    }
+
+    //PREVIEW 
+    public class AiPreviewViewModel
+    {
+        // Dữ liệu gốc để gửi lại Server khi bấm Save (Serialize thành JSON String)
+        public string RawPlanJson { get; set; }
+        public Guid? TeamId { get; set; }
+        public bool IsTeamBoard { get; set; }
+
+        // Dữ liệu hiển thị
+        public string BoardName { get; set; }
+        public string Description { get; set; }
+        public List<AiListPreview> Lists { get; set; } = new List<AiListPreview>();
+    }
+
+    public class AiListPreview
+    {
+        public string Title { get; set; }
+        public List<AiTaskPreview> Tasks { get; set; }
+    }
+
+    public class AiTaskPreview
+    {
+        public string Title { get; set; }
+        public string Priority { get; set; }
+        public int DueInDays { get; set; }
+
+        // Thông tin người được gán + Tỷ lệ thành công
+        public Guid? AssignedUserId { get; set; }
+        public string AssignedUserName { get; set; }
+        public string AssignedUserAvatar { get; set; } // Nếu có
+        public int SuccessProbability { get; set; } // Điểm số tính toán
+        public string AiReason { get; set; }
     }
 }

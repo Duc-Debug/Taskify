@@ -1,0 +1,10 @@
+- Chuyển đổi Dropdown chọn Team từ HTML thủ công sang SelectList của ASP.NET Core để code sạch hơn và đồng bộ với Module AI.
+- Refactor TeamService & BoardService: Sửa lỗi so sánh Enum và tối ưu Cascade Delete (Quan trọng nhất).
+
+Tạo BaseController: Dọn dẹp code lặp lại ở các Controller.
+
+Audit TasksController: Chuyển hết logic DB sang Service (vì Task là module hoạt động nhiều nhất).
+
+Quét lại View: Chuyển các Dropdown cũ sang SelectList.
+
+Bạn muốn bắt đầu với mục số 1 (Sửa lỗi Logic & Hiệu năng) hay làm tiếp phần AI View cho xong dứt điểm? Tôi khuyên nên làm mục 1 trước cho "chắc móng".

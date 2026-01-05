@@ -230,8 +230,6 @@ namespace Taskify.Services
         }
         public async Task<Guid> CreateBoardFromAiAsync(AiBoardPlan plan, Guid userId, Guid? teamId)
         {
-            // 1. [MỚI] Lấy danh sách ID thành viên hợp lệ để kiểm tra AI
-            // Nếu AI trả về ID không nằm trong list này -> Bỏ qua assignment đó
             HashSet<Guid> validUserIds;
 
             if (teamId.HasValue)
@@ -289,6 +287,8 @@ namespace Taskify.Services
                                 Description = $"{aiTask.Description}\n\n>  **AI Suggestion:** {aiTask.ReasonForAssignment}",
                                 Priority = priority,
                                 Status = Models.TaskStatus.Pending,
+                               
+                                DueDate = DateTime.Now.AddDays(aiTask.DueInDays > 0 ? aiTask.DueInDays : 3),
                                 CreatorId = userId,
                                 Order = taskOrder++,
                                 Assignments = new List<TaskAssignment>()
@@ -309,7 +309,6 @@ namespace Taskify.Services
                                 }
                                 else
                                 {
-                                    // Nếu AI bịa ra ID sai, ta ghi chú vào description để biết
                                     newTask.Description += $"\n\n*(Cảnh báo: AI đã cố gán cho User ID không tồn tại: {aiTask.AssignedUserId})*";
                                 }
                             }
@@ -321,7 +320,6 @@ namespace Taskify.Services
                 }
             }
 
-            // 4. Lưu Board (Lúc này assignments đã sạch, không còn ID rác)
             _context.Boards.Add(newBoard);
             await _context.SaveChangesAsync();
 

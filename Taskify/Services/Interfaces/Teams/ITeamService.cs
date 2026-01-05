@@ -22,6 +22,7 @@ namespace Taskify.Services
         Task<List<TeamViewModel>> GetManagedTeamsAsync(Guid userId);
         Task<List<User>> GetUsersForAiAsync(Guid? teamId, Guid currentUserId);
         //HELPER
+        Task<List<User>> GetTeamMembersWithSkillsAsync(Guid teamId);
         Task<bool> HandleInviteApprovalAsync(Guid notificationId, bool isApproved);
         Task<TeamRole?> GetUserRoleInTeamAsync(Guid teamId, Guid userId);
         Task<TeamEditViewModel> GetTeamForEditAsync(Guid teamId);

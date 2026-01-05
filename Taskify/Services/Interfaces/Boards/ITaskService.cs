@@ -16,6 +16,7 @@ namespace Taskify.Services
         Task<TaskDetailsViewModel> GetTaskDetailsAsync(Guid taskId);
         Task<List<TaskDetailsViewModel>> GetTasksByUserIdAsync(Guid userId);
         Task<TeamRole?> GetUserRoleInBoardAsync(Guid boardId, Guid userId);
+        Task<Guid?> GetTeamIdByAsync(Guid boardId);
         //Assign
          Task AssignMemberASync(Guid taskId, Guid userId);
         Task RemoveMemberAsync(Guid taskId, Guid userId);

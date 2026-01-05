@@ -4,6 +4,8 @@
 <div class="modal fade" id="taskDetailsModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-scrollable modal-xl">
         <div class="modal-content task-modal">
+            <input type="hidden" id="detailTeamId" value="@Model.TeamId" />
+            <input type="hidden" id="detailTaskId" value="@Model.Id" />
             <!-- Modal Header -->
             <div class="modal-header task-modal-header">
                 <div class="header-left">
@@ -123,6 +125,9 @@
                                         <line x1="5" y1="12" x2="19" y2="12" />
                                     </svg>
                                     Add Member
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="updateDetailScores(this)" title="Check score Success Task">
+                                    <i class="fas fa-magic"></i> Check score success
                                 </button>
                                 <partial name="_MemberSelectDropdown"
                                    model="new Taskify.Models.MemberSelectViewModel { 
@@ -381,4 +386,5 @@
             }
         });
     }
+   
 </script>

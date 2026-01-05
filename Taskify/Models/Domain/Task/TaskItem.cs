@@ -5,7 +5,7 @@ namespace Taskify.Models
 {
     public class TaskItem
     {
-        public Guid Id { get; set; } // Đang là Guid
+        public Guid Id { get; set; }
         [Required, MaxLength(200)]
         public string Title { get; set; }
         public string? Description { get; set; }
@@ -17,14 +17,15 @@ namespace Taskify.Models
         public TaskPriority Priority { get; set; } = TaskPriority.Medium;
         public TaskStatus Status { get; set; } = TaskStatus.Pending;
 
-        // Foreign Keys cũng phải là Guid
+       // public DateTime? Deadline { get; set; } 
+        public DateTime? CompletedAt { get; set; }
         public Guid ListId { get; set; }
         [ForeignKey("ListId")] //
         public TaskList List { get; set; }
 
-        public int? CategoryId { get; set; } // Category của bạn bên kia dùng int hay Guid? Kiểm tra lại nhé. Nếu Category dùng int thì để int.
+        public int? CategoryId { get; set; } 
         public Category Category { get; set; }
-        // [MỚI THÊM] Thêm dòng này để BoardService có thể Include và xóa History
+
         public ICollection<TaskHistory> TaskHistories { get; set; }
 
         public ICollection<TaskAssignment> Assignments { get; set; }

@@ -218,7 +218,6 @@ namespace Taskify.Services
                     ReferenceId = teamId,
                     CreatedAt = DateTime.Now,
                     IsRead = false,
-                    // Lưu ID người được mời vào đây để dùng sau này
                     Metadata = userToInvite.Id.ToString()
                 };
                 _context.Notifications.Add(notification);
@@ -442,7 +441,15 @@ namespace Taskify.Services
             };
 
         }
-
+        public async Task<List<User>> GetTeamMembersWithSkillsAsync(Guid teamId)
+        {
+            return await _context.TeamMembers
+                .Where(tm => tm.TeamId == teamId)
+                .Include(tm => tm.User)          
+                .ThenInclude(u => u.Skills)     
+                .Select(tm => tm.User)          
+                .ToListAsync();
+        }
         public async Task<TeamAnalyticsViewModel> GetTeamAnalyticsAsync(Guid teamId,Guid userId)
         {
             var team = await _context.Teams
@@ -499,7 +506,7 @@ namespace Taskify.Services
 
             var attentionTasks = await _context.Tasks
                 .Include(t => t.Assignments).ThenInclude(a => a.User)
-                // .Include(t => t.List).ThenInclude(l => l.Board) // (Optional) Nếu muốn truy xuất thông tin Board sau này
+                // .Include(t => t.List).ThenInclude(l => l.Board) // Nếu muốn truy xuất thông tin Board sau này
                 .Where(t => t.List.Board.TeamId == teamId 
                             && t.Status != Models.TaskStatus.Completed 
                             && (t.DueDate < DateTime.UtcNow || t.DueDate < DateTime.UtcNow.AddDays(1)))

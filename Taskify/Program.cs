@@ -60,6 +60,7 @@ namespace Taskify
             builder.Services.AddScoped<ITeamService, TeamService>();
             builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
             builder.Services.AddScoped<IGeminiService, GeminiService>();
+            builder.Services.AddScoped<IPerformanceService, PerformanceService> ();
 
             builder.Services.AddHostedService<Taskify.Services.Background.DeadlineReminderService>();
             builder.Services.AddHostedService<LogCleanupWorker>();

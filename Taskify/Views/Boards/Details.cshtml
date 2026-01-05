@@ -1,6 +1,7 @@
 ﻿@model Taskify.Models.BoardViewModel
 @{
     ViewData["Title"] = Model.Name;
+    ViewBag.TeamId = Model.TeamId;
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/kanban.css" asp-append-version="true" />
@@ -394,6 +395,74 @@
                  else if(res.status === 403) alert("Không có quyền xóa.");
              });
         }
+        // --- HÀM TÍNH ĐIỂM AI (Phiên bản Debug & Scoped) ---
+function updateDetailScores(btnElement) {
+    var $modal = $(btnElement).closest('.modal-content');
+    
+    // 1. Lấy dữ liệu (Đảm bảo ID của input hidden đúng là detailTeamId)
+    var teamId = $modal.find('#detailTeamId').val(); 
+    
+    // Fallback: Nếu input hidden rỗng, thử lấy từ data-attribute của modal hoặc một nơi khác
+    if (!teamId || teamId === "00000000-0000-0000-0000-000000000000") {
+        console.warn("Không tìm thấy TeamId trong Modal, thử tìm từ Board...");
+        // Thử lấy từ Board Details (nếu đang ở trang Board Details)
+        teamId = '@ViewBag.TeamId'; 
+    }
+
+    if (!teamId) {
+        alert("Lỗi: Không xác định được TeamId để tính điểm.");
+        return;
+    }
+
+    var title = $modal.find('.task-title-display').text().trim(); 
+    var desc = $modal.find('.description-display p').text().trim();
+    var $btnAI = $(btnElement);
+    var originalText = $btnAI.html();
+
+    $btnAI.html('<i class="fas fa-spinner fa-spin"></i>');
+    $btnAI.prop('disabled', true);
+
+    $.ajax({
+        url: '/api/TaskHelper/suggestions',
+        type: 'GET',
+        data: { teamId: teamId, title: title, desc: desc },
+        success: function (data) {
+            $btnAI.html(originalText);
+            $btnAI.prop('disabled', false);
+            
+            if (data && data.length > 0) {
+                var count = 0;
+                // 2. Selector mới: Tìm thẻ a có class .dropdown-item bên trong modal này
+                $modal.find('a.dropdown-item[data-user-id]').each(function() {
+                    var $item = $(this);
+                    var userId = $item.data('user-id'); // Lấy ID từ data attribute
+                    
+                    var scoreData = data.find(x => x.id.toLowerCase() === userId.toLowerCase());
+                    
+                    if (scoreData) {
+                        count++;
+                        var $badge = $item.find('.ai-score-badge');
+                        
+                        // Tô màu
+                        var colorClass = scoreData.score >= 80 ? 'text-success' : (scoreData.score >= 50 ? 'text-warning' : 'text-danger');
+                        $badge.removeClass('text-success text-warning text-danger').addClass(colorClass);
+                        $badge.addClass('fw-bold').css('font-size', '0.75rem');
+                        
+                        // Gán nội dung
+                        $badge.html(`<i class="fas fa-chart-bar me-1"></i> ${scoreData.score}% fit`);
+                    }
+                });
+                
+                if(count === 0) console.log("Không khớp User ID nào trong dropdown.");
+            }
+        },
+        error: function(err) {
+            console.error(err);
+            $btnAI.html(originalText);
+            $btnAI.prop('disabled', false);
+        }
+    });
+}
     </script>
 }
 

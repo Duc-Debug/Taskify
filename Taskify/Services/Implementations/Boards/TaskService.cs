@@ -17,7 +17,7 @@ namespace Taskify.Services
             _notificationService = notificationService;
             _activityLogService = activityLogService;
         }
-        public async Task MoveTaskAsync(Guid taskId, Guid targetListId, int newPosition,Guid userId)
+        public async Task MoveTaskAsync(Guid taskId, Guid targetListId, int newPosition, Guid userId)
         {
             var task = await _context.Tasks.Include(t => t.List).FirstOrDefaultAsync(t => t.Id == taskId);
             if (task == null) return;
@@ -41,21 +41,24 @@ namespace Taskify.Services
                     if (listTitle == "to do" || listTitle == "todo" || listTitle == "backlog")
                     {
                         task.Status = Models.TaskStatus.Pending;
+                        task.CompletedAt = null;
                     }
                     else if (listTitle == "done" || listTitle == "completed" || listTitle == "complete" || listTitle == "finished")
                     {
                         task.Status = Models.TaskStatus.Completed;
+                        task.CompletedAt = DateTime.Now;
                     }
                     else
                     {
                         // Tất cả các tên khác (Doing, In Process, Review, Testing...) đều về InProgress
                         task.Status = Models.TaskStatus.InProgress;
+                        task.CompletedAt = null;
                     }
 
                     // Ghi log
                     await LogHistoryAsync(taskId, $"Moved from {oldListName}  to {targetList.Title}");
                     var board = await _context.Boards.FindAsync(task.List.BoardId);
-                  //  var userName = await _context.Users.FindAsync(userId);
+                    //  var userName = await _context.Users.FindAsync(userId);
                     await _activityLogService.LogAsync(userId, ActivityType.TaskMoved,
                         $"Move task from {oldListName} to List {targetList.Title}", teamId: board?.TeamId, boardId: board.Id);
                 }
@@ -68,6 +71,7 @@ namespace Taskify.Services
         public async Task<TaskItem> CreateTaskAsync(TaskCreateViewModel model, Guid userId)
         {
             var status = Models.TaskStatus.Pending;
+
             var list = await _context.TaskLists.FindAsync(model.ListId);
             if (list != null)
             {
@@ -75,6 +79,7 @@ namespace Taskify.Services
                 if (listTitle == "done" || listTitle == "completed" || listTitle == "complete" || listTitle == "finished")
                 {
                     status = Models.TaskStatus.Completed;
+
                 }
                 else if (listTitle == "to do" || listTitle == "todo" || listTitle == "backlog")
                 {
@@ -157,14 +162,14 @@ namespace Taskify.Services
             return await _context.Tasks
                 .Include(t => t.Assignments)
                 .ThenInclude(t => t.User)
-                .Include(t=>t.List)
+                .Include(t => t.List)
                 .FirstOrDefaultAsync(t => t.Id == taskId);
         }
         public async Task<TaskDetailsViewModel> GetTaskDetailsAsync(Guid taskId)
         {
             var task = await _context.Tasks
                 .Include(t => t.Assignments).ThenInclude(a => a.User)
-                .Include(t => t.List).ThenInclude(l=>l.Board) // Lay ten List
+                .Include(t => t.List).ThenInclude(l => l.Board) // Lay ten List
                 .FirstOrDefaultAsync(t => t.Id == taskId);
 
             if (task == null) return null;
@@ -197,7 +202,7 @@ namespace Taskify.Services
                 ListId = task.ListId,
                 ListName = task.List?.Title,
                 CreatedAt = DateTime.Now, // Vi du thoi, neu co DB lay sau
-
+                TeamId = teamId,
                 //Map assignees
                 Assignees = task.Assignments.Select(a => new MemberViewModel
                 {
@@ -267,7 +272,7 @@ namespace Taskify.Services
         {
             var task = await _context.Tasks
                 .Include(t => t.Assignments)
-                .Include(t=>t.List)
+                .Include(t => t.List)
                 .FirstOrDefaultAsync(t => t.Id == model.Id);
             if (task == null) return (false, "Don't have Task");
 
@@ -341,6 +346,15 @@ namespace Taskify.Services
 
             return role;
         }
+
+        public async Task<Guid?> GetTeamIdByAsync(Guid boardId)
+        {
+            var teamId = await _context.Boards
+        .Where(b => b.Id == boardId)
+        .Select(b => b.TeamId)
+        .FirstOrDefaultAsync();
+            return teamId;
+        }
         public async Task AssignMemberASync(Guid taskId, Guid userId)
         {
             var exists = await _context.TaskAssignments
@@ -353,8 +367,8 @@ namespace Taskify.Services
                     TaskId = taskId,
                     UserId = userId,
                 };
-                var taskName = await _context.Tasks.Where(i=>i.Id== taskId)
-                    .Select(name=>name.Title)
+                var taskName = await _context.Tasks.Where(i => i.Id == taskId)
+                    .Select(name => name.Title)
                     .FirstOrDefaultAsync();
 
                 _context.TaskAssignments.Add(assignment);
@@ -372,5 +386,6 @@ namespace Taskify.Services
                 await _context.SaveChangesAsync();
             }
         }
+
     }
 }

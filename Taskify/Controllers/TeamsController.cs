@@ -216,11 +216,11 @@ namespace Taskify.Controllers
             }
             else if (result == "Unauthorized")
             {
-                return Json(new { success = false, message = "❌ Bạn không có quyền hối thúc (Chỉ Owner/Admin Team)!" });
+                return Json(new { success = false, message = " Bạn không có quyền hối thúc (Chỉ Owner/Admin Team)!" });
             }
             else if (result == "SpamLimitReached")
             {
-                return Json(new { success = false, message = "⚠️ Spam warning: Bạn chỉ được nhắc người này 2 lần/ngày!" });
+                return Json(new { success = false, message = " Spam warning: Bạn chỉ được nhắc người này 2 lần/ngày!" });
             }
             else
             {

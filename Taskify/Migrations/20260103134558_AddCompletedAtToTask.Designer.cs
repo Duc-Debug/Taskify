@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Taskify.Data;
 
@@ -10,9 +11,11 @@ using Taskify.Data;
 namespace Taskify.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260103134558_AddCompletedAtToTask")]
+    partial class AddCompletedAtToTask
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.11");
@@ -222,6 +225,9 @@ namespace Taskify.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("CreatorId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("Deadline")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")

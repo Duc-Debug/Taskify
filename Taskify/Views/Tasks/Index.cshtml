@@ -371,6 +371,16 @@
                 else alert("Cannot delete task.");
             });
     }
+    function openCreateTaskModal(listId, boardId) {
+    // Đảm bảo URL có tham số boardId
+    $.get('/Tasks/Create?listId=' + listId + '&boardId=' + boardId, function(data) {
+        $('#modal-container').html(data);
+        $('#createTaskModal').modal('show');
+        
+        // Debug: Kiểm tra xem TeamId đã có chưa
+        console.log("TeamId loaded:", $('#hiddenTeamId').val()); 
+    });
+}
     </script>
 }
 

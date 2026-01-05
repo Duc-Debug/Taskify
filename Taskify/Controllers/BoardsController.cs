@@ -15,14 +15,15 @@ namespace Taskify.Controllers
         private readonly ITaskService _taskService;
         private readonly IActivityLogService _activitiesLogService;
         private readonly IGeminiService _geminiService;
-
-        public BoardsController(IBoardService boardService, ITeamService teamService, ITaskService taskService, IActivityLogService activityLogService, IGeminiService geminiService)
+        private readonly IPerformanceService _performanceService;
+        public BoardsController(IBoardService boardService, ITeamService teamService, ITaskService taskService, IActivityLogService activityLogService, IGeminiService geminiService, IPerformanceService performanceService)
         {
             _boardService = boardService;
             _teamService = teamService;
             _taskService = taskService;
             _activitiesLogService = activityLogService;
             _geminiService = geminiService;
+            _performanceService = performanceService;
         }
 
         [HttpGet]
@@ -179,7 +180,6 @@ namespace Taskify.Controllers
             }
 
             // 3. Lấy dữ liệu cho AI (Gọi Service, không query tại đây)
-            // Hàm này sẽ tự xử lý logic: nếu TeamId null -> lấy 1 user, nếu có TeamId -> lấy list member
             var participants = await _teamService.GetUsersForAiAsync(model.IsTeamBoard ? model.TeamId : null, userId);
 
             // 4. Gọi Gemini AI
@@ -192,15 +192,60 @@ namespace Taskify.Controllers
                 model.Teams = new SelectList(teams, "Id", "Name", model.TeamId);
                 return View(model);
             }
+            var previewModel = new AiPreviewViewModel
+            {
+                BoardName = aiPlan.BoardName,
+                Description = aiPlan.Description,
+                TeamId = model.TeamId,
+                IsTeamBoard = model.IsTeamBoard,
+                RawPlanJson = System.Text.Json.JsonSerializer.Serialize(aiPlan) 
+            };
 
-            // 5. Lưu vào DB (Gọi BoardService)
+            foreach (var list in aiPlan.Lists)
+            {
+                var listPreview = new AiListPreview { Title = list.Title, Tasks = new List<AiTaskPreview>() };
+                foreach (var task in list.Tasks)
+                {
+                    var taskPreview = new AiTaskPreview
+                    {
+                        Title = task.Title,
+                        Priority = task.Priority,
+                        DueInDays = task.DueInDays,
+                        AssignedUserId = task.AssignedUserId,
+                        AiReason = task.ReasonForAssignment,
+                        SuccessProbability= task.SuccessConfidence
+                    };
+
+                    // TÍNH ĐIỂM
+                    if (task.AssignedUserId.HasValue)
+                    {
+                        var user = participants.FirstOrDefault(u => u.Id == task.AssignedUserId.Value);
+                        if (user != null)
+                        {
+                            taskPreview.AssignedUserName = user.FullName;
+                            if(taskPreview.SuccessProbability==0)
+                                    taskPreview.SuccessProbability = await _performanceService.CalculateSuccessProbabilityAsync(
+                                        user.Id, task.Title, task.Description);
+                        }
+                    }
+                    listPreview.Tasks.Add(taskPreview);
+                }
+                previewModel.Lists.Add(listPreview);
+            }
+
+            return View("PreviewBoard", previewModel);
+        }
+        [HttpPost]
+        public async Task<IActionResult> ConfirmAiCreate(AiPreviewViewModel model)
+        {
+            var userId = GetCurrentUserId();
+
+            var aiPlan = System.Text.Json.JsonSerializer.Deserialize<AiBoardPlan>(model.RawPlanJson);
             Guid? finalTeamId = model.IsTeamBoard ? model.TeamId : null;
-            // Lưu ý: Cần thêm hàm CreateBoardFromAiAsync vào IBoardService như đã bàn ở bước trước
             var newBoardId = await _boardService.CreateBoardFromAiAsync(aiPlan, userId, finalTeamId);
 
             return RedirectToAction(nameof(Details), new { id = newBoardId });
         }
-
 
         [HttpPost]
         public async Task<IActionResult> CreateList([FromBody] CreateListRequest request)

@@ -1,6 +1,6 @@
 ﻿@model Taskify.Models.MemberSelectViewModel
 
-<ul class="dropdown-menu p-2 shadow" style="max-height: 200px; overflow-y: auto; width: 250px;">
+<ul class="dropdown-menu p-2 shadow" style="max-height: 200px; overflow-y: auto; width: 400px;">
     <li><h6 class="dropdown-header">Select Member</h6></li>
 
     @if (Model.TeamMembers != null && Model.TeamMembers.Any())
@@ -19,6 +19,7 @@
                 <li>
                     <a class="dropdown-item d-flex align-items-center gap-2 rounded py-2 cursor-pointer"
                        href="javascript:void(0)"
+                       data-user-id="@user.Id"
                        onclick="assignMemberToTask('@Model.TaskId', '@user.Id')">
 
                         @if (!string.IsNullOrEmpty(user.AvatarUrl))
@@ -34,6 +35,7 @@
                         }
 
                         <span class="text-truncate">@user.FullName</span>
+                        <small class="ai-score-badge"></small>
                     </a>
                 </li>
             }
