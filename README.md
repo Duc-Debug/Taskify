@@ -60,14 +60,18 @@ Tại thư mục gốc của dự án (nơi chứa file `.csproj`), chạy các 
    dotnet user-secrets init
    ```
    # Cấu hình Google Login
-dotnet user-secrets set "Authentication:Google:ClientId" "YOUR_CLIENT_ID"
-dotnet user-secrets set "Authentication:Google:ClientSecret" "YOUR_CLIENT_SECRET"
-
+   ```bash
+   dotnet user-secrets set "Authentication:Google:ClientId" "YOUR_CLIENT_ID"
+   dotnet user-secrets set "Authentication:Google:ClientSecret" "YOUR_CLIENT_SECRET"
+   
 # Cấu hình Gemini AI
-dotnet user-secrets set "Gemini:ApiKey" "YOUR_GEMINI_API_KEY"
-
+   ```bash
+   dotnet user-secrets set "Gemini:ApiKey" "YOUR_GEMINI_API_KEY"
+   ```
 # Cấu hình Email gửi thông báo
+```bash
 dotnet user-secrets set "EmailSettings:Password" "YOUR_EMAIL_APP_PASSWORD"
-
+```
 # check xem lại secert 
+```bash
 dotnet user-secrets list
