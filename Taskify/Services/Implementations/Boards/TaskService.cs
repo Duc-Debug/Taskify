@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Collections;
-using System.Collections.Generic;
 using Taskify.Data;
 using Taskify.Models;
 
@@ -11,11 +9,13 @@ namespace Taskify.Services
         private readonly AppDbContext _context;
         private readonly INotificationService _notificationService;
         private readonly IActivityLogService _activityLogService;
-        public TaskService(AppDbContext context, INotificationService notificationService, IActivityLogService activityLogService)
+        private readonly ISkillEvaluationService _skillEvaluationService;
+        public TaskService(AppDbContext context, INotificationService notificationService, IActivityLogService activityLogService, ISkillEvaluationService skillEvaluationService)
         {
             _context = context;
             _notificationService = notificationService;
             _activityLogService = activityLogService;
+            _skillEvaluationService = skillEvaluationService;
         }
         public async Task MoveTaskAsync(Guid taskId, Guid targetListId, int newPosition, Guid userId)
         {
@@ -47,6 +47,7 @@ namespace Taskify.Services
                     {
                         task.Status = Models.TaskStatus.Completed;
                         task.CompletedAt = DateTime.Now;
+                        _ = _skillEvaluationService.CheckAndSuggestSkillUpdateAsync(taskId, userId);
                     }
                     else
                     {

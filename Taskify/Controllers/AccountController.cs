@@ -2,13 +2,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Text.Json;
 using Taskify.Models;
 using Taskify.Services;
-using Taskify.Utilities;
 
 namespace Taskify.Controllers
 {
@@ -17,10 +15,12 @@ namespace Taskify.Controllers
     {
         private readonly IAccountService _accountService;
         private readonly IEmailService _emailService;
-        public AccountController(IAccountService accountService,IEmailService emailService)
+        private readonly ISkillEvaluationService _skillEvaluationService;
+        public AccountController(IAccountService accountService, IEmailService emailService, ISkillEvaluationService skillEvaluationService)
         {
             _accountService = accountService;
             _emailService = emailService;
+            _skillEvaluationService = skillEvaluationService;
         }
 
         // -------- REGISTER------------
@@ -47,7 +47,7 @@ namespace Taskify.Controllers
                     return View(model);
                 }
                 var otp = new Random().Next(100000, 999999).ToString();
-                HttpContext.Session.SetString("RegisterData",JsonSerializer.Serialize(model));
+                HttpContext.Session.SetString("RegisterData", JsonSerializer.Serialize(model));
                 HttpContext.Session.SetString("OTP", otp);
                 HttpContext.Session.SetString("OTP_Expiry", DateTime.Now.AddMinutes(5).ToString());
                 string subject = "Taskify - Verify your email";
@@ -64,7 +64,7 @@ namespace Taskify.Controllers
                     await _emailService.SendEmailAsync(model.Email, subject, body);
                     return RedirectToAction("VerifyOtp");
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     ModelState.AddModelError("", "Could not send verification email. Please try again later. Error: " + ex.Message);
                 }
@@ -134,7 +134,7 @@ namespace Taskify.Controllers
         }
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl=null)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             if (ModelState.IsValid)
             {
@@ -170,11 +170,11 @@ namespace Taskify.Controllers
                 return RedirectToAction("Login");
             var emailClaim = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
             var nameClaim = result.Principal.FindFirst(ClaimTypes.Name)?.Value ?? "Google User";
-            if (string.IsNullOrEmpty(emailClaim)) 
+            if (string.IsNullOrEmpty(emailClaim))
                 return RedirectToAction("Login");
 
             var user = await _accountService.GetUserbyEmailAsync(emailClaim);
-            if(user == null)
+            if (user == null)
             {
                 //Chua co tk==> Tu dong dang ky
                 string randomPassword = GenerateRandomPassword(10);
@@ -190,7 +190,7 @@ namespace Taskify.Controllers
                     await _emailService.SendEmailAsync(emailClaim, "Your Taskify Account Credentials", emailBody);
                 }
             }
-            if(user != null)
+            if (user != null)
             {
                 await SignInUser(user, false);
                 return RedirectToAction("Index", "Dashboard");
@@ -223,7 +223,7 @@ namespace Taskify.Controllers
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
         }
-
+        // -------- UPDATE PROFILE ------------
         //---Method to Profile ----
         // -------- PROFILE (GET) ------------
         [Authorize]
@@ -236,18 +236,29 @@ namespace Taskify.Controllers
                 return RedirectToAction("Login");
             }
 
-          
+
             var userProfile = await _accountService.GetUserProfileAsync(userId);
 
             if (userProfile == null)
             {
                 return NotFound();
             }
-
+            var systemRatings = await _skillEvaluationService.EvaluateAllSkillsAsync(userId);
+            foreach (var skill in userProfile.Skills)
+            {
+                if (systemRatings.ContainsKey(skill.SkillName))
+                {
+                    skill.SystemRating = systemRatings[skill.SkillName];
+                }
+                else
+                {
+                    skill.SystemRating = skill.ProficiencyLevel;
+                }
+            }
             return View(userProfile);
         }
 
-        // -------- UPDATE PROFILE ------------
+
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -255,7 +266,6 @@ namespace Taskify.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // Nếu dữ liệu không hợp lệ, trả về view kèm lỗi
                 return View("Profile", model);
             }
 
@@ -265,7 +275,6 @@ namespace Taskify.Controllers
                 return RedirectToAction("Login");
             }
 
-            // 3. Gọi Service để cập nhật database (Bạn cần implement hàm này)
             var result = await _accountService.UpdateProfileAsync(userId, model);
 
             if (result)
@@ -281,7 +290,7 @@ namespace Taskify.Controllers
         }
 
         // -------- CHANGE PASSWORD(FORGOT) VIEW (GET) ------------
-       
+
         [HttpGet]
         [Authorize]
         public IActionResult ChangePassword()
@@ -293,7 +302,7 @@ namespace Taskify.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
-            if(!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid) return View(model);
             try
             {
                 var userId = GetCurrentUserId();
@@ -301,7 +310,7 @@ namespace Taskify.Controllers
                 TempData["SuccessMessage"] = "ChangePassword successffuly";
                 return RedirectToAction("Profile");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
                 return View(model);
@@ -347,14 +356,14 @@ namespace Taskify.Controllers
                 TempData["SuccessMessage"] = "Change password successfully, Please enter again.";
                 return RedirectToAction("Login");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
                 return View(model);
             }
         }
         //-----------OTHER------------------
-        private   Guid GetCurrentUserId()
+        private Guid GetCurrentUserId()
         {
             var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return Guid.Parse(id);

@@ -27,5 +27,14 @@ namespace Taskify.Models
     public class UserSkillViewModel{
         public string SkillName { get; set; }
         public int ProficiencyLevel { get; set; }
+        public int SystemRating { get; set; }
+    }
+    public class SkillSuggestionResult
+    {
+        public string SkillName { get; set; }
+        public int CurrentLevel { get; set; } 
+        public int CalculatedLevel { get; set; } 
+        public string Reason { get; set; } 
+        public bool ShouldUpdate { get; set; } // True nếu chênh lệch >= 2 điểm
     }
 }

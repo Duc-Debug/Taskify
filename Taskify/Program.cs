@@ -21,9 +21,9 @@ namespace Taskify
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromMinutes(5); // Set session timeout
-                options.Cookie.HttpOnly = true; // Make the session cookie HTTP only
-                options.Cookie.IsEssential = true; // Make the session cookie essential
+                options.IdleTimeout = TimeSpan.FromMinutes(5); 
+                options.Cookie.HttpOnly = true; 
+                options.Cookie.IsEssential = true; 
             });
             // Cau hinh Cookie
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -61,6 +61,7 @@ namespace Taskify
             builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
             builder.Services.AddScoped<IGeminiService, GeminiService>();
             builder.Services.AddScoped<IPerformanceService, PerformanceService> ();
+            builder.Services.AddScoped<ISkillEvaluationService,SkillEvaluationService>();
 
             builder.Services.AddHostedService<Taskify.Services.Background.DeadlineReminderService>();
             builder.Services.AddHostedService<LogCleanupWorker>();

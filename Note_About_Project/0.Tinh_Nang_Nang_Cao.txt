@@ -31,3 +31,6 @@ Phan 3:
 - Update Profile
 - Analytics Trong Team
 -Hối người được Task
+- AI 
+- Add Success rate
+- Check xem co dung thuc luc k

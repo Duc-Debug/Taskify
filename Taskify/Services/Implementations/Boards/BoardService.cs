@@ -318,6 +318,16 @@ namespace Taskify.Services
                     }
                     newBoard.Lists.Add(newList);
                 }
+                //var doneList = new TaskList
+                //{
+                //    Id = Guid.NewGuid(),
+                //    Title = "Done",
+                //    BoardId = newBoard.Id,
+                //    Order = listOrder++,
+                //    Tasks = new List<TaskItem>()
+                //};
+                //newBoard.Lists.Add(doneList);
+
             }
 
             _context.Boards.Add(newBoard);
